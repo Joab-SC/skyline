@@ -11,11 +11,13 @@ public class Aircraft {
     private AircraftModel aircraftModel;
     private int numSeats;
     private List<Seat> seats;
+    private int availableSeats;
 
-    private Aircraft(AircraftModel aircraftModel, int numSeats, List<Seat> seats) {
+    private Aircraft(AircraftModel aircraftModel, int numSeats, List<Seat> seats, int availableSeats) {
         this.aircraftModel = aircraftModel;
         this.numSeats = numSeats;
         this.seats = seats;
+        this.availableSeats = availableSeats;
     }
 
 
