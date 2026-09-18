@@ -1,5 +1,7 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.valueObject.Gender;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
