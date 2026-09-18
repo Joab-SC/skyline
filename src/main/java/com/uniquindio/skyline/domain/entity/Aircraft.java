@@ -7,6 +7,7 @@ import java.util.List;
 
 @Getter
 public class Aircraft {
+    private String id;
     private AircraftModel aircraftModel;
     private int numSeats;
     private List<Seat> seats;
