@@ -10,9 +10,11 @@ public class Seat {
 
     String id;
     String code;
+    SeatStatus seatStatus;
 
-    public Seat(String code) {
+    public Seat(String code, SeatStatus seatStatus) {
         this.code = code;
+        this.seatStatus = seatStatus;
     }
 
     @Override
