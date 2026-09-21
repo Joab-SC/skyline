@@ -21,7 +21,7 @@ public class Leg {
     private Luggage luggage;
     private final List<LegSeat> seats;
 
-    public Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+    private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                LocalDateTime arrivalTime, String aircraftId, double price,
                List<ExtraService> extraServices, Luggage luggage, List<LegSeat> seats) {
         this.id = id;
