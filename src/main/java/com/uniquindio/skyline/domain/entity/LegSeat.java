@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 
 import java.util.Optional;
@@ -16,7 +17,10 @@ public class LegSeat {
         this.passengerId = Optional.empty();
     }
 
-    public static LegSeat createLegSeat(Seat seat) {
-        return new  LegSeat(seat.getId());
+    public static LegSeat createLegSeat(String seatId) {
+        if(seatId == null || seatId.isEmpty()){
+            throw new DomainRuleException("The legSeat must include the seat");
+        }
+        return new  LegSeat(seatId);
     }
 }
