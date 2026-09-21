@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -33,6 +34,24 @@ public class Leg {
         this.extraServices = extraServices;
         this.luggage = luggage;
         this.seats = seats;
+    }
+
+    public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+                                LocalDateTime arrivalTime, Aircraft aircraft, Double luggagePrice, List<ExtraService> extraServices,
+                                Double price) {
+        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, extraServices, price);
+
+        List<LegSeat> legSeats = new ArrayList<>(List.of());
+        List<Seat> seats = aircraft.getSeats();
+
+        for (Seat seat : seats) {
+            LegSeat legSeat = LegSeat.createLegSeat(seat.getId());
+            legSeats.add(legSeat);
+        }
+
+        Luggage luggage = Luggage.createLuggage(luggagePrice);
+
+        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, extraServices, luggage, legSeats);
     }
 
 
