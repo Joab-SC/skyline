@@ -17,13 +17,11 @@ public class Leg {
     private final LocalDateTime arrivalTime;
     private final String aircraftId;
     private double price;
-    private List<ExtraService> extraServices;
     private Luggage luggage;
     private final List<LegSeat> seats;
 
     private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-               LocalDateTime arrivalTime, String aircraftId, double price,
-               List<ExtraService> extraServices, Luggage luggage, List<LegSeat> seats) {
+               LocalDateTime arrivalTime, String aircraftId, double price, Luggage luggage, List<LegSeat> seats) {
         this.id = id;
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
@@ -31,15 +29,14 @@ public class Leg {
         this.arrivalTime = arrivalTime;
         this.aircraftId = aircraftId;
         this.price = price;
-        this.extraServices = extraServices;
         this.luggage = luggage;
         this.seats = seats;
     }
 
     public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                                LocalDateTime arrivalTime, Aircraft aircraft, Double luggagePrice, List<ExtraService> extraServices,
-                                Double price) {
-        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, extraServices, price);
+                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, double price) {
+
+        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
 
         List<LegSeat> legSeats = new ArrayList<>(List.of());
         List<Seat> seats = aircraft.getSeats();
@@ -51,7 +48,7 @@ public class Leg {
 
         Luggage luggage = Luggage.createLuggage(luggagePrice);
 
-        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, extraServices, luggage, legSeats);
+        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, luggage, legSeats);
     }
 
 
@@ -111,12 +108,6 @@ public class Leg {
         }
     }
 
-    private static void validateExtraServices(List<ExtraService> extraServices) {
-        if (extraServices == null || extraServices.isEmpty()) {
-            throw new DomainRuleException("At least one extra service is required");
-        }
-    }
-
     private static void validateTimes(LocalDateTime departureTime, LocalDateTime arrivalTime) {
         if (!arrivalTime.isAfter(departureTime)) {
             throw new DomainRuleException("The arrival time must be later than the departure time");
@@ -131,7 +122,6 @@ public class Leg {
             LocalDateTime arrivalTime,
             Aircraft aircraft,
             Double luggagePrice,
-            List<ExtraService> extraServices,
             Double price) {
 
         validateId(id);
@@ -142,7 +132,6 @@ public class Leg {
         validateTimes(departureTime, arrivalTime);
         validateAircraft(aircraft);
         validateLuggagePrice(luggagePrice);
-        validateExtraServices(extraServices);
         validatePrice(price);
     }
 }
