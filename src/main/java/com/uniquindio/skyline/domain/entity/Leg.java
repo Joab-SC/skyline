@@ -9,111 +9,121 @@ import java.util.List;
 
 @Getter
 public class Leg {
-    private String id;
-    private Airport originAirport;
-    private Airport destinationAirport;
-    private LocalDateTime departureTime;
-    private LocalDateTime arrivalTime;
-    private Aircraft aircraft;
+    private final String id;
+    private final Airport originAirport;
+    private final Airport destinationAirport;
+    private final LocalDateTime departureTime;
+    private final LocalDateTime arrivalTime;
+    private final String aircraftId;
     private double price;
-    private List<Passenger> passengers;
     private List<ExtraService> extraServices;
     private Luggage luggage;
-    private List<LegSeat> seats;
+    private final List<LegSeat> seats;
 
-    private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-               LocalDateTime arrivalTime, Aircraft aircraft, double price, List<Passenger> passengers,
+    public Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+               LocalDateTime arrivalTime, String aircraftId, double price,
                List<ExtraService> extraServices, Luggage luggage, List<LegSeat> seats) {
         this.id = id;
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
-        this.aircraft = aircraft;
+        this.aircraftId = aircraftId;
         this.price = price;
-        this.passengers = passengers;
         this.extraServices = extraServices;
         this.luggage = luggage;
         this.seats = seats;
     }
 
-    private void validateId() {
+
+    private static void validateId(String id) {
         if (id == null || id.isBlank()) {
-            throw new DomainRuleException("Error: id cannot be null or blank");
+            throw new DomainRuleException("A valid identifier is required");
         }
     }
 
-    private void validateOriginAirport() {
+    private static void validateOriginAirport(Airport originAirport) {
         if (originAirport == null) {
-            throw new DomainRuleException("Error: origin airport cannot be null");
+            throw new DomainRuleException("An origin airport is required");
         }
     }
 
-    private void validateDestinationAirport() {
+    private static void validateDestinationAirport(Airport destinationAirport) {
         if (destinationAirport == null) {
-            throw new DomainRuleException("Error: destination airport cannot be null");
+            throw new DomainRuleException("A destination airport is required");
         }
     }
 
-    private void validateDepartureTime() {
+    private static void validateDepartureTime(LocalDateTime departureTime) {
         if (departureTime == null) {
-            throw new DomainRuleException("Error: departure time cannot be null");
+            throw new DomainRuleException("A departure time is required");
         }
     }
 
-    private void validateArrivalTime() {
+    private static void validateArrivalTime(LocalDateTime arrivalTime) {
         if (arrivalTime == null) {
-            throw new DomainRuleException("Error: arrival time cannot be null");
+            throw new DomainRuleException("An arrival time is required");
         }
     }
 
-    private void validateAircraft() {
+    private static void validateAircraft(Aircraft aircraft) {
         if (aircraft == null) {
-            throw new DomainRuleException("Error: aircraft cannot be null");
+            throw new DomainRuleException("An aircraft is required");
         }
     }
 
-    private void validatePrice() {
+    private static void validatePrice(Double price) {
+        if (price == null) {
+            throw new DomainRuleException("A price is required");
+        }
+
         if (price < 0) {
-            throw new DomainRuleException("Error: price cannot be negative");
+            throw new DomainRuleException("The price cannot be less than zero");
         }
     }
 
-    private void validatePassengers() {
-        if (passengers == null || passengers.isEmpty()) {
-            throw new DomainRuleException("Error: passengers cannot be null or empty");
+    private static void validateLuggagePrice(Double luggagePrice) {
+        if (luggagePrice == null) {
+            throw new DomainRuleException("A luggage price is required");
+        }
+
+        if (luggagePrice < 0) {
+            throw new DomainRuleException("The luggage price cannot be less than zero");
         }
     }
 
-    private void validateExtraServices() {
+    private static void validateExtraServices(List<ExtraService> extraServices) {
         if (extraServices == null || extraServices.isEmpty()) {
-            throw new DomainRuleException("Error: extra services cannot be null or empty");
+            throw new DomainRuleException("At least one extra service is required");
         }
     }
 
-    private void validateLuggage() {
-        if (luggage == null) {
-            throw new DomainRuleException("Error: luggage cannot be null");
+    private static void validateTimes(LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        if (!arrivalTime.isAfter(departureTime)) {
+            throw new DomainRuleException("The arrival time must be later than the departure time");
         }
     }
 
-    private void validateSeats() {
-        if (seats == null || seats.isEmpty()) {
-            throw new DomainRuleException("Error: seats cannot be null or empty");
-        }
-    }
+    private static void validateLeg(
+            String id,
+            Airport originAirport,
+            Airport destinationAirport,
+            LocalDateTime departureTime,
+            LocalDateTime arrivalTime,
+            Aircraft aircraft,
+            Double luggagePrice,
+            List<ExtraService> extraServices,
+            Double price) {
 
-    private void validateLeg() {
-        validateId();
-        validateOriginAirport();
-        validateDestinationAirport();
-        validateDepartureTime();
-        validateArrivalTime();
-        validateAircraft();
-        validatePrice();
-        validatePassengers();
-        validateExtraServices();
-        validateLuggage();
-        validateSeats();
+        validateId(id);
+        validateOriginAirport(originAirport);
+        validateDestinationAirport(destinationAirport);
+        validateDepartureTime(departureTime);
+        validateArrivalTime(arrivalTime);
+        validateTimes(departureTime, arrivalTime);
+        validateAircraft(aircraft);
+        validateLuggagePrice(luggagePrice);
+        validateExtraServices(extraServices);
+        validatePrice(price);
     }
 }
