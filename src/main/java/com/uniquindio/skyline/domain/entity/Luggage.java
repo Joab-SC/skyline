@@ -13,7 +13,7 @@ public class Luggage {
 
     public static Luggage createLuggage(Double luggagePrice) {
         if(luggagePrice <  0 ){
-            throw new DomainRuleException("The price of the luggage must be pos");
+            throw new DomainRuleException("The price of the luggage must be positive");
         }
         return new Luggage(luggagePrice);
     }
