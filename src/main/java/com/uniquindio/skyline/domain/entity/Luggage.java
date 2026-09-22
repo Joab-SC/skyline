@@ -3,6 +3,8 @@ package com.uniquindio.skyline.domain.entity;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 public class Luggage {
     private final int maxWeight = 23;
@@ -25,4 +27,16 @@ public class Luggage {
         return new Luggage(id,luggagePrice);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Luggage)) return false;
+        Luggage other = (Luggage) o;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

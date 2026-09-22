@@ -24,4 +24,6 @@ public class LegSeat {
         }
         return new  LegSeat(seatCode);
     }
+
+
 }

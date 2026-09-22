@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 public class Leg {
@@ -134,5 +135,20 @@ public class Leg {
         validateAircraft(aircraft);
         validateLuggagePrice(luggagePrice);
         validatePrice(price);
+
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Leg)) return false;
+        Leg other = (Leg) o;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
