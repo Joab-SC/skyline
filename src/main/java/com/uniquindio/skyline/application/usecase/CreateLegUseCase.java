@@ -22,11 +22,11 @@ public class CreateLegUseCase {
     }
 
     public Leg execute(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                        LocalDateTime arrivalTime, String airlineId, String aircraftId, double luggagePrice, double price) {
+                        LocalDateTime arrivalTime, String airlineId, String aircraftId, String idLuggage, double luggagePrice, double price) {
 
         Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
         Aircraft aircraft = airline.getAircraft(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
-        Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
+        Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, idLuggage, price);
         airline.addLeg(leg.getId());
         legRepository.save(leg);
         return leg;

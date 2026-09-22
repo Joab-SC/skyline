@@ -35,7 +35,7 @@ public class Leg {
     }
 
     public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, double price) {
+                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, String idLuggage, double price) {
 
         validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
 
@@ -47,7 +47,7 @@ public class Leg {
             legSeats.add(legSeat);
         }
 
-        Luggage luggage = Luggage.createLuggage(luggagePrice);
+        Luggage luggage = Luggage.createLuggage(idLuggage,luggagePrice);
 
         return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, luggage, legSeats);
     }
