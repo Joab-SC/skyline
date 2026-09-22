@@ -7,20 +7,20 @@ import java.util.Optional;
 
 public class LegSeat {
     private String id;
-    private String seatId;
+    private String seatCode;
     private SeatStatus seatStatus;
     private Optional<String> passengerId;
 
-    private LegSeat(String seatId) {
-        this.seatId = seatId;
+    private LegSeat(String seatCode) {
+        this.seatCode = seatCode;
         this.seatStatus = SeatStatus.AVALIABLE;
         this.passengerId = Optional.empty();
     }
 
-    public static LegSeat createLegSeat(String seatId) {
-        if(seatId == null || seatId.isEmpty()){
+    public static LegSeat createLegSeat(String seatCode) {
+        if(seatCode == null || seatCode.isEmpty()){
             throw new DomainRuleException("The legSeat must include the seat");
         }
-        return new  LegSeat(seatId);
+        return new  LegSeat(seatCode);
     }
 }

@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.valueObject.AircraftModel;
+import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
 import java.util.List;

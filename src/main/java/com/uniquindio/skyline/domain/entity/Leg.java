@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -42,7 +43,7 @@ public class Leg {
         List<Seat> seats = aircraft.getSeats();
 
         for (Seat seat : seats) {
-            LegSeat legSeat = LegSeat.createLegSeat(seat.getId());
+            LegSeat legSeat = LegSeat.createLegSeat(seat.code());
             legSeats.add(legSeat);
         }
 
