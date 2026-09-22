@@ -25,7 +25,7 @@ public class Airline {
             throw new DomainRuleException("Leg already exists in the airline");
         }
         if(legId == null || legId.isEmpty()){
-            throw new DomainRuleException("Leg id cannot be empty");
+            throw new DomainRuleException("Leg id cannot be empty in the airline");
         }
         this.legIds.add(legId);
     }
