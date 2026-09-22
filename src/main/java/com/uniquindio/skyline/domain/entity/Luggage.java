@@ -6,18 +6,23 @@ import lombok.Getter;
 @Getter
 public class Luggage {
     private final int maxWeight = 23;
-    double price;
+    private String id;
+    private double price;
 
-    private Luggage(double price) {
+    private Luggage(String id, double price) {
+        this.id = id;
         this.price = price;
     }
 
 
-    public static Luggage createLuggage(Double luggagePrice) {
+    public static Luggage createLuggage(String id, Double luggagePrice) {
         if(luggagePrice <  0 ){
             throw new DomainRuleException("The price of the luggage must be positive");
         }
-        return new Luggage(luggagePrice);
+        if(id == null || id.isEmpty()){
+            throw new DomainRuleException("The id of the luggage is required");
+        }
+        return new Luggage(id,luggagePrice);
     }
 
 }
