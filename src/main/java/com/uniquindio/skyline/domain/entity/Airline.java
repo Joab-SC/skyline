@@ -3,21 +3,20 @@ package com.uniquindio.skyline.domain.entity;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Getter
 public class Airline {
+    private String id;
     private String name;
     private HashMap<String, Aircraft> aircrafts;
     private List<String> legIds;
 
 
-    private Airline(String name, HashMap<String, Aircraft> aircrafts) {
+    private Airline(String id, String name) {
+        this.id = id;
         this.name = name;
-        this.aircrafts = aircrafts;
+        this.aircrafts = new HashMap<>();
         this.legIds = new ArrayList<>()   ;
     }
 
@@ -36,4 +35,16 @@ public class Airline {
         return Optional.ofNullable(aircrafts.get(aircraftId));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Airline)) return false;
+        Airline other = (Airline) o;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
