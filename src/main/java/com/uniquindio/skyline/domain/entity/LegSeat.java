@@ -2,9 +2,10 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
+import lombok.Getter;
 
 import java.util.Optional;
-
+@Getter
 public class LegSeat {
     private String id;
     private String seatCode;
