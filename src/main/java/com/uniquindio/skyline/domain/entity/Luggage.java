@@ -1,7 +1,9 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import lombok.Getter;
 
+@Getter
 public class Luggage {
     private final int maxWeight = 23;
     double price;
