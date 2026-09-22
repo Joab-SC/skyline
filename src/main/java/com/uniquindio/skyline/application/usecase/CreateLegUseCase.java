@@ -27,6 +27,7 @@ public class CreateLegUseCase {
         Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
         Aircraft aircraft = airline.getAircraft(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
         Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
+        airline.addLeg(leg.getId());
         legRepository.save(leg);
         return leg;
     }
