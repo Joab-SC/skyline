@@ -1,12 +1,14 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+@Getter
 public class Airline {
     private String name;
     private HashMap<String, Aircraft> aircrafts;
