@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 public class Leg {
@@ -37,7 +38,7 @@ public class Leg {
 
     // Creates a leg with seats and luggage.
     public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, String idLuggage, double price) {
+                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, double price) {
 
         validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
 
@@ -45,11 +46,11 @@ public class Leg {
         List<Seat> seats = aircraft.getSeats();
 
         for (Seat seat : seats) {
-            LegSeat legSeat = LegSeat.createLegSeat(seat.code());
+            LegSeat legSeat = LegSeat.createLegSeat(UUID.randomUUID().toString(), seat.code());
             legSeats.add(legSeat);
         }
 
-        Luggage luggage = Luggage.createLuggage(idLuggage,luggagePrice);
+        Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
         return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, luggage, legSeats);
     }
