@@ -9,6 +9,7 @@ import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.LegOverlapValidator;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.Seat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +32,8 @@ public class CreateLegUseCase {
         Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
         Aircraft aircraft = airline.getAircraft(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
         legOverlapValidator.validateNoOverlap(aircraftId, departureTime, arrivalTime);
-        Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
+        List<Seat> aircraftSeats = aircraft.getSeats();
+        Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
         airline.addLeg(leg.getId());
         legRepository.save(leg);
         return leg;
