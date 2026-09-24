@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,5 +22,12 @@ public class LegRepositoryInMemory implements LegRepository {
     @Override
     public void save(Leg leg) {
         legs.put(leg.getId(), leg);
+    }
+
+    @Override
+    public List<Leg> findLegsByAircraft(String idAircraft) {
+        return legs.values().stream()
+                .filter(leg -> leg.getAircraftId().equals(idAircraft))
+                .toList();
     }
 }
