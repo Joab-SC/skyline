@@ -10,6 +10,7 @@ public class AirportTest {
 
     @Test
     void TwoAirportsWIthSameDataAreEqual() {
+        // Checks value equality for the same airport data.
         Airport airport = new Airport("El Eden", "AXM", City.ARMENIA);
         Airport duplicateAirport = new Airport("El Eden", "AXM", City.ARMENIA);
 
@@ -18,6 +19,7 @@ public class AirportTest {
 
     @Test
     void AirportWithInvalidDataThrowsException() {
+        // Checks airport validation errors.
 
         assertThrows(DomainRuleException.class, () -> {
             new Airport("El Eden", "AXM", null);

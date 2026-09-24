@@ -8,6 +8,7 @@ class SkylineApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Checks that the Spring context starts.
 	}
 
 }

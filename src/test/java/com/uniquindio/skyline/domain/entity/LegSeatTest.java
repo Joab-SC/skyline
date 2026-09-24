@@ -12,12 +12,14 @@ public class LegSeatTest {
 
     @Test
     public void LegSeatIsCreatedAvailable() {
+        // Checks the initial seat status.
         LegSeat legSeat = LegSeat.createLegSeat("A32");
         assertEquals(SeatStatus.AVALIABLE, legSeat.getSeatStatus());
     }
 
     @Test
     public void LegSeatIsCreatedWthEmptyPassengerId() {
+        // Checks that no passenger is assigned.
         LegSeat legSeat = LegSeat.createLegSeat("B28");
         assertEquals(Optional.empty(), legSeat.getPassengerId());
     }

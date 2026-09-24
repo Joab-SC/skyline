@@ -21,6 +21,7 @@ public class Airline {
     }
 
 
+    // Adds a leg id to the airline.
     public void addLeg(String legId){
         if(this.legIds.contains(legId)){
             throw new DomainRuleException("Leg already exists in the airline");
@@ -31,6 +32,7 @@ public class Airline {
         this.legIds.add(legId);
     }
 
+    // Finds an aircraft by its id.
     public Optional<Aircraft> getAircraft(String aircraftId) {
         return Optional.ofNullable(aircrafts.get(aircraftId));
     }

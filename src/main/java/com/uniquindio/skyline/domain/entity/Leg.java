@@ -35,6 +35,7 @@ public class Leg {
         this.seats = seats;
     }
 
+    // Creates a leg with seats and luggage.
     public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                                 LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, String idLuggage, double price) {
 
@@ -116,6 +117,7 @@ public class Leg {
         }
     }
 
+    // Runs all leg validations.
     private static void validateLeg(
             String id,
             Airport originAirport,

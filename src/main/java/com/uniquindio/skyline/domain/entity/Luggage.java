@@ -17,6 +17,7 @@ public class Luggage {
     }
 
 
+    // Creates luggage with a valid id and price.
     public static Luggage createLuggage(String id, Double luggagePrice) {
         if(luggagePrice <  0 ){
             throw new DomainRuleException("The price of the luggage must be positive");

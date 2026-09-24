@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 
 public record Airport(String name, String acronym, City city) {
 
+    // Validates the airport data.
     public Airport{
         if (name == null || name.isBlank()){
             throw new DomainRuleException("The name or acronym can not be blank");

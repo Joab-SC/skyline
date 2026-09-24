@@ -9,6 +9,7 @@ public class SeatTest {
 
     @Test
     void twoSeatsWithSameDataAreEqual(){
+        // Checks value equality for the same seat code.
 
         Seat seat = new Seat("A21");
         Seat duplicateSeat = new Seat("A21");
@@ -18,6 +19,7 @@ public class SeatTest {
 
     @Test
     void SeatWithInvalidDataThrowsException(){
+        // Checks seat code validation errors.
         assertThrows(DomainRuleException.class, () -> {
             new Seat(" ");
         });

@@ -21,6 +21,7 @@ public class CreateLegUseCase {
         this.airlineRepository = airlineRepository;
     }
 
+    // Creates a leg and links it to the airline.
     public Leg execute(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                         LocalDateTime arrivalTime, String airlineId, String aircraftId, String idLuggage, double luggagePrice, double price) {
 

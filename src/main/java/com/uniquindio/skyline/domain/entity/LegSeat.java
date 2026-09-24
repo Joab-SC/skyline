@@ -18,6 +18,7 @@ public class LegSeat {
         this.passengerId = Optional.empty();
     }
 
+    // Creates an available leg seat.
     public static LegSeat createLegSeat(String seatCode) {
         if(seatCode == null || seatCode.isEmpty()){
             throw new DomainRuleException("The legSeat must include the seat");
