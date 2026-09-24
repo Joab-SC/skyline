@@ -38,21 +38,20 @@ public class Leg {
 
     // Creates a leg with seats and luggage.
     public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                                LocalDateTime arrivalTime, Aircraft aircraft, double luggagePrice, double price) {
+                                LocalDateTime arrivalTime, String aircraftId, List<Seat> aircraftSeats, double luggagePrice, double price) {
 
-        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft, luggagePrice, price);
+        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
 
         List<LegSeat> legSeats = new ArrayList<>(List.of());
-        List<Seat> seats = aircraft.getSeats();
 
-        for (Seat seat : seats) {
+        for (Seat seat : aircraftSeats) {
             LegSeat legSeat = LegSeat.createLegSeat(UUID.randomUUID().toString(), seat.code());
             legSeats.add(legSeat);
         }
 
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
-        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraft.getId(), price, luggage, legSeats);
+        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, price, luggage, legSeats);
     }
 
 
@@ -86,9 +85,15 @@ public class Leg {
         }
     }
 
-    private static void validateAircraft(Aircraft aircraft) {
-        if (aircraft == null) {
+    private static void validateAircraft(String aircraftId) {
+        if (aircraftId == null || aircraftId.isBlank()) {
             throw new DomainRuleException("An aircraft is required");
+        }
+    }
+
+    private static void validateAircraftSeats(List<Seat> aircraftSeats) {
+        if (aircraftSeats == null || aircraftSeats.isEmpty()) {
+            throw new DomainRuleException("The aircraft seats are required and there must be at least one");
         }
     }
 
@@ -125,7 +130,8 @@ public class Leg {
             Airport destinationAirport,
             LocalDateTime departureTime,
             LocalDateTime arrivalTime,
-            Aircraft aircraft,
+            String aircraftId,
+            List<Seat> aircraftSeats,
             Double luggagePrice,
             Double price) {
 
@@ -135,7 +141,8 @@ public class Leg {
         validateDepartureTime(departureTime);
         validateArrivalTime(arrivalTime);
         validateTimes(departureTime, arrivalTime);
-        validateAircraft(aircraft);
+        validateAircraft(aircraftId);
+        validateAircraftSeats(aircraftSeats);
         validateLuggagePrice(luggagePrice);
         validatePrice(price);
 
