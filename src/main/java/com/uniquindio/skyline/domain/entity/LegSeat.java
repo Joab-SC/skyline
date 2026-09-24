@@ -12,18 +12,23 @@ public class LegSeat {
     private SeatStatus seatStatus;
     private Optional<String> passengerId;
 
-    private LegSeat(String seatCode) {
+    private LegSeat(String id, String seatCode) {
+        this.id = id;
         this.seatCode = seatCode;
         this.seatStatus = SeatStatus.AVALIABLE;
         this.passengerId = Optional.empty();
     }
 
     // Creates an available leg seat.
-    public static LegSeat createLegSeat(String seatCode) {
-        if(seatCode == null || seatCode.isEmpty()){
+    public static LegSeat createLegSeat(String id, String seatCode) {
+        if(seatCode == null || seatCode.isBlank()){
             throw new DomainRuleException("The legSeat must include the seat");
         }
-        return new  LegSeat(seatCode);
+
+        if(id == null || id.isEmpty()){
+            throw new DomainRuleException("The legSeat requires an id");
+        }
+        return new  LegSeat(id, seatCode);
     }
 
 
