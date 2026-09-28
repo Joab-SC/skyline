@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 import lombok.Getter;
 
+import java.util.Objects;
 import java.util.Optional;
 @Getter
 public class LegSeat {
@@ -29,6 +30,20 @@ public class LegSeat {
             throw new DomainRuleException("The legSeat requires an id");
         }
         return new  LegSeat(id, seatCode);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LegSeat)) return false;
+        LegSeat other = (LegSeat) o;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
 
