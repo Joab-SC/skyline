@@ -25,5 +25,12 @@ public class LegSeatTest {
         assertEquals(Optional.empty(), legSeat.getPassengerId());
     }
 
+    @Test
+    public void twoLegSeatsWithTheSameIdAreEqual() {
+        // Checks equality by leg seat id.
+        LegSeat legSeatOriginal = LegSeat.createLegSeat("001", "A1");
+        LegSeat legSeatDuplicated = LegSeat.createLegSeat("001", "B2");
 
+        assertEquals(legSeatOriginal, legSeatDuplicated);
+    }
 }
