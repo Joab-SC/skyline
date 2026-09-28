@@ -42,6 +42,7 @@ public class Leg {
 
         validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
 
+        // Creates the seats available for this leg.
         List<LegSeat> legSeats = new ArrayList<>(List.of());
 
         for (Seat seat : aircraftSeats) {
@@ -49,6 +50,7 @@ public class Leg {
             legSeats.add(legSeat);
         }
 
+        // Creates the luggage configuration for this leg.
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
         return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, price, luggage, legSeats);
