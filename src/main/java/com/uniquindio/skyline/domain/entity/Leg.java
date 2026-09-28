@@ -145,8 +145,20 @@ public class Leg {
         validateAircraftSeats(aircraftSeats);
         validateLuggagePrice(luggagePrice);
         validatePrice(price);
+        validateDifferentAirports(originAirport,destinationAirport);
 
 
+    }
+
+    private static void validateDifferentAirports(
+            Airport originAirport,
+            Airport destinationAirport) {
+
+        if (originAirport.equals(destinationAirport)) {
+            throw new DomainRuleException(
+                    "The origin and destination airports cannot be the same"
+            );
+        }
     }
 
     @Override
