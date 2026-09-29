@@ -13,6 +13,7 @@ public class Layover {
     Airport airport;
     Duration duration;
 
+    // Creates a layover for an airport.
     public Layover(Airport airport, Duration duration) {
         this.airport = airport;
         this.duration = duration;

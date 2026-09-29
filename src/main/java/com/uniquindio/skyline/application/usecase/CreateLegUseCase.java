@@ -1,0 +1,45 @@
+package com.uniquindio.skyline.application.usecase;
+
+import com.uniquindio.skyline.domain.entity.Aircraft;
+import com.uniquindio.skyline.domain.entity.Airline;
+import com.uniquindio.skyline.domain.entity.ExtraService;
+import com.uniquindio.skyline.domain.entity.Leg;
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.repository.AirlineRepository;
+import com.uniquindio.skyline.domain.repository.LegRepository;
+import com.uniquindio.skyline.domain.service.LegOverlapValidator;
+import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.Seat;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public class CreateLegUseCase {
+    private final LegRepository legRepository;
+    private final AirlineRepository airlineRepository;
+    private final LegOverlapValidator legOverlapValidator;
+
+    public CreateLegUseCase(LegRepository legRepository, AirlineRepository airlineRepository, LegOverlapValidator legOverlapValidator) {
+        this.legRepository = legRepository;
+        this.airlineRepository = airlineRepository;
+        this.legOverlapValidator = legOverlapValidator;
+    }
+
+    // Creates a leg and links it to the airline.
+    public Leg execute(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+                       LocalDateTime arrivalTime, String airlineId, String aircraftId, double luggagePrice, double price) {
+
+        Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
+        Aircraft aircraft = airline.getAircraft(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
+
+        // Checks that the aircraft has no overlapping legs.
+        legOverlapValidator.validateNoOverlap(aircraftId, departureTime, arrivalTime);
+
+        List<Seat> aircraftSeats = aircraft.getSeats();
+        Leg leg = Leg.createLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
+
+        airline.addLeg(leg.getId());
+        legRepository.save(leg);
+        return leg;
+    }
+}
