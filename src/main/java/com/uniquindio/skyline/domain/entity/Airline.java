@@ -9,14 +9,14 @@ import java.util.*;
 public class Airline {
     private String id;
     private String name;
-    private HashMap<String, Aircraft> aircrafts;
+    private List<String> aircraftsId;
     private List<String> legIds;
 
 
     private Airline(String id, String name) {
         this.id = id;
         this.name = name;
-        this.aircrafts = new HashMap<>();
+        this.aircraftsId = new ArrayList<>();
         this.legIds = new ArrayList<>()   ;
     }
 
@@ -32,10 +32,16 @@ public class Airline {
         this.legIds.add(legId);
     }
 
-    // Finds an aircraft by its id.
-    public Optional<Aircraft> getAircraft(String aircraftId) {
-        return Optional.ofNullable(aircrafts.get(aircraftId));
+    public void addAircraft(String aircraftId){
+        if(this.aircraftsId.contains(aircraftId)){
+            throw new DomainRuleException("Aircraft already exists in the airline");
+        }
+        if(aircraftId == null || aircraftId.isEmpty()){
+            throw new DomainRuleException("Aircraft id cannot be empty in the airline");
+        }
+        this.aircraftsId.add(aircraftId);
     }
+
 
     @Override
     public boolean equals(Object o) {
