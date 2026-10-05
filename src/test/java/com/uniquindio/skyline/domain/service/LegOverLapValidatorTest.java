@@ -22,7 +22,6 @@ public class LegOverLapValidatorTest {
         LegOverlapValidator validator = new LegOverlapValidator(legRepository);
 
         Leg existingLeg = Leg.createLeg(
-                "001",
                 new Airport("El Dorado", "BOG", City.BOGOTA),
                 new Airport("Jose Maria Cordova", "MDE", City.MEDELLIN),
                 LocalDateTime.of(2026, 9, 23, 8, 0),
