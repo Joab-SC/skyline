@@ -37,10 +37,10 @@ public class Leg {
     }
 
     // Creates a leg with seats and luggage.
-    public static Leg createLeg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+    public static Leg createLeg(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                                 LocalDateTime arrivalTime, String aircraftId, List<Seat> aircraftSeats, double luggagePrice, double price) {
 
-        validateLeg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
+        validateLeg( originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
 
         // Creates the seats available for this leg.
         List<LegSeat> legSeats = new ArrayList<>(List.of());
@@ -53,15 +53,9 @@ public class Leg {
         // Creates the luggage configuration for this leg.
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
-        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, price, luggage, legSeats);
+        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, price, luggage, legSeats);
     }
 
-
-    private static void validateId(String id) {
-        if (id == null || id.isBlank()) {
-            throw new DomainRuleException("A valid identifier is required");
-        }
-    }
 
     private static void validateOriginAirport(Airport originAirport) {
         if (originAirport == null) {
@@ -127,7 +121,6 @@ public class Leg {
 
     // Runs all leg validations.
     private static void validateLeg(
-            String id,
             Airport originAirport,
             Airport destinationAirport,
             LocalDateTime departureTime,
@@ -137,7 +130,6 @@ public class Leg {
             Double luggagePrice,
             Double price) {
 
-        validateId(id);
         validateOriginAirport(originAirport);
         validateDestinationAirport(destinationAirport);
         validateDepartureTime(departureTime);
