@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.repository.AircraftRepository;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.LegOverlapValidator;
@@ -18,11 +19,13 @@ public class CreateLegUseCase {
     private final LegRepository legRepository;
     private final AirlineRepository airlineRepository;
     private final LegOverlapValidator legOverlapValidator;
+    private final AircraftRepository aircraftRepository;
 
-    public CreateLegUseCase(LegRepository legRepository, AirlineRepository airlineRepository, LegOverlapValidator legOverlapValidator) {
+    public CreateLegUseCase(LegRepository legRepository, AirlineRepository airlineRepository, LegOverlapValidator legOverlapValidator, AircraftRepository aircraftRepository) {
         this.legRepository = legRepository;
         this.airlineRepository = airlineRepository;
         this.legOverlapValidator = legOverlapValidator;
+        this.aircraftRepository = aircraftRepository;
     }
 
     // Creates a leg and links it to the airline.
@@ -30,7 +33,7 @@ public class CreateLegUseCase {
                        LocalDateTime arrivalTime, String airlineId, String aircraftId, double luggagePrice, double price) {
 
         Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
-        Aircraft aircraft = airline.getAircraft(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
+        Aircraft aircraft = aircraftRepository.findById(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
 
         // Checks that the aircraft has no overlapping legs.
         legOverlapValidator.validateNoOverlap(aircraftId, departureTime, arrivalTime);
