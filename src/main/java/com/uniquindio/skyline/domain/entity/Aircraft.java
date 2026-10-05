@@ -11,16 +11,12 @@ import java.util.Objects;
 public class Aircraft {
     private String id;
     private AircraftModel aircraftModel;
-    private int numSeats;
     private List<Seat> seats;
-    private int availableSeats;
 
-    private Aircraft(String id, AircraftModel aircraftModel, int numSeats, List<Seat> seats, int availableSeats) {
+    private Aircraft(String id, AircraftModel aircraftModel, List<Seat> seats) {
         this.id = id;
         this.aircraftModel = aircraftModel;
-        this.numSeats = numSeats;
         this.seats = seats;
-        this.availableSeats = availableSeats;
     }
 
     @Override
