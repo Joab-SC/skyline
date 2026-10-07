@@ -2,43 +2,136 @@ package com.uniquindio.skyline.domain.valueObject;
 
 import com.uniquindio.skyline.domain.entity.Layover;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public record Flight(double price, List<String > idLegs, Airport originAirport, Airport destinationAirport,
-                     LocalDateTime departureTime,LocalDateTime arrivalTime, List<String> idLayovers){
+@Getter
+public class Flight {
 
-    public Flight {
-        if (price <= 0) {
-            throw new DomainRuleException("El precio debe ser mayor que 0");
-        }
+    private String id;
+    private double price;
+    private List<String> idLegs;
+    private Airport originAirport;
+    private Airport destinationAirport;
+    private LocalDateTime departureTime;
+    private LocalDateTime arrivalTime;
+    private List<Layover> layovers;
 
-        if (idLegs == null || idLegs.isEmpty()) {
-            throw new DomainRuleException("Los IDs de los legs no pueden ser null ni estar vacíos");
-        }
+    private Flight(String id, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
+            LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        this.id = id;
+        this.price = price;
+        this.idLegs = idLegs;
+        this.originAirport = originAirport;
+        this.destinationAirport = destinationAirport;
+        this.departureTime = departureTime;
+        this.arrivalTime = arrivalTime;
+        this.layovers = new ArrayList<>();
+    }
 
-        if (idLegs.stream().anyMatch(id -> id == null || id.isBlank())) {
-            throw new DomainRuleException("Los IDs de los legs no pueden ser null ni estar vacíos");
-        }
+    public static Flight createFlight(double price, String idleg, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+            LocalDateTime arrivalTime) {
+        ArrayList<String> idLegs = new ArrayList<>();
+        idLegs.add(idleg);
+        validateFlight(price, idLegs, originAirport, destinationAirport, departureTime, arrivalTime
+        );
 
-        if (originAirport == null) {
-            throw new DomainRuleException("El aeropuerto de origen no puede ser null");
-        }
+        return new Flight(UUID.randomUUID().toString(), price, idLegs, originAirport, destinationAirport, departureTime, arrivalTime);
 
-        if (destinationAirport == null) {
-            throw new DomainRuleException("El aeropuerto de destino no puede ser null");
+    }
+
+    public Flight addLeg(String idLeg, LocalDateTime departureTime, LocalDateTime arrivalTime, Airport airportArrival) {
+
+        if (idLeg == null || idLeg.isBlank()) {
+            throw new DomainRuleException("The leg ID cannot be null or empty");
         }
 
         if (departureTime == null) {
-            throw new DomainRuleException("La hora de salida no puede ser null");
+            throw new DomainRuleException("The departure time cannot be null");
         }
 
         if (arrivalTime == null) {
-            throw new DomainRuleException("La hora de llegada no puede ser null");
+            throw new DomainRuleException("The arrival time cannot be null");
         }
-        if (idLayovers.stream().anyMatch(id -> id == null || id.isBlank())) {
-            throw new DomainRuleException("Los IDs de los layovers no pueden ser null ni estar vacíos");
+
+        if (airportArrival == null) {
+            throw new DomainRuleException("The arrival airport cannot be null");
+        }
+
+        if (departureTime.isBefore(this.arrivalTime)) {
+            throw new DomainRuleException(
+                    "The departure time of the new leg cannot be before the current arrival time"
+            );
+        }
+
+        if (arrivalTime.isBefore(departureTime)) {
+            throw new DomainRuleException(
+                    "The arrival time cannot be before the departure time"
+            );
+        }
+
+        Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, departureTime
+        );
+
+        idLegs.add(idLeg);
+        layovers.add(layover);
+
+        this.arrivalTime = arrivalTime;
+        this.destinationAirport = airportArrival;
+
+        return this;
+    }
+
+    private static void validateFlight(double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
+                                       LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        if (price <= 0) {
+            throw new DomainRuleException("The price must be greater than 0");
+        }
+
+        if (idLegs == null || idLegs.isEmpty()) {
+            throw new DomainRuleException(
+                    "The leg IDs cannot be null or empty"
+            );
+        }
+
+        if (idLegs.stream().anyMatch(id -> id == null || id.isBlank())) {
+            throw new DomainRuleException(
+                    "The leg IDs cannot be null or empty"
+            );
+        }
+
+        if (originAirport == null) {
+            throw new DomainRuleException(
+                    "The origin airport cannot be null"
+            );
+        }
+
+        if (destinationAirport == null) {
+            throw new DomainRuleException(
+                    "The destination airport cannot be null"
+            );
+        }
+
+        if (departureTime == null) {
+            throw new DomainRuleException(
+                    "The departure time cannot be null"
+            );
+        }
+
+        if (arrivalTime == null) {
+            throw new DomainRuleException(
+                    "The arrival time cannot be null"
+            );
+        }
+
+        if (arrivalTime.isBefore(departureTime)) {
+            throw new DomainRuleException(
+                    "The arrival time cannot be before the departure time"
+            );
         }
     }
 
