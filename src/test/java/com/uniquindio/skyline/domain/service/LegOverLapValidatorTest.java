@@ -27,6 +27,7 @@ public class LegOverLapValidatorTest {
                 LocalDateTime.of(2026, 9, 23, 8, 0),
                 LocalDateTime.of(2026, 9, 23, 10, 0),
                 "aircraft-001",
+                "AV0A123",
                 List.of(new Seat("A1")),
                 50.0,
                 300.0

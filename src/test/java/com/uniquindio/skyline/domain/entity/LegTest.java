@@ -16,7 +16,7 @@ public class LegTest {
         List<Seat> aircraftSeats = List.of(new Seat("001"), new Seat("002"), new Seat("003"));
         Leg leg = Leg.createLeg(new Airport("El Eden", "AXM", City.ARMENIA), new Airport("El Dorado", "EDR", City.BOGOTA),
                 LocalDateTime.of(2025, 11, 5, 10, 10, 10),
-                LocalDateTime.of(2025, 11, 6, 10, 10, 10), "001", aircraftSeats, 2000, 3000);
+                LocalDateTime.of(2025, 11, 6, 10, 10, 10), "001", "AV0A123",aircraftSeats, 2000, 3000);
         assertEquals(leg.getSeats().size(), aircraftSeats.size());
     }
 
@@ -35,6 +35,7 @@ public class LegTest {
                     LocalDateTime.of(2025, 11, 5, 15, 10),
                     LocalDateTime.of(2025, 11, 5, 12, 10),
                     "001",
+                    "AV0A123",
                     aircraftSeats,
                     2000,
                     3000
@@ -59,6 +60,7 @@ public class LegTest {
                     LocalDateTime.of(2025, 11, 5, 10, 10),
                     LocalDateTime.of(2025, 11, 5, 12, 10),
                     "001",
+                    "AV0A123",
                     aircraftSeats,
                     2000,
                     3000

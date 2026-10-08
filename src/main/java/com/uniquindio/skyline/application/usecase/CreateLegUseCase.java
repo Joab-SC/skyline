@@ -39,7 +39,7 @@ public class CreateLegUseCase {
         legOverlapValidator.validateNoOverlap(aircraftId, departureTime, arrivalTime);
 
         List<Seat> aircraftSeats = aircraft.getSeats();
-        Leg leg = Leg.createLeg(originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
+        Leg leg = Leg.createLeg(originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, aircraftSeats, luggagePrice, price);
 
         airline.addLeg(leg.getId());
         legRepository.save(leg);

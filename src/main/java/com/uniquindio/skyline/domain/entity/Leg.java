@@ -19,18 +19,20 @@ public class Leg {
     private final LocalDateTime departureTime;
     private final LocalDateTime arrivalTime;
     private final String aircraftId;
+    private final String airlineId;
     private double price;
     private Luggage luggage;
     private final List<LegSeat> seats;
 
     private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-               LocalDateTime arrivalTime, String aircraftId, double price, Luggage luggage, List<LegSeat> seats) {
+               LocalDateTime arrivalTime, String aircraftId, String airlineId, double price, Luggage luggage, List<LegSeat> seats) {
         this.id = id;
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.aircraftId = aircraftId;
+        this.airlineId = airlineId;
         this.price = price;
         this.luggage = luggage;
         this.seats = seats;
@@ -38,9 +40,9 @@ public class Leg {
 
     // Creates a leg with seats and luggage.
     public static Leg createLeg(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-                                LocalDateTime arrivalTime, String aircraftId, List<Seat> aircraftSeats, double luggagePrice, double price) {
+                                LocalDateTime arrivalTime, String aircraftId, String airlineId, List<Seat> aircraftSeats, double luggagePrice, double price) {
 
-        validateLeg( originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, aircraftSeats, luggagePrice, price);
+        validateLeg( originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, aircraftSeats, luggagePrice, price);
 
         // Creates the seats available for this leg.
         List<LegSeat> legSeats = new ArrayList<>(List.of());
@@ -53,7 +55,7 @@ public class Leg {
         // Creates the luggage configuration for this leg.
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
-        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, price, luggage, legSeats);
+        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, price, luggage, legSeats);
     }
 
 
@@ -84,6 +86,12 @@ public class Leg {
     private static void validateAircraft(String aircraftId) {
         if (aircraftId == null || aircraftId.isBlank()) {
             throw new DomainRuleException("An aircraft is required");
+        }
+    }
+
+    private static void validateAirline(String airlineId) {
+        if (airlineId == null || airlineId.isBlank()) {
+            throw new DomainRuleException("An airline is required");
         }
     }
 
@@ -126,6 +134,7 @@ public class Leg {
             LocalDateTime departureTime,
             LocalDateTime arrivalTime,
             String aircraftId,
+            String airlineId,
             List<Seat> aircraftSeats,
             Double luggagePrice,
             Double price) {
@@ -136,6 +145,7 @@ public class Leg {
         validateArrivalTime(arrivalTime);
         validateTimes(departureTime, arrivalTime);
         validateAircraft(aircraftId);
+        validateAirline(airlineId);
         validateAircraftSeats(aircraftSeats);
         validateLuggagePrice(luggagePrice);
         validatePrice(price);
