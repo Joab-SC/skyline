@@ -46,69 +46,81 @@ public class Flight {
 
     }
 
-    public Flight addLeg(String idLeg, String airlineId, LocalDateTime departureTime, LocalDateTime arrivalTime, Airport airportArrival) {
+    public Flight addLeg(
+            String idLeg, String airlineId, Airport legOriginAirport, Airport legDestinationAirport,
+            LocalDateTime departureTime, LocalDateTime arrivalTime) {
 
         if (idLeg == null || idLeg.isBlank()) {
             throw new DomainRuleException("The leg ID cannot be null or empty");
         }
 
-        if(airlineId == null || airlineId.isBlank()){
-            throw new DomainRuleException("The airline ID cannot be null or empty");
+        if (legDestinationAirport == null) {
+            throw new DomainRuleException("The leg destination airport cannot be null");
         }
 
-        if (departureTime == null) {
-            throw new DomainRuleException("The departure time cannot be null");
-        }
-
-        if (arrivalTime == null) {
-            throw new DomainRuleException("The arrival time cannot be null");
-        }
-
-        if (airportArrival == null) {
-            throw new DomainRuleException("The arrival airport cannot be null");
-        }
-
-        if (!isNewDepartureTimeValid(departureTime)) {
+        if (!isAirlineIdValid(this.airlineId, airlineId)) {
             throw new DomainRuleException(
-                    "The departure time of the new leg cannot be before the current arrival time"
+                    "All the legs for a flight must be from the same airline"
             );
         }
-        if(!isAirlineIdValid(airlineId)){
-            throw new DomainRuleException("All the legs for a flight must be from the same airline");
+
+        if (!isNewOriginAirportValid(this.destinationAirport, legOriginAirport)) {
+            throw new DomainRuleException(
+                    "The origin airport of the new leg must match the current destination airport"
+            );
+        }
+
+        if (!isNewDepartureTimeValid(departureTime, this.arrivalTime)) {
+            throw new DomainRuleException(
+                    "The departure time of the new leg must be after the current arrival time"
+            );
         }
 
         if (!isArrivalTimeAfterDepartureTime(departureTime, arrivalTime)) {
             throw new DomainRuleException(
-                    "The arrival time cannot be before the departure time"
+                    "The arrival time must be after the departure time"
             );
         }
 
-        Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, departureTime
+        Layover layover = Layover.createLayover(
+                this.destinationAirport,
+                this.arrivalTime,
+                departureTime
         );
 
         idLegs.add(idLeg);
         layovers.add(layover);
 
         this.arrivalTime = arrivalTime;
-        this.destinationAirport = airportArrival;
+        this.destinationAirport = legDestinationAirport;
 
         return this;
     }
 
-    public boolean isNewLegValid(String airlineId, LocalDateTime departureTime, LocalDateTime arrivalTime){
-        return isNewDepartureTimeValid(departureTime) && isAirlineIdValid(airlineId) &&
-                isArrivalTimeAfterDepartureTime(arrivalTime, departureTime);
+
+    public static boolean isNewLegValid(
+            String flightAirlineId, String legAirlineId, Airport previousArrivalAirport, Airport legOriginAirport,
+            LocalDateTime previousArrivalTime, LocalDateTime legDepartureTime, LocalDateTime legArrivalTime) {
+
+        return isAirlineIdValid(flightAirlineId, legAirlineId)
+                && isNewOriginAirportValid(previousArrivalAirport, legOriginAirport)
+                && isNewDepartureTimeValid(legDepartureTime, previousArrivalTime)
+                && isArrivalTimeAfterDepartureTime(legDepartureTime, legArrivalTime);
     }
 
-    private boolean isNewDepartureTimeValid(LocalDateTime newDepartureTime) {
-        return newDepartureTime.isAfter(this.arrivalTime);
+    private static boolean isNewOriginAirportValid(Airport previousArrivalAirport, Airport legOriginAirport) {
+        return previousArrivalAirport.equals(legOriginAirport);
     }
 
-    private boolean isAirlineIdValid(String airlineId) {
-        return airlineId.equals(this.airlineId);
+    private static boolean isNewDepartureTimeValid(LocalDateTime newDepartureTime, LocalDateTime flightArrivalTime) {
+        return newDepartureTime.isAfter(flightArrivalTime);
     }
 
-    private boolean isArrivalTimeAfterDepartureTime(LocalDateTime departureTime, LocalDateTime arrivalTime) {
+    private static boolean isAirlineIdValid(String flightAirlineId, String legAirlineId) {
+        return flightAirlineId.equals(legAirlineId);
+    }
+
+    private static boolean isArrivalTimeAfterDepartureTime(LocalDateTime departureTime, LocalDateTime arrivalTime) {
         return departureTime.isBefore(arrivalTime);
     }
 
