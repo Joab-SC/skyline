@@ -3,10 +3,7 @@ package com.uniquindio.skyline.infrastructure.persistence;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class LegRepositoryInMemory implements LegRepository {
 
@@ -29,5 +26,10 @@ public class LegRepositoryInMemory implements LegRepository {
         return legs.values().stream()
                 .filter(leg -> leg.getAircraftId().equals(idAircraft))
                 .toList();
+    }
+
+    @Override
+    public List<Leg> findAll() {
+        return new ArrayList<>(legs.values());
     }
 }

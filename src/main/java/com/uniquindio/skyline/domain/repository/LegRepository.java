@@ -9,4 +9,5 @@ public interface LegRepository {
     Optional<Leg> findById(String id);
     void save(Leg leg);
     List<Leg> findLegsByAircraft(String idAircraft);
+    List<Leg> findAll();
 }
