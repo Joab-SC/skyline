@@ -13,6 +13,7 @@ import java.util.UUID;
 public class Flight {
 
     private String id;
+    private final String airlineId;
     private double price;
     private List<String> idLegs;
     private Airport originAirport;
@@ -21,9 +22,10 @@ public class Flight {
     private LocalDateTime arrivalTime;
     private List<Layover> layovers;
 
-    private Flight(String id, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
-            LocalDateTime departureTime, LocalDateTime arrivalTime) {
+    private Flight(String id, String airlineId, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
+                   LocalDateTime departureTime, LocalDateTime arrivalTime) {
         this.id = id;
+        this.airlineId = airlineId;
         this.price = price;
         this.idLegs = idLegs;
         this.originAirport = originAirport;
@@ -33,21 +35,25 @@ public class Flight {
         this.layovers = new ArrayList<>();
     }
 
-    public static Flight createFlight(double price, String idleg, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+    public static Flight createFlight(double price, String airlineId, String idleg, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
             LocalDateTime arrivalTime) {
         ArrayList<String> idLegs = new ArrayList<>();
         idLegs.add(idleg);
         validateFlight(price, idLegs, originAirport, destinationAirport, departureTime, arrivalTime
         );
 
-        return new Flight(UUID.randomUUID().toString(), price, idLegs, originAirport, destinationAirport, departureTime, arrivalTime);
+        return new Flight(UUID.randomUUID().toString(), airlineId, price, idLegs, originAirport, destinationAirport, departureTime, arrivalTime);
 
     }
 
-    public Flight addLeg(String idLeg, LocalDateTime departureTime, LocalDateTime arrivalTime, Airport airportArrival) {
+    public Flight addLeg(String idLeg, String airlineId, LocalDateTime departureTime, LocalDateTime arrivalTime, Airport airportArrival) {
 
         if (idLeg == null || idLeg.isBlank()) {
             throw new DomainRuleException("The leg ID cannot be null or empty");
+        }
+
+        if(airlineId == null || airlineId.isBlank()){
+            throw new DomainRuleException("The airline ID cannot be null or empty");
         }
 
         if (departureTime == null) {
@@ -62,13 +68,16 @@ public class Flight {
             throw new DomainRuleException("The arrival airport cannot be null");
         }
 
-        if (departureTime.isBefore(this.arrivalTime)) {
+        if (!isNewDepartureTimeValid(departureTime)) {
             throw new DomainRuleException(
                     "The departure time of the new leg cannot be before the current arrival time"
             );
         }
+        if(!isAirlineIdValid(airlineId)){
+            throw new DomainRuleException("All the legs for a flight must be from the same airline");
+        }
 
-        if (arrivalTime.isBefore(departureTime)) {
+        if (!isArrivalTimeAfterDepartureTime(departureTime, arrivalTime)) {
             throw new DomainRuleException(
                     "The arrival time cannot be before the departure time"
             );
@@ -84,6 +93,23 @@ public class Flight {
         this.destinationAirport = airportArrival;
 
         return this;
+    }
+
+    public boolean isNewLegValid(String airlineId, LocalDateTime departureTime, LocalDateTime arrivalTime){
+        return isNewDepartureTimeValid(departureTime) && isAirlineIdValid(airlineId) &&
+                isArrivalTimeAfterDepartureTime(arrivalTime, departureTime);
+    }
+
+    private boolean isNewDepartureTimeValid(LocalDateTime newDepartureTime) {
+        return newDepartureTime.isAfter(this.arrivalTime);
+    }
+
+    private boolean isAirlineIdValid(String airlineId) {
+        return airlineId.equals(this.airlineId);
+    }
+
+    private boolean isArrivalTimeAfterDepartureTime(LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        return departureTime.isBefore(arrivalTime);
     }
 
     private static void validateFlight(double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
