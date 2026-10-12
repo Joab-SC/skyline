@@ -9,18 +9,14 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Flight;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class FlightSearcher {
 
-    private final LegRepository legRepository;
-    private final AirlineRepository airlineRepository;
-    private final int maximumLegsForFlight = 5;
+    private final LegRepository legRepository;private final int maximumLegsForFlight = 5;
 
-    public FlightSearcher(LegRepository legRepository, AirlineRepository airlineRepository) {
+    public FlightSearcher(LegRepository legRepository) {
         this.legRepository = legRepository;
-        this.airlineRepository = airlineRepository;
     }
 
     public ArrayList<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay) {
