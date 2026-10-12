@@ -9,10 +9,7 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Flight;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class FlightSearcher {
 
@@ -26,29 +23,27 @@ public class FlightSearcher {
 
     public ArrayList<Flight> searchFlights(Airport origin, Airport destination) {
         ArrayList<Flight> resultFlights = new ArrayList<>();
-        if (origin.equals(destination)) return resultFlights;
+        HashMap<Airport, ArrayList<Leg>> graph = createGraph();
 
-        HashMap<Airport, ArrayList<AirportConexion>> graph = createGraph();
+        LinkedList<ArrayList<Leg>> queue = new LinkedList<>();
 
-        LinkedList<ArrayList<AirportConexion>> queue = new LinkedList<>();
-
-
-        ArrayList<AirportConexion> initialAirportConexions = new ArrayList<>();
-        initialAirportConexions.add(new AirportConexion(null, origin));
-
-        queue.add(initialAirportConexions);
+        // Fill deque with paths starting from the origin airport
+        for (Leg first : graph.getOrDefault(origin, new ArrayList<>()))
+            queue.add(new ArrayList<>(List.of(first)));
 
         while (!queue.isEmpty()) {
-            ArrayList<AirportConexion> conexions = queue.poll();
-            Airport currentAirport = conexions.getLast().airport();
+            ArrayList<Leg> path = queue.poll();
+            Airport currentAirport = path.getLast().getDestinationAirport();
+
+            // Build leg with current path
             if (currentAirport == destination) {
-                Leg firstLeg = conexions.get(1).leg();
+                Leg firstLeg = path.getFirst();
                 Flight flight = Flight.createFlight(1, firstLeg.getAirlineId(), firstLeg.getId(),
                         firstLeg.getOriginAirport(), firstLeg.getDestinationAirport(),
                         firstLeg.getDepartureTime(), firstLeg.getArrivalTime());
 
-                for (int i = 2; i < conexions.size(); i++) {
-                    Leg nextLeg = conexions.get(i).leg();
+                for (int i = 1; i < path.size(); i++) {
+                    Leg nextLeg = path.get(i);
                     flight.addLeg(nextLeg.getId(), nextLeg.getAirlineId(),
                             nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(),
                             nextLeg.getDepartureTime(), nextLeg.getArrivalTime());
@@ -56,40 +51,35 @@ public class FlightSearcher {
                 resultFlights.add(flight);
                 continue;
             }
-            for (AirportConexion airportConexion : graph.getOrDefault(currentAirport, new ArrayList<>())) {
-                Leg nextLeg = airportConexion.leg();
-                boolean validLeg;
 
-                if (conexions.size() == 1) {validLeg = true;}
-                else {
-                    Leg previousLeg = conexions.getLast().leg();
-                    validLeg = Flight.isNewLegValid(previousLeg.getAirlineId(), nextLeg.getAirlineId(),
-                            previousLeg.getDestinationAirport(), nextLeg.getOriginAirport(),
-                            previousLeg.getArrivalTime(), nextLeg.getDepartureTime(), nextLeg.getArrivalTime()
-                    );
-                }
-                if (conexions.size()< 6 && !conexions.stream().anyMatch(
-                        selected -> selected.airport().equals(airportConexion.airport()))
+            // Create new paths with the conexions of the last leg
+            for (Leg nextLeg : graph.get(currentAirport)) {
+
+                Leg previousLeg = path.getLast();
+                boolean validLeg = Flight.isNewLegValid(previousLeg.getAirlineId(), nextLeg.getAirlineId(),
+                                previousLeg.getDestinationAirport(), nextLeg.getOriginAirport(),
+                        previousLeg.getArrivalTime(), nextLeg.getDepartureTime(), nextLeg.getArrivalTime()
+                );
+
+                if (path.size()< 5 && !path.stream().anyMatch(
+                        selected -> selected.getOriginAirport().equals(nextLeg.getOriginAirport()))
                         && validLeg) {
-                    ArrayList<AirportConexion> nextAirportConexions = new ArrayList<>(conexions);
-                    nextAirportConexions.add(airportConexion);
-                    queue.add(nextAirportConexions);
+                    ArrayList<Leg> newPath = new ArrayList<>(path);
+                    newPath.add(nextLeg);
+                    queue.add(newPath);
                 }
             }
         }
         return resultFlights;
     }
 
-
-    private record AirportConexion(Leg leg, Airport airport){};
-
-    private HashMap<Airport, ArrayList<AirportConexion>> createGraph() {
-        HashMap<Airport, ArrayList<AirportConexion>> graph = new HashMap<>();
+    private HashMap<Airport, ArrayList<Leg>> createGraph() {
+        HashMap<Airport, ArrayList<Leg>> graph = new HashMap<>();
         for (Leg leg: legRepository.findAll()){
             if (!graph.containsKey(leg.getOriginAirport())){
                 graph.put(leg.getOriginAirport(), new ArrayList<>());
             }
-            graph.get(leg.getOriginAirport()).add(new AirportConexion(leg,leg.getDestinationAirport()));
+            graph.get(leg.getOriginAirport()).add(leg);
         }
         return graph;
     }
