@@ -8,6 +8,7 @@ import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Flight;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -22,16 +23,18 @@ public class FlightSearcher {
         this.airlineRepository = airlineRepository;
     }
 
-    public ArrayList<Flight> searchFlights(Airport origin, Airport destination) {
+    public ArrayList<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay) {
         ArrayList<Flight> resultFlights = new ArrayList<>();
         HashMap<Airport, ArrayList<Leg>> graph = createGraph();
 
         LinkedList<ArrayList<Leg>> queue = new LinkedList<>();
 
         // Fill deque with paths starting from the origin airport
-        for (Leg first : graph.getOrDefault(origin, new ArrayList<>()))
-            queue.add(new ArrayList<>(List.of(first)));
-
+        for (Leg first : graph.getOrDefault(origin, new ArrayList<>())) {
+            if (first.getDepartureTime().toLocalDate().equals(departureDay)) {
+                queue.add(new ArrayList<>(List.of(first)));
+            }
+        }
         while (!queue.isEmpty()) {
             ArrayList<Leg> path = queue.poll();
             Airport currentAirport = path.getLast().getDestinationAirport(); // Represents the last airport of the path
@@ -54,7 +57,7 @@ public class FlightSearcher {
             }
 
             // Create new paths with the legs starting from the current airport
-            for (Leg nextLeg : graph.get(currentAirport)) {
+            for (Leg nextLeg : graph.getOrDefault(currentAirport, new ArrayList<>())) {
 
                 Leg previousLeg = path.getLast();
                 boolean validLeg = Flight.isNewLegValid(previousLeg.getAirlineId(), nextLeg.getAirlineId(),
