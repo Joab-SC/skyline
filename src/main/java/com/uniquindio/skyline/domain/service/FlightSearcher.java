@@ -15,6 +15,7 @@ public class FlightSearcher {
 
     private final LegRepository legRepository;
     private final AirlineRepository airlineRepository;
+    private final int maximumLegsForFlight = 5;
 
     public FlightSearcher(LegRepository legRepository, AirlineRepository airlineRepository) {
         this.legRepository = legRepository;
@@ -33,9 +34,9 @@ public class FlightSearcher {
 
         while (!queue.isEmpty()) {
             ArrayList<Leg> path = queue.poll();
-            Airport currentAirport = path.getLast().getDestinationAirport();
+            Airport currentAirport = path.getLast().getDestinationAirport(); // Represents the last airport of the path
 
-            // Build leg with current path
+            // Build leg with current path if already in destination
             if (currentAirport == destination) {
                 Leg firstLeg = path.getFirst();
                 Flight flight = Flight.createFlight(1, firstLeg.getAirlineId(), firstLeg.getId(),
@@ -52,7 +53,7 @@ public class FlightSearcher {
                 continue;
             }
 
-            // Create new paths with the conexions of the last leg
+            // Create new paths with the legs starting from the current airport
             for (Leg nextLeg : graph.get(currentAirport)) {
 
                 Leg previousLeg = path.getLast();
@@ -61,7 +62,7 @@ public class FlightSearcher {
                         previousLeg.getArrivalTime(), nextLeg.getDepartureTime(), nextLeg.getArrivalTime()
                 );
 
-                if (path.size()< 5 && !path.stream().anyMatch(
+                if (path.size() < maximumLegsForFlight && !path.stream().anyMatch(
                         selected -> selected.getOriginAirport().equals(nextLeg.getOriginAirport()))
                         && validLeg) {
                     ArrayList<Leg> newPath = new ArrayList<>(path);
