@@ -19,9 +19,9 @@ public class FlightSearcher {
         this.legRepository = legRepository;
     }
 
-    public ArrayList<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay) {
+    public ArrayList<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay, int numberOfPassengers) {
         ArrayList<Flight> resultFlights = new ArrayList<>();
-        HashMap<Airport, ArrayList<Leg>> graph = createGraph();
+        HashMap<Airport, ArrayList<Leg>> graph = createGraph(numberOfPassengers);
 
         LinkedList<ArrayList<Leg>> queue = new LinkedList<>();
 
@@ -73,13 +73,15 @@ public class FlightSearcher {
         return resultFlights;
     }
 
-    private HashMap<Airport, ArrayList<Leg>> createGraph() {
+    private HashMap<Airport, ArrayList<Leg>> createGraph(int numberOfPassengers) {
         HashMap<Airport, ArrayList<Leg>> graph = new HashMap<>();
         for (Leg leg: legRepository.findAll()){
             if (!graph.containsKey(leg.getOriginAirport())){
                 graph.put(leg.getOriginAirport(), new ArrayList<>());
             }
-            graph.get(leg.getOriginAirport()).add(leg);
+            if (leg.getAvailableSeats() >= numberOfPassengers) {
+                graph.get(leg.getOriginAirport()).add(leg);
+            }
         }
         return graph;
     }

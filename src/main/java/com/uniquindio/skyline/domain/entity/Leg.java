@@ -23,9 +23,10 @@ public class Leg {
     private double price;
     private Luggage luggage;
     private final List<LegSeat> seats;
+    private int availableSeats;
 
     private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-               LocalDateTime arrivalTime, String aircraftId, String airlineId, double price, Luggage luggage, List<LegSeat> seats) {
+               LocalDateTime arrivalTime, String aircraftId, String airlineId, double price, Luggage luggage, List<LegSeat> seats, int availableSeats) {
         this.id = id;
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
@@ -36,6 +37,7 @@ public class Leg {
         this.price = price;
         this.luggage = luggage;
         this.seats = seats;
+        this.availableSeats = availableSeats;
     }
 
     // Creates a leg with seats and luggage.
@@ -51,11 +53,12 @@ public class Leg {
             LegSeat legSeat = LegSeat.createLegSeat(UUID.randomUUID().toString(), seat.code());
             legSeats.add(legSeat);
         }
+        int availableSeats = legSeats.size();
 
         // Creates the luggage configuration for this leg.
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
-        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, price, luggage, legSeats);
+        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, price, luggage, legSeats, availableSeats);
     }
 
 
