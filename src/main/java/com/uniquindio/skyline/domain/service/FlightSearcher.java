@@ -33,7 +33,7 @@ public class FlightSearcher {
             ArrayList<Leg> path = queue.poll();
             Airport currentAirport = path.getLast().getDestinationAirport(); // Represents the last airport of the path
 
-            // Build leg with current path if already in destination
+            // Build flight with current path if already in destination
             if (currentAirport.equals(destination)) {
                 Leg firstLeg = path.getFirst();
                 Flight flight = Flight.createFlight(1, firstLeg.getAirlineId(), firstLeg.getId(),
