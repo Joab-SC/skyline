@@ -32,4 +32,11 @@ public class LegRepositoryInMemory implements LegRepository {
     public List<Leg> findAll() {
         return new ArrayList<>(legs.values());
     }
+
+    @Override
+    public List<Leg> findLegsWithAtLeastAvailableSeats(int minimumSeats) {
+        return legs.values().stream()
+                .filter(leg -> leg.getAvailableSeats() >= minimumSeats)
+                .toList();
+    }
 }

@@ -73,13 +73,12 @@ public class FlightSearcher {
 
     private HashMap<Airport, ArrayList<Leg>> createGraph(int numberOfPassengers) {
         HashMap<Airport, ArrayList<Leg>> graph = new HashMap<>();
-        for (Leg leg: legRepository.findAll()){
+        for (Leg leg: legRepository.findLegsWithAtLeastAvailableSeats(numberOfPassengers)){
             if (!graph.containsKey(leg.getOriginAirport())){
                 graph.put(leg.getOriginAirport(), new ArrayList<>());
             }
-            if (leg.getAvailableSeats() >= numberOfPassengers) {
-                graph.get(leg.getOriginAirport()).add(leg);
-            }
+            graph.get(leg.getOriginAirport()).add(leg);
+
         }
         return graph;
     }
