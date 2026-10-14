@@ -1,9 +1,6 @@
 package com.uniquindio.skyline.domain.service;
 
-import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.Leg;
-import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Flight;
@@ -13,7 +10,8 @@ import java.util.*;
 
 public class FlightSearcher {
 
-    private final LegRepository legRepository;private final int maximumLegsForFlight = 5;
+    private final LegRepository legRepository;
+    private final int maximumLegsForFlight = 5;
 
     public FlightSearcher(LegRepository legRepository) {
         this.legRepository = legRepository;
@@ -36,7 +34,7 @@ public class FlightSearcher {
             Airport currentAirport = path.getLast().getDestinationAirport(); // Represents the last airport of the path
 
             // Build leg with current path if already in destination
-            if (currentAirport == destination) {
+            if (currentAirport.equals(destination)) {
                 Leg firstLeg = path.getFirst();
                 Flight flight = Flight.createFlight(1, firstLeg.getAirlineId(), firstLeg.getId(),
                         firstLeg.getOriginAirport(), firstLeg.getDestinationAirport(),
