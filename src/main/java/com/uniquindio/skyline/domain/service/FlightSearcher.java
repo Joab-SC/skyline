@@ -3,7 +3,7 @@ package com.uniquindio.skyline.domain.service;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.Flight;
+import com.uniquindio.skyline.domain.entity.Flight;
 
 import java.time.LocalDate;
 import java.util.*;

@@ -1,7 +1,7 @@
-package com.uniquindio.skyline.domain.valueObject;
+package com.uniquindio.skyline.domain.entity;
 
-import com.uniquindio.skyline.domain.entity.Layover;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.valueObject.Airport;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

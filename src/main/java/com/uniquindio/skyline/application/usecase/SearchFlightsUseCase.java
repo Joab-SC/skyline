@@ -2,7 +2,7 @@ package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.service.FlightSearcher;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.Flight;
+import com.uniquindio.skyline.domain.entity.Flight;
 
 import java.time.LocalDate;
 import java.util.List;
