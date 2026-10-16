@@ -2,7 +2,6 @@ package com.uniquindio.skyline.domain.service;
 
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.City;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.infrastructure.persistence.LegRepositoryInMemory;
@@ -42,14 +41,14 @@ class FlightSearcherTest {
         legRepository = new LegRepositoryInMemory();
         flightSearcher = new FlightSearcher(legRepository);
 
-        armenia = new Airport("El Eden", "AXM", City.ARMENIA);
-        bogota = new Airport("El Dorado", "BOG", City.BOGOTA);
-        medellin = new Airport("Jose Maria Cordova", "MDE", City.MEDELLIN);
-        cali = new Airport("Alfonso Bonilla Aragon", "CLO", City.CALI);
-        cartagena = new Airport("Rafael Nunez", "CTG", City.CARTAGENA);
-        barranquilla = new Airport("Ernesto Cortissoz", "BAQ", City.BARRANQUILLA);
-        miami = new Airport("Miami International", "MIA", City.MIAMI);
-        madrid = new Airport("Adolfo Suarez Madrid-Barajas", "MAD", City.MADRID);
+        armenia = Airport.EL_EDEN;
+        bogota = Airport.EL_DORADO;
+        medellin = Airport.JOSE_MARIA_CORDOVA;
+        cali = Airport.ALFONSO_BONILLA_ARAGON;
+        cartagena = Airport.RAFAEL_NUNEZ;
+        barranquilla = Airport.ERNESTO_CORTISSOZ;
+        miami = Airport.MIAMI_INTERNATIONAL;
+        madrid = Airport.ADOLFO_SUAREZ_MADRID;
     }
 
     @Test
@@ -64,7 +63,6 @@ class FlightSearcherTest {
 
     @Test
     void resultsAreSortedByFewestLayoversFirst() {
-        // Legs are deliberately saved from the longest path to the shortest
         saveLeg(cartagena, miami, 8, 9, "AIR1", seats2);
         saveLeg(bogota, cartagena, 4, 5, "AIR1", seats2);
         saveLeg(bogota, miami, 5, 6, "AIR1", seats2);
@@ -105,22 +103,15 @@ class FlightSearcherTest {
 
     @Test
     void returnsAllValidPossibleFlights() {
-        // AIR1
-        saveLeg(armenia, miami, 7, 9, "AIR1", seats2);       // direct
+        saveLeg(armenia, miami, 7, 9, "AIR1", seats2);
         saveLeg(armenia, bogota, 1, 2, "AIR1", seats2);
         saveLeg(bogota, miami, 5, 6, "AIR1", seats2);
         saveLeg(bogota, cartagena, 4, 5, "AIR1", seats2);
         saveLeg(cartagena, miami, 8, 9, "AIR1", seats2);
 
-        // AIR2
         saveLeg(armenia, bogota, 2, 3, "AIR2", seats2);
         saveLeg(bogota, miami, 7, 8, "AIR2", seats2);
 
-        // Expected flights (Armenia -> Miami, on DAY):
-        // 1. AIR1: ARM -> MIA                  (direct)
-        // 2. AIR1: ARM -> BOG -> MIA           (1 layover)
-        // 3. AIR1: ARM -> BOG -> CTG -> MIA    (2 layovers)
-        // 4. AIR2: ARM -> BOG -> MIA           (1 layover)
         int expectedFlights = 4;
 
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
@@ -190,22 +181,18 @@ class FlightSearcherTest {
     void onlyFormsFlightsWithEnoughSeatsForAllPassengers() {
         int passengers = 4;
 
-        // Valid: direct leg with 4 seats
         saveLeg(armenia, miami, 6, 8, "AIR1", seats4);
 
-        // Valid: ARM -> BOG -> MIA, both legs with 4 seats
         saveLeg(armenia, bogota, 1, 2, "AIR1", seats4);
         saveLeg(bogota, miami, 5, 6, "AIR1", seats4);
 
-        // Noise: not enough seats for 4 passengers
-        saveLeg(armenia, miami, 10, 12, "AIR1", seats3);     // Direct, only 3 seats
-        saveLeg(armenia, miami, 13, 15, "AIR1", seats2);     // Direct, only 2 seats
-        saveLeg(armenia, medellin, 1, 2, "AIR1", seats4);    // First leg OK...
-        saveLeg(medellin, miami, 5, 6, "AIR1", seats3);      // ...but the second one lacks seats
+        saveLeg(armenia, miami, 10, 12, "AIR1", seats3);
+        saveLeg(armenia, miami, 13, 15, "AIR1", seats2);
+        saveLeg(armenia, medellin, 1, 2, "AIR1", seats4);
+        saveLeg(medellin, miami, 5, 6, "AIR1", seats3);
 
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, passengers);
 
-        // Expected flights: ARM -> MIA (direct) and ARM -> BOG -> MIA
         assertEquals(2, flights.size());
     }
 
