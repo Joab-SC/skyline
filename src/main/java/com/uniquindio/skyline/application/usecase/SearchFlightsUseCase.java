@@ -15,7 +15,9 @@ public class SearchFlightsUseCase {
         this.flightSearcher = flightSearcher;
     }
 
-    public List<Flight> execute(Airport origin, Airport destination, LocalDate departureDay, int numberOfPassengers){
+    public List<Flight> execute(String originCode, String destinationCode, LocalDate departureDay, int numberOfPassengers){
+        Airport origin = Airport.fromAcronym(originCode);
+        Airport destination = Airport.fromAcronym(destinationCode);
         return flightSearcher.searchFlights(origin, destination, departureDay, numberOfPassengers);
     }
 }

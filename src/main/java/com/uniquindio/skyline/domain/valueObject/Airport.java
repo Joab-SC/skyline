@@ -141,7 +141,7 @@ public enum Airport {
         return city;
     }
 
-    public static Airport fromAcronym(String acronym) {
+    public static Airport getByAcronym(String acronym) {
         return Arrays.stream(values())
                 .filter(airport -> airport.getAcronym().equalsIgnoreCase(acronym))
                 .findFirst()
