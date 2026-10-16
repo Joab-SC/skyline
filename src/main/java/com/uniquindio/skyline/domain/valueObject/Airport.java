@@ -1,6 +1,10 @@
 
 package com.uniquindio.skyline.domain.valueObject;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
+
+import java.util.Arrays;
+
 public enum Airport {
 
     // Colombia
@@ -135,5 +139,13 @@ public enum Airport {
 
     public City getCity() {
         return city;
+    }
+
+    public static Airport fromAcronym(String acronym) {
+        return Arrays.stream(values())
+                .filter(airport -> airport.getAcronym().equalsIgnoreCase(acronym))
+                .findFirst()
+                .orElseThrow(() -> new DomainRuleException(
+                        "No existe un aeropuerto con el código: " + acronym));
     }
 }
