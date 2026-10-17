@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenNumberOfPassengersIsZero() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         0,
                         500000,
@@ -56,7 +57,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenNumberOfPassengersIsNegative() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         -1,
                         500000,
@@ -68,7 +69,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenOutboundFlightIdIsNull() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
@@ -80,7 +81,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenOutboundFlightIdIsBlank() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
@@ -92,7 +93,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenTripTypeIsNull() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
