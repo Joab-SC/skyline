@@ -59,6 +59,9 @@ public class Leg {
     }
 
     public void reduceAvailableSeats(int numPassengers){
+        if (numPassengers > availableSeats){
+            throw new DomainRuleException("There's not enough available seats for the num of passengers");
+        }
         this.availableSeats = availableSeats - numPassengers;
     }
 
