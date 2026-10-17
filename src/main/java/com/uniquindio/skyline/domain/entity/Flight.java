@@ -40,6 +40,9 @@ public class Flight {
     public static Flight createFlight(String idleg, LegSummary leg) {
         ArrayList<String> idLegs = new ArrayList<>();
         idLegs.add(idleg);
+        if(leg == null){
+            throw new DomainRuleException("The first leg for the flight is required");
+        }
         validateFlight(leg.price(), idLegs, leg.airlineId(), leg.originAirport(), leg.destinationAirport(),
                 leg.departureTime(), leg.arrivalTime());
 
