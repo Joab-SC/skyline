@@ -6,14 +6,12 @@ import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 
-import java.util.List;
-
-public class SelectOutboundFlight {
+public class SelectOutboundFlightUseCase {
 
     private final BookingRepository bookingRepository;
     private final FlightRepository flightRepository;
 
-    public SelectOutboundFlight(BookingRepository bookingRepository, FlightRepository flightRepository) {
+    public SelectOutboundFlightUseCase(BookingRepository bookingRepository, FlightRepository flightRepository) {
         this.bookingRepository = bookingRepository;
         this.flightRepository = flightRepository;
     }
