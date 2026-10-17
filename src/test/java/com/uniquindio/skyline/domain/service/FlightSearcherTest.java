@@ -161,11 +161,11 @@ class FlightSearcherTest {
     }
 
     @Test
-    void allResultsHaveAtMostFiveLegs() {
+    void allResultsHaveAtMostFourLegs() {
+        saveLeg(armenia, miami, 0, 1, "AIR1", seats2);
         saveLeg(armenia, bogota, 0, 1, "AIR1", seats2);
         saveLeg(bogota, medellin, 3, 4, "AIR1", seats2);
-        saveLeg(medellin, cali, 6, 7, "AIR1", seats2);
-        saveLeg(cali, cartagena, 9, 10, "AIR1", seats2);
+        saveLeg(medellin, cartagena, 6, 7, "AIR1", seats2);
         saveLeg(cartagena, miami, 12, 13, "AIR1", seats2);
         saveLeg(cartagena, barranquilla, 12, 13, "AIR1", seats2);
         saveLeg(barranquilla, miami, 15, 16, "AIR1", seats2);
@@ -194,6 +194,17 @@ class FlightSearcherTest {
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, passengers);
 
         assertEquals(2, flights.size());
+    }
+
+    @Test
+    void pathRevisitingAnAirportIsNotReturned() {
+        saveLeg(armenia, bogota, 1, 2, "AIR1", seats2);
+        saveLeg(bogota, armenia, 4, 5, "AIR1", seats2);
+        saveLeg(armenia, miami, 7, 8, "AIR1", seats2);
+
+        List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
+
+        assertEquals(1, flights.size());
     }
 
     private Leg saveLeg(Airport origin, Airport destination,
