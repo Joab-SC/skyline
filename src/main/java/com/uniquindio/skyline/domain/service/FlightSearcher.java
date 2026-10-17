@@ -35,17 +35,7 @@ public class FlightSearcher {
 
             // Build flight with current path if already in destination
             if (currentAirport.equals(destination)) {
-                Leg firstLeg = path.getFirst();
-                Flight flight = Flight.createFlight(firstLeg.getId(), new LegSummary(firstLeg.getDepartureTime(),firstLeg.getArrivalTime(),
-                                firstLeg.getOriginAirport(), firstLeg.getDestinationAirport(), firstLeg.getPrice(), firstLeg.getAirlineId()));
-
-                for (int i = 1; i < path.size(); i++) {
-                    Leg nextLeg = path.get(i);
-                    Leg previousLeg = path.get(i-1);
-                    LegSummary previousSummary = previousLeg.toSummary();
-                    LegSummary nextSummary = nextLeg.toSummary();
-                    flight.addLeg(nextLeg.getId(),previousSummary, nextSummary);
-                }
+                Flight flight = buildFlight(path);
                 resultFlights.add(flight);
                 continue;
             }
@@ -56,11 +46,8 @@ public class FlightSearcher {
                 Leg previousLeg = path.getLast();
                 LegSummary previousSummary = previousLeg.toSummary();
                 LegSummary nextSummary = nextLeg.toSummary();
-                boolean validLeg = Flight.isNewLegValid(previousSummary, nextSummary);
 
-                if (path.size()-1 < Flight.getMaxLayovers() && !path.stream().anyMatch(
-                        selected -> selected.getOriginAirport().equals(nextLeg.getOriginAirport()))
-                        && validLeg) {
+                if (canExtendPath(path, previousSummary, nextSummary)) {
                     ArrayList<Leg> newPath = new ArrayList<>(path);
                     newPath.add(nextLeg);
                     queue.add(newPath);
@@ -68,6 +55,22 @@ public class FlightSearcher {
             }
         }
         return resultFlights;
+    }
+
+    private boolean canExtendPath(List<Leg> path, LegSummary previousSummary, LegSummary nextSummary){
+        return Flight.isNewLegValid(previousSummary, nextSummary) && Flight.canAddMoreLegs(path.size()) && !path.stream().anyMatch(
+                selected -> selected.getOriginAirport().equals(nextSummary.originAirport()));
+    }
+
+    private Flight buildFlight(List<Leg> path) {
+        Leg first = path.getFirst();
+        Flight flight = Flight.createFlight(first.getId(), first.toSummary());
+        for (int i = 1; i < path.size(); i++) {
+            LegSummary previousLegSummary = path.get(i-1).toSummary();
+            LegSummary nextLegSummary = path.get(i).toSummary();
+            flight.addLeg(path.get(i).getId(), previousLegSummary, nextLegSummary);
+        }
+        return flight;
     }
 
     private HashMap<Airport, ArrayList<Leg>> createGraph(int numberOfPassengers) {

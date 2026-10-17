@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 public class Flight {
     @Getter
-    private static final int maxLegs= 5;
+    private static final int maxLegs= 4;
     private String id;
     private final String airlineId;
     private double price;
@@ -97,7 +97,7 @@ public class Flight {
     }
 
     public static boolean canAddMoreLegs(int currentAmount){
-        return currentAmount<=maxLegs;
+        return currentAmount<maxLegs;
     }
 
 
