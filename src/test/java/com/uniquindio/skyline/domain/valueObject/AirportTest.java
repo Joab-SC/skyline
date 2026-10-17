@@ -1,6 +1,5 @@
-package com.uniquindio.skyline.domain.valueobject;
+package com.uniquindio.skyline.domain.valueObject;
 
-import com.uniquindio.skyline.domain.valueObject.Airport;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
