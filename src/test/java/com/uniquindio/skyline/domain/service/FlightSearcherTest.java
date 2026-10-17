@@ -9,6 +9,7 @@ import com.uniquindio.skyline.infrastructure.persistence.LegRepositoryInMemory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class FlightSearcherTest {
 
     private static final LocalDate DAY = LocalDate.of(2026, 11, 10);
-    private static final int MAX_LEGS = 4;
+    private static final int MAX_LEGS_EXPECTED = 4;
+    private static final Duration MAX_DURATION_EXPECTED = Duration.ofHours(12);
     private static final int PASSENGERS = 2;
 
     private final List<Seat> seats2 = List.of(new Seat("A1"), new Seat("A2"));
@@ -173,7 +175,7 @@ class FlightSearcherTest {
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
 
         for (Flight flight : flights) {
-            assertTrue(flight.getIdLegs().size() <= MAX_LEGS);
+            assertTrue(flight.getIdLegs().size() <= MAX_LEGS_EXPECTED);
         }
     }
 
@@ -205,6 +207,18 @@ class FlightSearcherTest {
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
 
         assertEquals(1, flights.size());
+    }
+
+    @Test
+    void layoverLongerThanMaximumIsDiscardedButExactOrLowerThanLimitIsAccepted() {
+        saveLeg(armenia, bogota, 1, 2, "AIR1", seats2);
+        saveLeg(bogota, miami, 14, 15, "AIR1", seats2);
+        saveLeg(bogota, miami, 8, 9, "AIR1", seats2);
+        saveLeg(bogota, miami, 15, 16, "AIR1", seats2);
+
+        List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
+
+        assertEquals(2, flights.size());
     }
 
     private Leg saveLeg(Airport origin, Airport destination,
