@@ -62,7 +62,7 @@ public class Flight {
 
         idLegs.add(idLeg);
         layovers.add(layover);
-
+        this.price += newLeg.price();
         this.arrivalTime = newLeg.arrivalTime();
         this.destinationAirport = newLeg.destinationAirport();
 
