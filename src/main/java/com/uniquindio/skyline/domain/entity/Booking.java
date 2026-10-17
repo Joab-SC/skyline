@@ -47,11 +47,18 @@ public class Booking {
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
     }
 
-    public Booking addReturnFlight(String idReturnFlight){
+    public void addReturnFlight(String idReturnFlight, double price){
         if (this.tripType == TripType.ONE_WAY){
-
+            throw new DomainRuleException("There's no return flight on one way trip");
         }
-        return this;
+        if (idReturnFlight == null || idReturnFlight.isBlank()){
+            throw new DomainRuleException("id return flight cannot be null or empty");
+        }
+        if (price <= 0 ){
+            throw new DomainRuleException("Price cannot be zero or less");
+        }
+        this.idReturnFlight=Optional.of(idReturnFlight);
+        this.price = this.price + price;
     }
     private static void validateBookingData(
             int numPassengers,
