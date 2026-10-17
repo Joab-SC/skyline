@@ -12,8 +12,7 @@ import java.util.UUID;
 
 @Getter
 public class Flight {
-    @Getter
-    private static final int maxLegs= 4;
+    private static final int MAXLEGS= 4;
     private String id;
     private final String airlineId;
     private double price;
@@ -59,7 +58,7 @@ public class Flight {
 
 
         if(!canAddMoreLegs(idLegs.size())) {
-            throw new DomainRuleException("The maximum number of legs for a flight is " + maxLegs);
+            throw new DomainRuleException("The maximum number of legs for a flight is " + MAXLEGS);
         }
         Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, newLeg.departureTime());
 
@@ -100,7 +99,7 @@ public class Flight {
     }
 
     public static boolean canAddMoreLegs(int currentAmount){
-        return currentAmount<maxLegs;
+        return currentAmount<MAXLEGS;
     }
 
 
