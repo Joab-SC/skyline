@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.LegSummary;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
@@ -166,6 +167,11 @@ public class Leg {
                     "The origin and destination airports cannot be the same"
             );
         }
+    }
+
+    public LegSummary toSummary() {
+        return new LegSummary(departureTime, arrivalTime, originAirport,
+                destinationAirport, price, airlineId);
     }
 
     @Override

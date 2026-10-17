@@ -42,10 +42,8 @@ public class FlightSearcher {
                 for (int i = 1; i < path.size(); i++) {
                     Leg nextLeg = path.get(i);
                     Leg previousLeg = path.get(i-1);
-                    LegSummary previousSummary = new LegSummary(previousLeg.getDepartureTime(),previousLeg.getArrivalTime(),
-                            previousLeg.getOriginAirport(), previousLeg.getDestinationAirport(), previousLeg.getPrice(), previousLeg.getAirlineId());
-                    LegSummary nextSummary = new LegSummary(nextLeg.getDepartureTime(),nextLeg.getArrivalTime(),
-                            nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(), nextLeg.getPrice(), nextLeg.getAirlineId());
+                    LegSummary previousSummary = previousLeg.toSummary();
+                    LegSummary nextSummary = nextLeg.toSummary();
                     flight.addLeg(nextLeg.getId(),previousSummary, nextSummary);
                 }
                 resultFlights.add(flight);
@@ -56,10 +54,8 @@ public class FlightSearcher {
             for (Leg nextLeg : graph.getOrDefault(currentAirport, new ArrayList<>())) {
 
                 Leg previousLeg = path.getLast();
-                LegSummary previousSummary = new LegSummary(previousLeg.getDepartureTime(),previousLeg.getArrivalTime(),
-                        previousLeg.getOriginAirport(), previousLeg.getDestinationAirport(), previousLeg.getPrice(), previousLeg.getAirlineId());
-                LegSummary nextSummary = new LegSummary(nextLeg.getDepartureTime(),nextLeg.getArrivalTime(),
-                        nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(), nextLeg.getPrice(), nextLeg.getAirlineId());
+                LegSummary previousSummary = previousLeg.toSummary();
+                LegSummary nextSummary = nextLeg.toSummary();
                 boolean validLeg = Flight.isNewLegValid(previousSummary, nextSummary);
 
                 if (path.size()-1 < Flight.getMaxLayovers() && !path.stream().anyMatch(
