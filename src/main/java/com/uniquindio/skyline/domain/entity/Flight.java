@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 public class Flight {
     @Getter
-    private static final int maxLayovers= 4;
+    private static final int maxLegs= 5;
     private String id;
     private final String airlineId;
     private double price;
@@ -54,10 +54,11 @@ public class Flight {
         }
         validateNewLeg(previousLeg, newLeg);
 
-        Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, newLeg.departureTime());
-        if(layovers.size() > maxLayovers) {
-            throw new DomainRuleException("The maximum number of layovers for a flight is " + maxLayovers);
+
+        if(!canAddMoreLegs(idLegs.size())) {
+            throw new DomainRuleException("The maximum number of legs for a flight is " + maxLegs);
         }
+        Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, newLeg.departureTime());
 
         idLegs.add(idLeg);
         layovers.add(layover);
@@ -95,6 +96,10 @@ public class Flight {
         }
     }
 
+    public static boolean canAddMoreLegs(int currentAmount){
+        return currentAmount<=maxLegs;
+    }
+
 
     private static boolean isNewOriginAirportValid(Airport previousArrivalAirport, Airport legOriginAirport) {
         return previousArrivalAirport.equals(legOriginAirport);
@@ -115,51 +120,35 @@ public class Flight {
         }
 
         if (idLegs == null || idLegs.isEmpty()) {
-            throw new DomainRuleException(
-                    "The leg IDs cannot be null or empty"
-            );
+            throw new DomainRuleException("The leg IDs cannot be null or empty");
         }
 
         if (idLegs.stream().anyMatch(id -> id == null || id.isBlank())) {
-            throw new DomainRuleException(
-                    "The leg IDs cannot be null or empty"
-            );
+            throw new DomainRuleException("The leg IDs cannot be null or empty");
         }
 
         if (airlineId == null || airlineId.isBlank()) {
-            throw new DomainRuleException(
-                    "The airline id cannot be null or empty"
-            );
+            throw new DomainRuleException("The airline id cannot be null or empty");
         }
 
         if (originAirport == null) {
-            throw new DomainRuleException(
-                    "The origin airport cannot be null"
-            );
+            throw new DomainRuleException("The origin airport cannot be null");
         }
 
         if (destinationAirport == null) {
-            throw new DomainRuleException(
-                    "The destination airport cannot be null"
-            );
+            throw new DomainRuleException("The destination airport cannot be null");
         }
 
         if (departureTime == null) {
-            throw new DomainRuleException(
-                    "The departure time cannot be null"
-            );
+            throw new DomainRuleException("The departure time cannot be null");
         }
 
         if (arrivalTime == null) {
-            throw new DomainRuleException(
-                    "The arrival time cannot be null"
-            );
+            throw new DomainRuleException("The arrival time cannot be null");
         }
 
         if (arrivalTime.isBefore(departureTime)) {
-            throw new DomainRuleException(
-                    "The arrival time cannot be before the departure time"
-            );
+            throw new DomainRuleException("The arrival time cannot be before the departure time");
         }
     }
 }
