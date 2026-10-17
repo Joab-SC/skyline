@@ -68,7 +68,7 @@ public class FlightSearcher {
         for (int i = 1; i < path.size(); i++) {
             LegSummary previousLegSummary = path.get(i-1).toSummary();
             LegSummary nextLegSummary = path.get(i).toSummary();
-            flight.addLeg(path.get(i).getId(), previousLegSummary, nextLegSummary);
+            flight.addLeg(path.get(i).getId(), nextLegSummary);
         }
         return flight;
     }

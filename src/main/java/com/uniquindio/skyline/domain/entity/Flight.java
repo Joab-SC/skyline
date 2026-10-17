@@ -50,7 +50,7 @@ public class Flight {
                 leg.originAirport(), leg.destinationAirport(), leg.departureTime(), leg.arrivalTime());
     }
 
-    public Flight addLeg(String idLeg, LegSummary previousLeg, LegSummary newLeg) {
+    public Flight addLeg(String idLeg, LegSummary newLeg) {
 
         if (idLeg == null || idLeg.isBlank()) {
             throw new DomainRuleException("The leg ID cannot be null or empty");
