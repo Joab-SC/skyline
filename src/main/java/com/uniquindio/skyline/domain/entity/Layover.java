@@ -27,22 +27,19 @@ public class Layover {
         if(endFirstLeg == null || startNextLeg == null){
             throw new DomainRuleException("The hours for the layover cannot be null");
         }
-        if(startNextLeg.isBefore(endFirstLeg)){
-            throw new DomainRuleException("The hours for the layover cannot be before the end of the first leg");
-        }
         if (airport == null) {
             throw new DomainRuleException("The airport is required");
         }
-        Duration duration = Duration.between(startNextLeg, endFirstLeg);
+        Duration duration = Duration.between(endFirstLeg, startNextLeg);
         if (!canCreateLayoverWithDuration(duration)) {
-            throw new DomainRuleException("The duration of the layover at most " +  duration.toHours() + " hours");
+            throw new DomainRuleException("The duration of the layover at most " +  maxDuration.toHours() + " hours and cannot be negative");
         }
 
         return new Layover(UUID.randomUUID().toString(),airport, duration);
     }
 
     public static boolean canCreateLayoverWithDuration(Duration duration) {
-        return duration.compareTo(maxDuration) <= 0;
+        return !duration.isNegative() && duration.compareTo(maxDuration) <= 0;
     }
 
     @Override
