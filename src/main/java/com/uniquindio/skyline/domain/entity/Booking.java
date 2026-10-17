@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import lombok.Getter;
@@ -46,23 +47,29 @@ public class Booking {
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
     }
 
+    public Booking addReturnFlight(String idReturnFlight){
+        if (this.tripType == TripType.ONE_WAY){
+
+        }
+        return this;
+    }
     private static void validateBookingData(
             int numPassengers,
             String idOutboundFlight,
             TripType tripType) {
 
         if (numPassengers <= 0) {
-            throw new IllegalArgumentException(
+            throw new DomainRuleException(
                     "The number of passengers must be greater than zero");
         }
 
         if (idOutboundFlight == null || idOutboundFlight.isBlank()) {
-            throw new IllegalArgumentException(
+            throw new DomainRuleException(
                     "The outbound flight ID cannot be null or empty");
         }
 
         if (tripType == null) {
-            throw new IllegalArgumentException(
+            throw new DomainRuleException(
                     "The trip type cannot be null");
         }
     }
