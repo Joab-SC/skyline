@@ -120,12 +120,12 @@ public enum Airport {
     PERTH("Perth Airport", "PER", City.PERTH);
 
     private final String name;
-    private final String acronym;
+    private final String code;
     private final City city;
 
-    Airport(String name, String acronym, City city) {
+    Airport(String name, String code, City city) {
         this.name = name;
-        this.acronym = acronym;
+        this.code = code;
         this.city = city;
     }
 
@@ -133,8 +133,8 @@ public enum Airport {
         return name;
     }
 
-    public String getAcronym() {
-        return acronym;
+    public String getCode() {
+        return code;
     }
 
     public City getCity() {
@@ -143,9 +143,9 @@ public enum Airport {
 
     public static Airport getByAcronym(String acronym) {
         return Arrays.stream(values())
-                .filter(airport -> airport.getAcronym().equalsIgnoreCase(acronym))
+                .filter(airport -> airport.getCode().equalsIgnoreCase(acronym))
                 .findFirst()
                 .orElseThrow(() -> new DomainRuleException(
-                        "No existe un aeropuerto con el código: " + acronym));
+                        "There is no airport with the code: " + acronym));
     }
 }
