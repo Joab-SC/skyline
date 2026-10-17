@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Getter
 public class Layover {
+    private static final Duration maxDuration =  Duration.ofHours(12);
     private String id;
     private Airport airport;
     private Duration duration;
@@ -32,7 +33,16 @@ public class Layover {
         if (airport == null) {
             throw new DomainRuleException("The airport is required");
         }
-        return new Layover(UUID.randomUUID().toString(),airport, Duration.between(endFirstLeg, startNextLeg));
+        Duration duration = Duration.between(startNextLeg, endFirstLeg);
+        if (!canCreateLayoverWithDuration(duration)) {
+            throw new DomainRuleException("The duration of the layover at most " +  duration.toHours() + " hours");
+        }
+
+        return new Layover(UUID.randomUUID().toString(),airport, duration);
+    }
+
+    public static boolean canCreateLayoverWithDuration(Duration duration) {
+        return duration.compareTo(maxDuration) <= 0;
     }
 
     @Override
