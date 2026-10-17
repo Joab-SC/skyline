@@ -1,11 +1,13 @@
 package com.uniquindio.skyline.domain.service;
 
+import com.uniquindio.skyline.domain.entity.Layover;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.valueObject.LegSummary;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -58,7 +60,8 @@ public class FlightSearcher {
     }
 
     private boolean canExtendPath(List<Leg> path, LegSummary previousSummary, LegSummary nextSummary){
-        return Flight.isNewLegValid(previousSummary, nextSummary) && Flight.canAddMoreLegs(path.size()) && !path.stream().anyMatch(
+        return Flight.isNewLegValid(previousSummary, nextSummary) && Flight.canAddMoreLegs(path.size()) &&
+                Layover.canCreateLayoverWithDuration(Duration.between(previousSummary.arrivalTime(), nextSummary.departureTime())) &&!path.stream().anyMatch(
                 selected -> selected.getOriginAirport().equals(nextSummary.originAirport()));
     }
 
