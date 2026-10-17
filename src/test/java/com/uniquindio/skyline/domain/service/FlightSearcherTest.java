@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FlightSearcherTest {
 
     private static final LocalDate DAY = LocalDate.of(2026, 11, 10);
-    private static final int MAX_LEGS = 5;
+    private static final int MAX_LEGS = 4;
     private static final int PASSENGERS = 2;
 
     private final List<Seat> seats2 = List.of(new Seat("A1"), new Seat("A2"));
@@ -78,13 +78,13 @@ class FlightSearcherTest {
     }
 
     @Test
-    void pathWithMoreThanFiveLegsReturnsEmptyList() {
+    void pathWithMoreThanFourLegsReturnsEmptyList() {
         saveLeg(armenia, bogota, 0, 1, "AIR1", seats2);
         saveLeg(bogota, medellin, 3, 4, "AIR1", seats2);
         saveLeg(medellin, cali, 6, 7, "AIR1", seats2);
         saveLeg(cali, cartagena, 9, 10, "AIR1", seats2);
-        saveLeg(cartagena, barranquilla, 12, 13, "AIR1", seats2);
-        saveLeg(barranquilla, miami, 15, 16, "AIR1", seats2);
+        saveLeg(cartagena, miami, 12, 13, "AIR1", seats2);
+
 
         List<Flight> flights = flightSearcher.searchFlights(armenia, miami, DAY, PASSENGERS);
 
