@@ -33,4 +33,10 @@ public class Flight {
         this.layovers = new ArrayList<>();
     }
 
+    public static Flight createFlightBasic(String id, String airlineId, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
+                                    LocalDateTime departureTime, LocalDateTime arrivalTime){
+        return new Flight(id, airlineId, price, idLegs, originAirport, destinationAirport,
+                 departureTime, arrivalTime);
+    }
+
 }
