@@ -52,7 +52,7 @@ public class Flight {
         if (idLeg == null || idLeg.isBlank()) {
             throw new DomainRuleException("The leg ID cannot be null or empty");
         }
-        validateNewLeg(previousLeg, newLeg);
+        validateNewLeg(newLeg);
 
 
         if(!canAddMoreLegs(idLegs.size())) {
@@ -76,20 +76,20 @@ public class Flight {
                 && isNewDepartureTimeValid(newLeg.departureTime(), previousLeg.arrivalTime());
     }
 
-    private void validateNewLeg(LegSummary previousLeg, LegSummary newLeg) {
+    private void validateNewLeg(LegSummary newLeg) {
         if (!isAirlineIdValid(airlineId, newLeg.airlineId())){
             throw new DomainRuleException(
                     "All the legs for a flight must be from the same airline"
             );
         }
 
-        if (!isNewOriginAirportValid(previousLeg.destinationAirport(), newLeg.originAirport())) {
+        if (!isNewOriginAirportValid(destinationAirport, newLeg.originAirport())) {
             throw new DomainRuleException(
                     "The origin airport of the new leg must match the current destination airport"
             );
         }
 
-        if (!isNewDepartureTimeValid(newLeg.departureTime(), previousLeg.arrivalTime())) {
+        if (!isNewDepartureTimeValid(newLeg.departureTime(), arrivalTime)) {
             throw new DomainRuleException(
                     "The departure time of the new leg must be after the current arrival time"
             );
