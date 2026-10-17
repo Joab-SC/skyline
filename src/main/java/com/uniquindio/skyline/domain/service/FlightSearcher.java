@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.entity.Flight;
+import com.uniquindio.skyline.domain.valueObject.LegSummary;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -11,7 +12,6 @@ import java.util.*;
 public class FlightSearcher {
 
     private final LegRepository legRepository;
-    private final int maximumLegsForFlight = 5;
 
     public FlightSearcher(LegRepository legRepository) {
         this.legRepository = legRepository;
@@ -36,15 +36,17 @@ public class FlightSearcher {
             // Build flight with current path if already in destination
             if (currentAirport.equals(destination)) {
                 Leg firstLeg = path.getFirst();
-                Flight flight = Flight.createFlight(1, firstLeg.getAirlineId(), firstLeg.getId(),
-                        firstLeg.getOriginAirport(), firstLeg.getDestinationAirport(),
-                        firstLeg.getDepartureTime(), firstLeg.getArrivalTime());
+                Flight flight = Flight.createFlight(firstLeg.getId(), new LegSummary(firstLeg.getDepartureTime(),firstLeg.getArrivalTime(),
+                                firstLeg.getOriginAirport(), firstLeg.getDestinationAirport(), firstLeg.getPrice(), firstLeg.getAirlineId()));
 
                 for (int i = 1; i < path.size(); i++) {
                     Leg nextLeg = path.get(i);
-                    flight.addLeg(nextLeg.getId(), nextLeg.getAirlineId(),
-                            nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(),
-                            nextLeg.getDepartureTime(), nextLeg.getArrivalTime());
+                    Leg previousLeg = path.get(i-1);
+                    LegSummary previousSummary = new LegSummary(previousLeg.getDepartureTime(),previousLeg.getArrivalTime(),
+                            previousLeg.getOriginAirport(), previousLeg.getDestinationAirport(), previousLeg.getPrice(), previousLeg.getAirlineId());
+                    LegSummary nextSummary = new LegSummary(nextLeg.getDepartureTime(),nextLeg.getArrivalTime(),
+                            nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(), nextLeg.getPrice(), nextLeg.getAirlineId());
+                    flight.addLeg(nextLeg.getId(),previousSummary, nextSummary);
                 }
                 resultFlights.add(flight);
                 continue;
@@ -54,12 +56,13 @@ public class FlightSearcher {
             for (Leg nextLeg : graph.getOrDefault(currentAirport, new ArrayList<>())) {
 
                 Leg previousLeg = path.getLast();
-                boolean validLeg = Flight.isNewLegValid(previousLeg.getAirlineId(), nextLeg.getAirlineId(),
-                                previousLeg.getDestinationAirport(), nextLeg.getOriginAirport(),
-                        previousLeg.getArrivalTime(), nextLeg.getDepartureTime(), nextLeg.getArrivalTime()
-                );
+                LegSummary previousSummary = new LegSummary(previousLeg.getDepartureTime(),previousLeg.getArrivalTime(),
+                        previousLeg.getOriginAirport(), previousLeg.getDestinationAirport(), previousLeg.getPrice(), previousLeg.getAirlineId());
+                LegSummary nextSummary = new LegSummary(nextLeg.getDepartureTime(),nextLeg.getArrivalTime(),
+                        nextLeg.getOriginAirport(), nextLeg.getDestinationAirport(), nextLeg.getPrice(), nextLeg.getAirlineId());
+                boolean validLeg = Flight.isNewLegValid(previousSummary, nextSummary);
 
-                if (path.size() < maximumLegsForFlight && !path.stream().anyMatch(
+                if (path.size()-1 < Flight.getMaxLayovers() && !path.stream().anyMatch(
                         selected -> selected.getOriginAirport().equals(nextLeg.getOriginAirport()))
                         && validLeg) {
                     ArrayList<Leg> newPath = new ArrayList<>(path);
