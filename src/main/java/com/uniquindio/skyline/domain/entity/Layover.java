@@ -7,16 +7,17 @@ import lombok.Getter;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 public class Layover {
-
-    String id;
-    Airport airport;
-    Duration duration;
+    private String id;
+    private Airport airport;
+    private Duration duration;
 
     // Creates a layover for an airport.
-    private Layover(Airport airport, Duration duration) {
+    private Layover(String id, Airport airport, Duration duration) {
+        this.id = id;
         this.airport = airport;
         this.duration = duration;
     }
@@ -26,12 +27,12 @@ public class Layover {
             throw new DomainRuleException("The hours for the layover cannot be null");
         }
         if(startNextLeg.isBefore(endFirstLeg)){
-            throw new DomainRuleException("the hours for the layover cannot be before the end of the first leg");
+            throw new DomainRuleException("The hours for the layover cannot be before the end of the first leg");
         }
         if (airport == null) {
             throw new DomainRuleException("The airport is required");
         }
-        return new Layover(airport, Duration.between(endFirstLeg, startNextLeg));
+        return new Layover(UUID.randomUUID().toString(),airport, Duration.between(endFirstLeg, startNextLeg));
     }
 
     @Override
