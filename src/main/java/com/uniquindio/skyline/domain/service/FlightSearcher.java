@@ -19,11 +19,11 @@ public class FlightSearcher {
         this.legRepository = legRepository;
     }
 
-    public ArrayList<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay, int numberOfPassengers) {
-        ArrayList<Flight> resultFlights = new ArrayList<>();
-        HashMap<Airport, ArrayList<Leg>> graph = createGraph(numberOfPassengers);
+    public List<Flight> searchFlights(Airport origin, Airport destination, LocalDate departureDay, int numberOfPassengers) {
+        List<Flight> resultFlights = new ArrayList<>();
+        Map<Airport, List<Leg>> graph = createGraph(numberOfPassengers);
 
-        LinkedList<ArrayList<Leg>> queue = new LinkedList<>();
+        Queue<List<Leg>> queue = new LinkedList<>();
 
         // Fill deque with paths starting from the origin airport
         for (Leg first : graph.getOrDefault(origin, new ArrayList<>())) {
@@ -32,7 +32,7 @@ public class FlightSearcher {
             }
         }
         while (!queue.isEmpty()) {
-            ArrayList<Leg> path = queue.poll();
+            List<Leg> path = queue.poll();
             Airport currentAirport = path.getLast().getDestinationAirport(); // Represents the last airport of the path
 
             // Build flight with current path if already in destination
@@ -50,7 +50,7 @@ public class FlightSearcher {
                 LegSummary nextSummary = nextLeg.toSummary();
 
                 if (canExtendPath(path, previousSummary, nextSummary)) {
-                    ArrayList<Leg> newPath = new ArrayList<>(path);
+                    List<Leg> newPath = new ArrayList<>(path);
                     newPath.add(nextLeg);
                     queue.add(newPath);
                 }
@@ -75,8 +75,8 @@ public class FlightSearcher {
         return flight;
     }
 
-    private HashMap<Airport, ArrayList<Leg>> createGraph(int numberOfPassengers) {
-        HashMap<Airport, ArrayList<Leg>> graph = new HashMap<>();
+    private Map<Airport, List<Leg>> createGraph(int numberOfPassengers) {
+        Map<Airport, List<Leg>> graph = new HashMap<>();
         for (Leg leg: legRepository.findLegsWithAtLeastAvailableSeats(numberOfPassengers)){
             if (!graph.containsKey(leg.getOriginAirport())){
                 graph.put(leg.getOriginAirport(), new ArrayList<>());
