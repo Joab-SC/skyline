@@ -1,10 +1,11 @@
+
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.Layover;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -17,58 +18,63 @@ class LayoverTest {
     private static final Duration MAXIMUM_DURATION_EXPECTED = Duration.ofHours(12);
     private static final Duration MINIMUM_DURATION_EXPECTED = Duration.ofHours(1);
 
-
     @Test
     void createLayoverWithNullEndFirstLegIsNotAccepted() {
         assertThrows(DomainRuleException.class,
-                () -> Layover.createLayover(AIRPORT, null, END_FIRST_LEG.plusHours(3)));
+                () -> new Layover(AIRPORT, null, END_FIRST_LEG.plusHours(3)));
     }
 
     @Test
     void createLayoverWithNullStartNextLegIsNotAccepted() {
         assertThrows(DomainRuleException.class,
-                () -> Layover.createLayover(AIRPORT, END_FIRST_LEG, null));
+                () -> new Layover(AIRPORT, END_FIRST_LEG, null));
     }
 
     @Test
     void createLayoverWithNullAirportIsNotAccepted() {
         assertThrows(DomainRuleException.class,
-                () -> Layover.createLayover(null, END_FIRST_LEG, END_FIRST_LEG.plusHours(3)));
+                () -> new Layover(null, END_FIRST_LEG, END_FIRST_LEG.plusHours(3)));
     }
 
     @Test
     void createLayoverLongerThanMaximumIsNotAccepted() {
         assertThrows(DomainRuleException.class,
-                () -> Layover.createLayover(AIRPORT, END_FIRST_LEG, END_FIRST_LEG.plusHours(MAXIMUM_DURATION_EXPECTED.toHours()).plusHours(1)));
+                () -> new Layover(AIRPORT, END_FIRST_LEG,
+                        END_FIRST_LEG.plusHours(MAXIMUM_DURATION_EXPECTED.toHours()).plusHours(1)));
     }
 
     @Test
     void createLayoverWithExactMaximumDurationIsAccepted() {
-        Layover layover = assertDoesNotThrow(() -> Layover.createLayover(AIRPORT, END_FIRST_LEG, END_FIRST_LEG.plusHours(MAXIMUM_DURATION_EXPECTED.toHours())));
-        assertEquals(AIRPORT, layover.getAirport());
+        Layover layover = assertDoesNotThrow(
+                () -> new Layover(AIRPORT, END_FIRST_LEG,
+                        END_FIRST_LEG.plusHours(MAXIMUM_DURATION_EXPECTED.toHours())));
+        assertEquals(AIRPORT, layover.airport());
+        assertEquals(MAXIMUM_DURATION_EXPECTED, layover.duration());
     }
 
     @Test
     void createLayoverShorterThanMinimumIsNotAccepted() {
         assertThrows(DomainRuleException.class,
-                () -> Layover.createLayover(AIRPORT, END_FIRST_LEG, END_FIRST_LEG.plusHours(MINIMUM_DURATION_EXPECTED.toHours()).minusMinutes(1)));
+                () -> new Layover(AIRPORT, END_FIRST_LEG,
+                        END_FIRST_LEG.plusHours(MINIMUM_DURATION_EXPECTED.toHours()).minusMinutes(1)));
     }
 
     @Test
     void createLayoverWithExactMinimumDurationIsAccepted() {
         Layover layover = assertDoesNotThrow(
-                () -> Layover.createLayover(AIRPORT, END_FIRST_LEG, END_FIRST_LEG.plusHours(MINIMUM_DURATION_EXPECTED.toHours())));
-        assertEquals(AIRPORT, layover.getAirport());
+                () -> new Layover(AIRPORT, END_FIRST_LEG,
+                        END_FIRST_LEG.plusHours(MINIMUM_DURATION_EXPECTED.toHours())));
+        assertEquals(AIRPORT, layover.airport());
+        assertEquals(MINIMUM_DURATION_EXPECTED, layover.duration());
     }
 
     @Test
     void createLayoverStoresExpectedDuration() {
         LocalDateTime startSecondLeg = END_FIRST_LEG.plusHours(3);
-        Layover layover = Layover.createLayover(AIRPORT, END_FIRST_LEG, startSecondLeg);
+        Layover layover = new Layover(AIRPORT, END_FIRST_LEG, startSecondLeg);
 
-        assertEquals(Duration.between(END_FIRST_LEG, startSecondLeg), layover.getDuration());
+        assertEquals(Duration.between(END_FIRST_LEG, startSecondLeg), layover.duration());
     }
-
 
     @Test
     void canCreateLayoverWithBetweenMaximumAndMinimumDuration() {
@@ -94,5 +100,4 @@ class LayoverTest {
     void cannotCreateLayoverWithDurationUnderTheMinimum() {
         assertFalse(Layover.canCreateLayoverWithDuration(MINIMUM_DURATION_EXPECTED.minusMinutes(1)));
     }
-
 }

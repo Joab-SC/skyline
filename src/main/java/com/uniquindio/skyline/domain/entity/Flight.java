@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.Layover;
 import com.uniquindio.skyline.domain.valueObject.LegSummary;
 import lombok.Getter;
 
@@ -60,8 +61,7 @@ public class Flight {
         if(!canAddMoreLegs(idLegs.size())) {
             throw new DomainRuleException("The maximum number of legs for a flight is " + MAX_LEGS);
         }
-        Layover layover = Layover.createLayover(this.destinationAirport, this.arrivalTime, newLeg.departureTime());
-
+        Layover layover = new Layover(this.destinationAirport, this.arrivalTime, newLeg.departureTime());
         idLegs.add(idLeg);
         layovers.add(layover);
         this.price += newLeg.price();

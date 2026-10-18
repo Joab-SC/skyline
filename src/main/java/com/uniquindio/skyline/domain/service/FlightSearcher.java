@@ -1,6 +1,6 @@
 package com.uniquindio.skyline.domain.service;
 
-import com.uniquindio.skyline.domain.entity.Layover;
+import com.uniquindio.skyline.domain.valueObject.Layover;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
