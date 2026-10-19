@@ -47,6 +47,15 @@ public class Booking {
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
     }
 
+
+
+    private Passenger getPassenger(String id){
+        return passengerList.stream()
+                .filter(passenger -> passenger.getPerson().getIdDocument().equals(id))
+                .findFirst()
+                .orElseThrow(() ->
+                        new DomainRuleException("Passenger not found"));
+    }
     public void addReturnFlight(String idReturnFlight, double price){
         if (this.tripType == TripType.ONE_WAY){
             throw new DomainRuleException("There's no return flight on one way trip");

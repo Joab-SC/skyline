@@ -1,8 +1,11 @@
 package com.uniquindio.skyline.domain.entity;
 
 
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.Seat;
+import lombok.Getter;
 
+@Getter
 public class Passenger  {
     private Seat seat;
     private boolean holder;
@@ -20,6 +23,7 @@ public class Passenger  {
         this.person = person;
         this.luggageDetail = luggageDetail;
     }
+
 
 
 }

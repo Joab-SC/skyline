@@ -2,11 +2,12 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
-
+@Getter
 public class Person{
 
     private String idDocument;
