@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Layover;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 @Getter
 public class Flight {
@@ -154,3 +156,4 @@ public class Flight {
         }
     }
 }
+

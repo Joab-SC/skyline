@@ -27,7 +27,8 @@ public class Leg {
     private int availableSeats;
 
     private Leg(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
-               LocalDateTime arrivalTime, String aircraftId, String airlineId, double price, Luggage luggage, List<LegSeat> seats, int availableSeats) {
+                LocalDateTime arrivalTime, String aircraftId, String airlineId, double price, Luggage luggage, List<LegSeat> seats, int availableSeats) {
+
         this.id = id;
         this.originAirport = originAirport;
         this.destinationAirport = destinationAirport;
@@ -59,9 +60,17 @@ public class Leg {
         // Creates the luggage configuration for this leg.
         Luggage luggage = Luggage.createLuggage(UUID.randomUUID().toString(),luggagePrice);
 
-        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId, price, luggage, legSeats, availableSeats);
+
+        return new Leg(UUID.randomUUID().toString(), originAirport, destinationAirport, departureTime, arrivalTime,
+                aircraftId, airlineId, price, luggage, legSeats, availableSeats);
     }
 
+    public void reduceAvailableSeats(int numPassengers){
+        if (numPassengers > availableSeats){
+            throw new DomainRuleException("There's not enough available seats for the num of passengers");
+        }
+        this.availableSeats = availableSeats - numPassengers;
+    }
 
     private static void validateOriginAirport(Airport originAirport) {
         if (originAirport == null) {
