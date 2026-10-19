@@ -42,8 +42,9 @@ class SearchFlightsUseCaseTest {
             airportMock.when(() -> Airport.getByAcronym("MDE")).thenReturn(destination);
             when(flightSearcher.searchFlights(origin, destination, DEPARTURE_DAY, 2)).thenReturn(expectedFlights);
 
-            useCase.execute("BOG", "MDE", DEPARTURE_DAY, 2);
+            List<Flight> flights = useCase.execute("BOG", "MDE", DEPARTURE_DAY, 2);
 
+            assertEquals(flights, expectedFlights);
             airportMock.verify(() -> Airport.getByAcronym("BOG"));
             airportMock.verify(() -> Airport.getByAcronym("MDE"));
             verify(flightSearcher).searchFlights(origin, destination, DEPARTURE_DAY, 2);
