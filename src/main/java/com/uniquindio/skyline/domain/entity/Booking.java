@@ -43,7 +43,7 @@ public class Booking {
                 tripType
         );
 
-        return new Booking(UUID.randomUUID().toString(), numPassengers, price, new ArrayList<>(), idOutboundFlight, Optional.empty(),
+        return new Booking(UUID.randomUUID().toString(), numPassengers, price * numPassengers, new ArrayList<>(), idOutboundFlight, Optional.empty(),
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
     }
 
@@ -58,7 +58,7 @@ public class Booking {
             throw new DomainRuleException("Price cannot be zero or less");
         }
         this.idReturnFlight=Optional.of(idReturnFlight);
-        this.price = this.price + price;
+        this.price = this.price + price * this.numPassengers;
     }
     private static void validateBookingData(
             int numPassengers,
