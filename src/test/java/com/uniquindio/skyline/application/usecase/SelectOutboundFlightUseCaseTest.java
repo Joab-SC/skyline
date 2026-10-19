@@ -14,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SelectOutboundFlightTest {
+class SelectOutboundFlightUseCaseTest {
 
     @Mock
     private BookingRepository bookingRepository;
 
     @InjectMocks
-    private SelectOutboundFlight selectOutboundFlight;
+    private SelectOutboundFlightUseCase selectOutboundFlightUseCase;
 
     @Test
     void shouldCreatePendingBookingAndSaveIt() {
@@ -31,7 +31,7 @@ class SelectOutboundFlightTest {
         TripType tripType = TripType.ONE_WAY;
 
         // Act
-        Booking booking = selectOutboundFlight.execute(
+        Booking booking = selectOutboundFlightUseCase.execute(
                 numPassengers,
                 price,
                 idOutboundFlight,
@@ -58,11 +58,11 @@ class SelectOutboundFlightTest {
         TripType tripType = TripType.ONE_WAY;
 
         // Act
-        Booking firstBooking = selectOutboundFlight.execute(
+        Booking firstBooking = selectOutboundFlightUseCase.execute(
                 numPassengers, price, idOutboundFlight, tripType
         );
 
-        Booking secondBooking = selectOutboundFlight.execute(
+        Booking secondBooking = selectOutboundFlightUseCase.execute(
                 numPassengers, price, idOutboundFlight, tripType
         );
 
@@ -80,7 +80,7 @@ class SelectOutboundFlightTest {
         // Act & Assert
         assertThrows(
                 IllegalArgumentException.class,
-                () -> selectOutboundFlight.execute(
+                () -> selectOutboundFlightUseCase.execute(
                         invalidNumPassengers,
                         500.0,
                         "flight-1",

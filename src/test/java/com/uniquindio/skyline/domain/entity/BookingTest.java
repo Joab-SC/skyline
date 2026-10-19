@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenNumberOfPassengersIsZero() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         0,
                         500000,
@@ -56,7 +57,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenNumberOfPassengersIsNegative() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         -1,
                         500000,
@@ -68,7 +69,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenOutboundFlightIdIsNull() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
@@ -80,7 +81,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenOutboundFlightIdIsBlank() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
@@ -92,7 +93,7 @@ public class BookingTest {
 
     @Test
     void bookingThrowsExceptionWhenTripTypeIsNull() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(DomainRuleException.class, () ->
                 Booking.createPendingBooking(
                         2,
                         500000,
@@ -121,4 +122,114 @@ public class BookingTest {
         assertNotEquals(firstBooking.getId(), secondBooking.getId());
         assertNotEquals(firstBooking, secondBooking);
     }
+
+    //Tests add return flight
+
+
+    @Test
+    void shouldAddReturnFlightAndUpdatePrice() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+
+        // Act
+        booking.addReturnFlight("flight-return", 300.0);
+
+        // Assert
+        assertEquals(
+                Optional.of("flight-return"),
+                booking.getIdReturnFlight()
+        );
+        assertEquals(800.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingReturnFlightToOneWayTrip() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ONE_WAY
+        );
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", 300.0)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightIdIsNull() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight(null, 300.0)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightIdIsBlank() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("   ", 300.0)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightPriceIsZero() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", 0.0)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightPriceIsNegative() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", -100.0)
+        );
+    }
+
 }
