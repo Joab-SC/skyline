@@ -4,7 +4,6 @@ import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.City;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.infrastructure.persistence.LegRepositoryInMemory;
 import org.junit.jupiter.api.Test;
@@ -22,11 +21,12 @@ public class LegOverLapValidatorTest {
         LegOverlapValidator validator = new LegOverlapValidator(legRepository);
 
         Leg existingLeg = Leg.createLeg(
-                new Airport("El Dorado", "BOG", City.BOGOTA),
-                new Airport("Jose Maria Cordova", "MDE", City.MEDELLIN),
+                Airport.EL_DORADO,
+                Airport.JOSE_MARIA_CORDOVA,
                 LocalDateTime.of(2026, 9, 23, 8, 0),
                 LocalDateTime.of(2026, 9, 23, 10, 0),
                 "aircraft-001",
+                "AV0A123",
                 List.of(new Seat("A1")),
                 50.0,
                 300.0

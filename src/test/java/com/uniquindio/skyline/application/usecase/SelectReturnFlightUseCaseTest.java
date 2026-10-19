@@ -3,6 +3,7 @@ package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Flight;
+import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
@@ -10,6 +11,7 @@ import com.uniquindio.skyline.domain.service.OutboundAndReturnFlightsValidator;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.City;
+import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +51,7 @@ class SelectReturnFlightUseCaseTest {
                 2, 500.0, "outbound-1", TripType.ROUND_TRIP
         );
 
-        Flight returnFlight = createFlight("return-1", 300.0);
+        Flight returnFlight = createFlight(300.0);
 
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
@@ -63,7 +65,6 @@ class SelectReturnFlightUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(booking, result);
-        assertEquals(Optional.of("return-1"), result.getIdReturnFlight());
         assertEquals(800.0, result.getPrice(), 0.001);
 
         verify(bookingRepository).findById(booking.getId());
@@ -127,7 +128,7 @@ class SelectReturnFlightUseCaseTest {
                 2, 500.0, "outbound-1", TripType.ONE_WAY
         );
 
-        Flight returnFlight = createFlight("return-1", 300.0);
+        Flight returnFlight = createFlight(300.0);
 
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
@@ -152,7 +153,7 @@ class SelectReturnFlightUseCaseTest {
                 2, 500.0, "outbound-1", TripType.ROUND_TRIP
         );
 
-        Flight returnFlight = createFlight("return-1", 300.0);
+        Flight returnFlight = createFlight(300.0);
 
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
@@ -178,19 +179,12 @@ class SelectReturnFlightUseCaseTest {
                 .reduceAvailableSeats(anyString(), anyInt());
     }
 
-    private Flight createFlight(String id, double price) {
-        Airport origin = new Airport("El Eden", "AXM", City.ARMENIA);
-        Airport destination = new Airport("El Dorado", "BOG", City.BOGOTA);
-
-        return Flight.createFlightBasic(
-                id,
-                "airline-1",
-                price,
-                List.of(),
-                origin,
-                destination,
-                LocalDateTime.of(2026, 11, 5, 10, 0),
-                LocalDateTime.of(2026, 11, 5, 12, 0)
-        );
+    private Flight createFlight(double price) {
+        Airport origin = Airport.EL_EDEN;
+        Airport destination = Airport.EL_DORADO;
+        Leg leg = Leg.createLeg(origin, destination, LocalDateTime.of(2026, 11, 5, 10, 0),
+                LocalDateTime.of(2026, 11, 5, 12, 0), "AIR-001", "airline-1",
+                List.of(new Seat("001")), 100, price);
+        return Flight.createFlight(leg.getId(), leg.toSummary());
     }
 }

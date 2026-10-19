@@ -2,7 +2,6 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.City;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,15 +13,14 @@ public class LegTest {
     @Test
     void legIsCreatedWithSameSizeOfAircraftSeats() {
         List<Seat> aircraftSeats = List.of(new Seat("001"), new Seat("002"), new Seat("003"));
-        Leg leg = Leg.createLeg(new Airport("El Eden", "AXM", City.ARMENIA), new Airport("El Dorado", "EDR", City.BOGOTA),
+        Leg leg = Leg.createLeg(Airport.EL_EDEN, Airport.EL_DORADO,
                 LocalDateTime.of(2025, 11, 5, 10, 10, 10),
-                LocalDateTime.of(2025, 11, 6, 10, 10, 10), "001", aircraftSeats, 2000, 3000);
+                LocalDateTime.of(2025, 11, 6, 10, 10, 10), "001", "AV0A123", aircraftSeats, 2000, 3000);
         assertEquals(leg.getSeats().size(), aircraftSeats.size());
     }
 
     @Test
     public void legThrowsExceptionWhenArrivalTimeIsBeforeDepartureTime() {
-        // Checks that arrival time must be later than departure time.
         List<Seat> aircraftSeats = List.of(
                 new Seat("001"),
                 new Seat("002")
@@ -30,11 +28,12 @@ public class LegTest {
 
         assertThrows(DomainRuleException.class, () -> {
             Leg.createLeg(
-                    new Airport("El Eden", "AXM", City.ARMENIA),
-                    new Airport("El Dorado", "EDR", City.BOGOTA),
+                    Airport.EL_EDEN,
+                    Airport.EL_DORADO,
                     LocalDateTime.of(2025, 11, 5, 15, 10),
                     LocalDateTime.of(2025, 11, 5, 12, 10),
                     "001",
+                    "AV0A123",
                     aircraftSeats,
                     2000,
                     3000
@@ -44,8 +43,7 @@ public class LegTest {
 
     @Test
     public void legThrowsExceptionWhenOriginAndDestinationAirportsAreTheSame() {
-        // Checks that origin and destination airports cannot be the same.
-        Airport airport = new Airport("El Eden", "AXM", City.ARMENIA);
+        Airport airport = Airport.EL_EDEN;
 
         List<Seat> aircraftSeats = List.of(
                 new Seat("001"),
@@ -59,6 +57,7 @@ public class LegTest {
                     LocalDateTime.of(2025, 11, 5, 10, 10),
                     LocalDateTime.of(2025, 11, 5, 12, 10),
                     "001",
+                    "AV0A123",
                     aircraftSeats,
                     2000,
                     3000

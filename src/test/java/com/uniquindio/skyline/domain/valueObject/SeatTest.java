@@ -1,7 +1,6 @@
-package com.uniquindio.skyline.domain.valueobject;
+package com.uniquindio.skyline.domain.valueObject;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.valueObject.Seat;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

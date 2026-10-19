@@ -2,6 +2,7 @@ package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
+import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;

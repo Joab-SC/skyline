@@ -3,11 +3,13 @@ package com.uniquindio.skyline.domain.service;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Flight;
+import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.City;
+import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import com.uniquindio.skyline.infrastructure.persistence.BookingRepositoryInMemory;
 import com.uniquindio.skyline.infrastructure.persistence.FlightRepositoryInMemory;
@@ -26,8 +28,8 @@ class OutboundAndReturnFlightsValidatorTest {
         BookingRepository bookingRepository = new BookingRepositoryInMemory();
         FlightRepository flightRepository = new FlightRepositoryInMemory();
 
-        Airport armenia = new Airport("El Eden", "AXM", City.ARMENIA);
-        Airport bogota = new Airport("El Dorado", "BOG", City.BOGOTA);
+        Airport armenia = Airport.EL_EDEN;
+        Airport bogota = Airport.EL_DORADO;
 
         Flight outboundFlight = createFlight(
                 "outbound-1", armenia, bogota
@@ -38,9 +40,9 @@ class OutboundAndReturnFlightsValidatorTest {
         );
 
         Booking booking = Booking.createPendingBooking(
-                2, 500.0, "outbound-1", TripType.ROUND_TRIP
+                2, 500.0, outboundFlight.getId(), TripType.ROUND_TRIP
         );
-        booking.addReturnFlight("return-1", 300.0);
+        booking.addReturnFlight(returnFlight.getId(), 300.0);
 
         flightRepository.save(outboundFlight);
         flightRepository.save(returnFlight);
@@ -111,8 +113,8 @@ class OutboundAndReturnFlightsValidatorTest {
         BookingRepository bookingRepository = new BookingRepositoryInMemory();
         FlightRepository flightRepository = new FlightRepositoryInMemory();
 
-        Airport armenia = new Airport("El Eden", "AXM", City.ARMENIA);
-        Airport bogota = new Airport("El Dorado", "BOG", City.BOGOTA);
+        Airport armenia = Airport.EL_EDEN;
+        Airport bogota = Airport.EL_DORADO;
 
         Flight outboundFlight = createFlight(
                 "outbound-1", armenia, bogota
@@ -145,8 +147,8 @@ class OutboundAndReturnFlightsValidatorTest {
         BookingRepository bookingRepository = new BookingRepositoryInMemory();
         FlightRepository flightRepository = new FlightRepositoryInMemory();
 
-        Airport armenia = new Airport("El Eden", "AXM", City.ARMENIA);
-        Airport bogota = new Airport("El Dorado", "BOG", City.BOGOTA);
+        Airport armenia = Airport.EL_EDEN;
+        Airport bogota = Airport.EL_DORADO;
 
         Flight outboundFlight = createFlight(
                 "outbound-1", armenia, bogota
@@ -180,9 +182,9 @@ class OutboundAndReturnFlightsValidatorTest {
         BookingRepository bookingRepository = new BookingRepositoryInMemory();
         FlightRepository flightRepository = new FlightRepositoryInMemory();
 
-        Airport armenia = new Airport("El Eden", "AXM", City.ARMENIA);
-        Airport bogota = new Airport("El Dorado", "BOG", City.BOGOTA);
-        Airport medellin = new Airport("Jose Maria Cordova", "MDE", City.MEDELLIN);
+        Airport armenia = Airport.EL_EDEN;
+        Airport bogota = Airport.EL_DORADO;
+        Airport medellin = Airport.JOSE_MARIA_CORDOVA;
 
         Flight outboundFlight = createFlight(
                 "outbound-1", armenia, bogota
@@ -220,15 +222,9 @@ class OutboundAndReturnFlightsValidatorTest {
             Airport origin,
             Airport destination
     ) {
-        return Flight.createFlightBasic(
-                id,
-                "airline-1",
-                300.0,
-                List.of(),
-                origin,
-                destination,
-                LocalDateTime.of(2026, 11, 5, 10, 0),
-                LocalDateTime.of(2026, 11, 5, 12, 0)
-        );
+        Leg leg = Leg.createLeg(origin, destination, LocalDateTime.of(2026, 11, 5, 10, 0),
+                LocalDateTime.of(2026, 11, 5, 12, 0), "AIR-001", "airline-1",
+                List.of(new Seat("001")), 100, 1000);
+        return Flight.createFlight(leg.getId(), leg.toSummary());
     }
 }
