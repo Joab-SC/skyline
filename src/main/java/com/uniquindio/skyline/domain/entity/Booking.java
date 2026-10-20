@@ -89,16 +89,8 @@ public class Booking {
         this.price = this.price + price * this.numPassengers;
     }
 
-    // Lets callers check the booking before changing other aggregates (e.g. reducing seats).
-    public boolean canAddReturnFlight(String idReturnFlight, double price){
-        return isPending()
-                && hasNoReturnFlight()
-                && isRoundTrip()
-                && isValidReturnFlightId(idReturnFlight)
-                && isValidReturnFlightPrice(price);
-    }
-
-    private void validateReturnFlight(String idReturnFlight, double price){
+    // Public so callers can check the booking before changing other aggregates (e.g. reducing seats).
+    public void validateReturnFlight(String idReturnFlight, double price){
         if (!isPending()){
             throw new DomainRuleException("Only a pending booking can be modified");
         }
