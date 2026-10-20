@@ -12,15 +12,12 @@ import java.util.List;
 public class SeatsAvailableReducer {
 
     private final LegRepository legRepository;
-    private final FlightRepository flightRepository;
 
-    public SeatsAvailableReducer(LegRepository legRepository, FlightRepository flightRepository) {
+    public SeatsAvailableReducer(LegRepository legRepository) {
         this.legRepository = legRepository;
-        this.flightRepository = flightRepository;
     }
 
-    public void reduceAvailableSeats (String idFlight, int numPassengers){
-        Flight flight = flightRepository.findById(idFlight).orElseThrow(() -> new DomainRuleException(" The flight doesn't exist"));
+    public void reduceAvailableSeats (Flight flight, int numPassengers){
         for (String idLeg : flight.getIdLegs()){
             Leg leg = legRepository.findById(idLeg).orElseThrow(() -> new DomainRuleException(" The leg cannot be found"));
             leg.reduceAvailableSeats(numPassengers);
