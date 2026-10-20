@@ -1,0 +1,26 @@
+package com.uniquindio.skyline.application.usecase;
+
+import com.uniquindio.skyline.domain.entity.Booking;
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.repository.BookingRepository;
+import com.uniquindio.skyline.domain.service.LuggageDetailCreator;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
+
+public class AddLuggageUseCase {
+    private final BookingRepository bookingRepository;
+    private final LuggageDetailCreator luggageDetailCreator;
+
+    public AddLuggageUseCase(BookingRepository bookingRepository, LuggageDetailCreator luggageDetailCreator) {
+        this.bookingRepository = bookingRepository;
+        this.luggageDetailCreator = luggageDetailCreator;
+    }
+
+    // Registers the luggage of a passenger for every leg of the booking.
+    public Booking execute(String passengerId, String bookingId, int amount){
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new DomainRuleException("Booking not found"));
+        LuggageDetail luggageDetail = luggageDetailCreator.createDetail(booking, amount);
+        booking.registerPassengerLuggage(passengerId, luggageDetail);
+        bookingRepository.save(booking);
+        return booking;
+    }
+}

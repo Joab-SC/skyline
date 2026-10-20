@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import lombok.Getter;
 
@@ -45,6 +46,36 @@ public class Booking {
 
         return new Booking(UUID.randomUUID().toString(), numPassengers, price, new ArrayList<>(), idOutboundFlight, Optional.empty(),
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
+    }
+
+
+
+    private Passenger getPassenger(String id){
+        return passengerList.stream()
+                .filter(passenger -> passenger.getPerson().getIdDocument().equals(id))
+                .findFirst()
+                .orElseThrow(() ->
+                        new DomainRuleException("Passenger not found"));
+    }
+
+    // Creates a luggage detail for a passenger of this booking.
+    public LuggageDetail createLuggageDetail(List<String> luggageIds, int quantity, double subTotal, int maxQuantity){
+        return new LuggageDetail(luggageIds, quantity, subTotal, maxQuantity);
+    }
+
+    public void registerPassengerLuggage(String idDocument, LuggageDetail luggageDetail){
+        if (this.bookingStatus != BookingStatus.PENDING){
+            throw new DomainRuleException("Only a pending booking can be modified");
+        }
+        if (luggageDetail == null){
+            throw new DomainRuleException("The luggage detail cannot be null");
+        }
+        Passenger passenger = getPassenger(idDocument);
+        if (passenger.getLuggageDetail() != null){
+            this.price = this.price - passenger.getLuggageDetail().subTotal();
+        }
+        passenger.registerLuggage(luggageDetail);
+        this.price = this.price + luggageDetail.subTotal();
     }
 
     public void addReturnFlight(String idReturnFlight, double price){
