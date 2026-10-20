@@ -6,6 +6,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.repository.FlightSearchCache;
+import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.OutboundAndReturnFlightsValidator;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 
@@ -18,7 +19,8 @@ public class SelectReturnFlightUseCase {
     private final FlightSearchCache flightSearchCache;
 
 
-    public SelectReturnFlightUseCase(BookingRepository bookingRepository, FlightRepository flightRepository, OutboundAndReturnFlightsValidator outboundAndReturnFlightsValidator,
+    public SelectReturnFlightUseCase(BookingRepository bookingRepository, FlightRepository flightRepository,
+                                     OutboundAndReturnFlightsValidator outboundAndReturnFlightsValidator,
                                      SeatsAvailableReducer seatsAvailableReducer, FlightSearchCache flightSearchCache) {
         this.bookingRepository = bookingRepository;
         this.flightRepository = flightRepository;
@@ -36,7 +38,6 @@ public class SelectReturnFlightUseCase {
 
         booking.addReturnFlight(returnFlight.getId(), returnFlight.getPrice());
         seatsAvailableReducer.reduceAvailableSeats(returnFlight,booking.getNumPassengers());
-
 
         flightRepository.save(returnFlight);
         bookingRepository.save(booking);
