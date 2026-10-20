@@ -6,12 +6,13 @@ import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -239,6 +240,7 @@ public class BookingTest {
         );
     }
 
+
     //Tests add passengers
 
     @Test
@@ -402,9 +404,112 @@ public class BookingTest {
         assertTrue(booking.getPassengerList().get(0).isHolder());
     }
 
+    @Test
+    void shouldCreateLuggageDetail() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+
+        // Act
+        LuggageDetail luggageDetail = booking.createLuggageDetail(List.of("luggage-1"), 2, 100.0, 3);
+
+        // Assert
+        assertEquals(new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3), luggageDetail);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLuggageQuantityExceedsMaximum() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.createLuggageDetail(List.of("luggage-1"), 4, 100.0, 3)
+        );
+    }
+
+    //Tests register passenger luggage
+
+    @Test
+    void shouldRegisterPassengerLuggageAndUpdatePrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        LuggageDetail luggageDetail = new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3);
+
+        // Act
+        booking.registerPassengerLuggage("123", luggageDetail);
+
+        // Assert
+        assertEquals(luggageDetail, booking.getPassengerList().getFirst().getLuggageDetail().get());
+        assertEquals(600.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldReplacePreviousLuggageAndAdjustPrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3));
+        LuggageDetail newLuggageDetail = new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3);
+
+        // Act
+        booking.registerPassengerLuggage("123", newLuggageDetail);
+
+        // Assert
+        assertEquals(newLuggageDetail, booking.getPassengerList().getFirst().getLuggageDetail().get());
+        assertEquals(550.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPassengerIsNotInBooking() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLuggageDetailIsNull() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("123", null)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegisteringLuggageOnNonPendingBooking() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.cancelBooking();
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
+        );
+
+    }
+
     private PassengerData passengerData(String idDocument) {
         return new PassengerData(idDocument, DocumentType.CITIZENSHIP_ID, "Laura", null,
                 "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);
     }
 
+    private Booking createBookingWithPassenger(String idDocument) {
+        Booking booking = Booking.createPendingBooking(
+                1,
+                500.0,
+                "flight-outbound",
+                TripType.ONE_WAY
+        );
+        booking.addPassengers(List.of(passengerData(idDocument)));
+        return booking;
+    }
 }

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
+
 @Getter
 public class Passenger  {
 
@@ -23,6 +24,7 @@ public class Passenger  {
 
     private Passenger(boolean holder, Optional<String> email, Optional<String> phoneNumber,Optional<PhonePrefix> phonePrefix, Person person,
                       Optional<LuggageDetail> luggageDetail) {
+
 
         this.holder = holder;
         this.email = email;
@@ -90,6 +92,14 @@ public class Passenger  {
 
     }
 
+    // Replaces the luggage detail of the passenger.
+    void registerLuggage(LuggageDetail luggageDetail) {
+        if (luggageDetail == null){
+            throw new DomainRuleException("LuggageDetail is required");
+        }
+        this.luggageDetail = Optional.of(luggageDetail);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -104,3 +114,6 @@ public class Passenger  {
         return Objects.hash(person.getIdDocument());
     }
 }
+
+
+
