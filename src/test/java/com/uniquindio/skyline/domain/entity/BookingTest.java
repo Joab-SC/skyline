@@ -34,7 +34,7 @@ public class BookingTest {
         );
 
         assertEquals(2, booking.getNumPassengers());
-        assertEquals(500000, booking.getPrice());
+        assertEquals(1000000, booking.getPrice());
         assertEquals("flight001", booking.getIdOutboundFlight());
         assertEquals(Optional.empty(), booking.getIdReturnFlight());
         assertEquals(TripType.ONE_WAY, booking.getTripType());
@@ -144,7 +144,7 @@ public class BookingTest {
                 Optional.of("flight-return"),
                 booking.getIdReturnFlight()
         );
-        assertEquals(800.0, booking.getPrice(), 0.001);
+        assertEquals(1600.0, booking.getPrice(), 0.001);
     }
 
     @Test
