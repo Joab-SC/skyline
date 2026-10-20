@@ -23,6 +23,11 @@ public class Airline {
 
     }
 
+    // Creates an airline without aircrafts or legs.
+    public static Airline createAirline(String name, int maximumLuggageAmount) {
+        return new Airline(UUID.randomUUID().toString(), name, maximumLuggageAmount);
+    }
+
 
     // Adds a leg id to the airline.
     public void addLeg(String legId){
