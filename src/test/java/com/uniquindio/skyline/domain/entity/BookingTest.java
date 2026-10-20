@@ -2,10 +2,15 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
+import com.uniquindio.skyline.domain.valueObject.DocumentType;
+import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -229,6 +234,87 @@ public class BookingTest {
         assertThrows(
                 DomainRuleException.class,
                 () -> booking.addReturnFlight("flight-return", -100.0)
+        );
+    }
+
+    //Tests register passenger luggage
+
+    private Booking createBookingWithPassenger(String idDocument) {
+        Booking booking = Booking.createPendingBooking(
+                1,
+                500.0,
+                "flight-outbound",
+                TripType.ONE_WAY
+        );
+        Person person = Person.createPerson(idDocument, DocumentType.CITIZENSHIP_ID, "Ana", null,
+                "Gomez", null, LocalDate.of(1990, 1, 1), Gender.FEMALE);
+        booking.getPassengerList().add(Passenger.createPassenger(person, true, "ana@mail.com", "3000000000"));
+        return booking;
+    }
+
+    @Test
+    void shouldRegisterPassengerLuggageAndUpdatePrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        LuggageDetail luggageDetail = new LuggageDetail(List.of("luggage-1"), 2, 100.0);
+
+        // Act
+        booking.registerPassengerLuggage("123", luggageDetail);
+
+        // Assert
+        assertEquals(luggageDetail, booking.getPassengerList().getFirst().getLuggageDetail());
+        assertEquals(600.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldReplacePreviousLuggageAndAdjustPrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0));
+        LuggageDetail newLuggageDetail = new LuggageDetail(List.of("luggage-1"), 1, 50.0);
+
+        // Act
+        booking.registerPassengerLuggage("123", newLuggageDetail);
+
+        // Assert
+        assertEquals(newLuggageDetail, booking.getPassengerList().getFirst().getLuggageDetail());
+        assertEquals(550.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPassengerIsNotInBooking() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0))
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLuggageDetailIsNull() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("123", null)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegisteringLuggageOnNonPendingBooking() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.cancelBooking();
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 1, 50.0))
         );
     }
 
