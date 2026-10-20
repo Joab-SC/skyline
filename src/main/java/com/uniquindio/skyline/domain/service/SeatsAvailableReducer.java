@@ -1,6 +1,5 @@
 package com.uniquindio.skyline.domain.service;
 
-import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -17,17 +16,12 @@ public class SeatsAvailableReducer {
         this.legRepository = legRepository;
     }
 
-    // Checks the booking can take the return flight before reducing seats, so a failure leaves nothing half done.
-    public void reduceAvailableSeats (Booking booking, Flight flight){
-        // Check the booking before reducing seats, so a failure leaves nothing half done.
-        if (!booking.canAddReturnFlight(flight.getId(), flight.getPrice())){
-            throw new DomainRuleException("The return flight cannot be added to this booking");
-        }
+    public void reduceAvailableSeats (Flight flight, int numPassengers){
         // First pass: load and validate every leg, so nothing changes if one of them fails.
         List<Leg> legs = new ArrayList<>();
         for (String idLeg : flight.getIdLegs()){
             Leg leg = legRepository.findById(idLeg).orElseThrow(() -> new DomainRuleException("The leg cannot be found"));
-            if (!leg.hasAvailableSeats(booking.getNumPassengers())){
+            if (!leg.hasAvailableSeats(numPassengers)){
                 throw new DomainRuleException("There's not enough available seats for the num of passengers");
             }
             legs.add(leg);
@@ -35,7 +29,7 @@ public class SeatsAvailableReducer {
 
         // Second pass: every leg has seats, so reduce and save them.
         for (Leg leg : legs){
-            leg.reduceAvailableSeats(booking.getNumPassengers());
+            leg.reduceAvailableSeats(numPassengers);
             legRepository.save(leg);
         }
     }
