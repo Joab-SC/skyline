@@ -237,6 +237,31 @@ public class BookingTest {
         );
     }
 
+
+    @Test
+    void shouldCreateLuggageDetail() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+
+        // Act
+        LuggageDetail luggageDetail = booking.createLuggageDetail(List.of("luggage-1"), 2, 100.0, 3);
+
+        // Assert
+        assertEquals(new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3), luggageDetail);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLuggageQuantityExceedsMaximum() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+
+        // Act & Assert
+        assertThrows(
+                DomainRuleException.class,
+                () -> booking.createLuggageDetail(List.of("luggage-1"), 4, 100.0, 3)
+        );
+    }
+
     //Tests register passenger luggage
 
     private Booking createBookingWithPassenger(String idDocument) {
@@ -256,7 +281,7 @@ public class BookingTest {
     void shouldRegisterPassengerLuggageAndUpdatePrice() {
         // Arrange
         Booking booking = createBookingWithPassenger("123");
-        LuggageDetail luggageDetail = new LuggageDetail(List.of("luggage-1"), 2, 100.0);
+        LuggageDetail luggageDetail = new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3);
 
         // Act
         booking.registerPassengerLuggage("123", luggageDetail);
@@ -270,8 +295,8 @@ public class BookingTest {
     void shouldReplacePreviousLuggageAndAdjustPrice() {
         // Arrange
         Booking booking = createBookingWithPassenger("123");
-        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0));
-        LuggageDetail newLuggageDetail = new LuggageDetail(List.of("luggage-1"), 1, 50.0);
+        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3));
+        LuggageDetail newLuggageDetail = new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3);
 
         // Act
         booking.registerPassengerLuggage("123", newLuggageDetail);
@@ -289,7 +314,7 @@ public class BookingTest {
         // Act & Assert
         assertThrows(
                 DomainRuleException.class,
-                () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0))
+                () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
         );
     }
 
@@ -314,7 +339,7 @@ public class BookingTest {
         // Act & Assert
         assertThrows(
                 DomainRuleException.class,
-                () -> booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 1, 50.0))
+                () -> booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
         );
     }
 
