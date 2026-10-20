@@ -84,6 +84,12 @@ public class Booking {
     }
 
     public void addReturnFlight(String idReturnFlight, double price){
+        if (this.bookingStatus != BookingStatus.PENDING){
+            throw new DomainRuleException("Only a pending booking can be modified");
+        }
+        if (this.idReturnFlight.isPresent()){
+            throw new DomainRuleException("The booking already has a return flight");
+        }
         if (this.tripType == TripType.ONE_WAY){
             throw new DomainRuleException("There's no return flight on one way trip");
         }
