@@ -58,6 +58,11 @@ public class Booking {
                         new DomainRuleException("Passenger not found"));
     }
 
+    // Creates a luggage detail for a passenger of this booking.
+    public LuggageDetail createLuggageDetail(List<String> luggageIds, int quantity, double subTotal, int maxQuantity){
+        return new LuggageDetail(luggageIds, quantity, subTotal, maxQuantity);
+    }
+
     public void registerPassengerLuggage(String idDocument, LuggageDetail luggageDetail){
         if (this.bookingStatus != BookingStatus.PENDING){
             throw new DomainRuleException("Only a pending booking can be modified");
