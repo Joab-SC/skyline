@@ -34,8 +34,8 @@ public class SelectReturnFlightUseCase {
         Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow(()-> new DomainRuleException(""));
         outboundAndReturnFlightsValidator.validateOutboundAirportEqualsReturnFlight(outboundFlight,  returnFlight);
 
-        seatsAvailableReducer.reduceAvailableSeats(returnFlight,booking.getNumPassengers());
         booking.addReturnFlight(returnFlight.getId(), returnFlight.getPrice());
+        seatsAvailableReducer.reduceAvailableSeats(returnFlight,booking.getNumPassengers());
 
 
         flightRepository.save(returnFlight);
