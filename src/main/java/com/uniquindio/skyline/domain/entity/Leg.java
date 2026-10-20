@@ -65,8 +65,12 @@ public class Leg {
                 aircraftId, airlineId, price, luggage, legSeats, availableSeats);
     }
 
+    public boolean hasAvailableSeats(int numPassengers){
+        return numPassengers <= availableSeats;
+    }
+
     public void reduceAvailableSeats(int numPassengers){
-        if (numPassengers > availableSeats){
+        if (!hasAvailableSeats(numPassengers)){
             throw new DomainRuleException("There's not enough available seats for the num of passengers");
         }
         this.availableSeats = availableSeats - numPassengers;
