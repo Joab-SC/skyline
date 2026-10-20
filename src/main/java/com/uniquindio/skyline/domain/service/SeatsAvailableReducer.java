@@ -3,11 +3,7 @@ package com.uniquindio.skyline.domain.service;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.repository.AirlineRepository;
-import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
-
-import java.util.List;
 
 public class SeatsAvailableReducer {
 
@@ -19,8 +15,9 @@ public class SeatsAvailableReducer {
 
     public void reduceAvailableSeats (Flight flight, int numPassengers){
         for (String idLeg : flight.getIdLegs()){
-            Leg leg = legRepository.findById(idLeg).orElseThrow(() -> new DomainRuleException(" The leg cannot be found"));
+            Leg leg = legRepository.findById(idLeg).orElseThrow(() -> new DomainRuleException("The leg cannot be found"));
             leg.reduceAvailableSeats(numPassengers);
+            legRepository.save(leg);
         }
     }
 }
