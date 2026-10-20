@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import lombok.Getter;
 
@@ -56,6 +57,22 @@ public class Booking {
                 .orElseThrow(() ->
                         new DomainRuleException("Passenger not found"));
     }
+
+    public void registerPassengerLuggage(String idDocument, LuggageDetail luggageDetail){
+        if (this.bookingStatus != BookingStatus.PENDING){
+            throw new DomainRuleException("Only a pending booking can be modified");
+        }
+        if (luggageDetail == null){
+            throw new DomainRuleException("The luggage detail cannot be null");
+        }
+        Passenger passenger = getPassenger(idDocument);
+        if (passenger.getLuggageDetail() != null){
+            this.price = this.price - passenger.getLuggageDetail().subTotal();
+        }
+        passenger.registerLuggage(luggageDetail);
+        this.price = this.price + luggageDetail.subTotal();
+    }
+
     public void addReturnFlight(String idReturnFlight, double price){
         if (this.tripType == TripType.ONE_WAY){
             throw new DomainRuleException("There's no return flight on one way trip");
