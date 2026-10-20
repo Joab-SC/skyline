@@ -6,10 +6,7 @@ import com.uniquindio.skyline.domain.entity.Person;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.service.LuggageDetailCreator;
-import com.uniquindio.skyline.domain.valueObject.DocumentType;
-import com.uniquindio.skyline.domain.valueObject.Gender;
-import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
-import com.uniquindio.skyline.domain.valueObject.TripType;
+import com.uniquindio.skyline.domain.valueObject.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -38,13 +35,6 @@ class AddLuggageUseCaseTest {
     @InjectMocks
     private AddLuggageUseCase addLuggageUseCase;
 
-    private Booking createBookingWithPassenger() {
-        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
-        Person person = Person.createPerson("123", DocumentType.CITIZENSHIP_ID, "Ana", null,
-                "Gomez", null, LocalDate.of(1990, 1, 1), Gender.FEMALE);
-        booking.getPassengerList().add(Passenger.createPassenger(person, true, "ana@mail.com", "3000000000"));
-        return booking;
-    }
 
     @Test
     void shouldRegisterCreatedDetailAndSaveBooking() {
@@ -53,12 +43,11 @@ class AddLuggageUseCaseTest {
         LuggageDetail luggageDetail = new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3);
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
         when(luggageDetailCreator.createDetail(booking, 2)).thenReturn(luggageDetail);
-
         // Act
         Booking result = addLuggageUseCase.execute("123", booking.getId(), 2);
 
         // Assert
-        assertEquals(luggageDetail, result.getPassengerList().getFirst().getLuggageDetail());
+        assertEquals(luggageDetail, result.getPassengerList().getFirst().getLuggageDetail().get());
         assertEquals(600.0, result.getPrice(), 0.001);
         InOrder inOrder = inOrder(luggageDetailCreator, bookingRepository);
         inOrder.verify(luggageDetailCreator).createDetail(booking, 2);
@@ -88,5 +77,16 @@ class AddLuggageUseCaseTest {
         assertThrows(DomainRuleException.class, () -> addLuggageUseCase.execute("123", booking.getId(), 4));
         assertEquals(500.0, booking.getPrice(), 0.001);
         verify(bookingRepository, never()).save(any());
+    }
+
+    private PassengerData passengerData(String idDocument) {
+        return new PassengerData(idDocument, DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);
+    }
+
+    private Booking createBookingWithPassenger() {
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+        booking.addPassengers(List.of(passengerData("123")));
+        return booking;
     }
 }

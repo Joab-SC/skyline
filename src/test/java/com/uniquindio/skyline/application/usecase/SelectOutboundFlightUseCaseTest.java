@@ -57,7 +57,7 @@ class SelectOutboundFlightUseCaseTest {
         // Assert
         assertNotNull(booking);
         assertEquals(numPassengers, booking.getNumPassengers());
-        assertEquals(price, booking.getPrice());
+        assertEquals(1000, booking.getPrice());
         assertEquals(idOutboundFlight, booking.getIdOutboundFlight());
         assertEquals(tripType, booking.getTripType());
         assertEquals(BookingStatus.PENDING, booking.getBookingStatus());

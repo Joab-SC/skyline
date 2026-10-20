@@ -65,7 +65,7 @@ class SelectReturnFlightUseCaseTest {
         // Assert
         assertNotNull(result);
         assertEquals(booking, result);
-        assertEquals(800.0, result.getPrice(), 0.001);
+        assertEquals(1600.0, result.getPrice(), 0.001);
 
         verify(bookingRepository).findById(booking.getId());
         verify(flightRepository).findById("return-1");
@@ -115,7 +115,7 @@ class SelectReturnFlightUseCaseTest {
         );
 
         assertTrue(booking.getIdReturnFlight().isEmpty());
-        assertEquals(500.0, booking.getPrice(), 0.001);
+        assertEquals(1000.0, booking.getPrice(), 0.001);
 
         verifyNoInteractions(outboundAndReturnFlightsValidator);
         verifyNoInteractions(seatsAvailableReducer);

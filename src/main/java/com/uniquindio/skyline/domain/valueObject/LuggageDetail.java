@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.valueObject;
 
+import java.util.List;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import java.util.List;
 
