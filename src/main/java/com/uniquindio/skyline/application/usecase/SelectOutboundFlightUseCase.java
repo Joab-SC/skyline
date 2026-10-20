@@ -1,29 +1,34 @@
 package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.entity.Booking;
+import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
+import com.uniquindio.skyline.domain.repository.FlightSearchCache;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 
 public class SelectOutboundFlightUseCase {
 
     private final BookingRepository bookingRepository;
-    private final FlightRepository flightRepository;
+    private final FlightSearchCache flightSearchCache;
     private final SeatsAvailableReducer seatsAvailableReducer;
+    private final FlightRepository flightRepository;
 
-    public SelectOutboundFlightUseCase(BookingRepository bookingRepository, FlightRepository flightRepository, SeatsAvailableReducer seatsAvailableReducer) {
+    public SelectOutboundFlightUseCase(BookingRepository bookingRepository, FlightSearchCache flightSearchCache, SeatsAvailableReducer seatsAvailableReducer, FlightRepository flightRepository) {
         this.bookingRepository = bookingRepository;
-        this.flightRepository = flightRepository;
+        this.flightSearchCache = flightSearchCache;
         this.seatsAvailableReducer = seatsAvailableReducer;
+        this.flightRepository = flightRepository;
     }
 
-    public Booking execute(int numPassengers, double price, String idOutboundFlight,
+    public Booking execute(int numPassengers, String idOutboundFlight,
                            TripType tripType){
-        flightRepository.findById(idOutboundFlight).orElseThrow(()-> new DomainRuleException("OutboundFlight cannot be found"));
-        Booking booking = Booking.createPendingBooking(numPassengers, price, idOutboundFlight, tripType);
-        seatsAvailableReducer.reduceAvailableSeats(idOutboundFlight,numPassengers);
+        Flight flight = flightSearchCache.findById(idOutboundFlight).orElseThrow(()-> new DomainRuleException("OutboundFlight cannot be found"));
+        Booking booking = Booking.createPendingBooking(numPassengers, flight.getPrice(), flight.getId(), tripType);
+        seatsAvailableReducer.reduceAvailableSeats(flight,numPassengers);
+        flightRepository.save(flight);
         bookingRepository.save(booking);
 
         return booking;

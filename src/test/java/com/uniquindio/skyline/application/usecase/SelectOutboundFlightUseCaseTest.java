@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
+import com.uniquindio.skyline.domain.repository.FlightSearchCache;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.TripType;
@@ -24,8 +25,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SelectOutboundFlightUseCaseTest {
 
+    private static final String ID_OUTBOUND_FLIGHT = "flight-1";
+
     @Mock
     private BookingRepository bookingRepository;
+
+    @Mock
+    private FlightSearchCache flightSearchCache;
 
     @Mock
     private FlightRepository flightRepository;
@@ -43,38 +49,36 @@ class SelectOutboundFlightUseCaseTest {
     void shouldCreatePendingBookingAndSaveIt() {
         // Arrange
         int numPassengers = 2;
-        double price = 500.0;
-        String idOutboundFlight = "flight-1";
         TripType tripType = TripType.ONE_WAY;
-
-        when(flightRepository.findById(idOutboundFlight)).thenReturn(Optional.of(flight));
+        givenFlightInCache();
+        when(flight.getPrice()).thenReturn(500.0);
 
         // Act
         Booking booking = selectOutboundFlightUseCase.execute(
-                numPassengers, price, idOutboundFlight, tripType
+                numPassengers, ID_OUTBOUND_FLIGHT, tripType
         );
 
         // Assert
         assertNotNull(booking);
         assertEquals(numPassengers, booking.getNumPassengers());
         assertEquals(1000, booking.getPrice());
-        assertEquals(idOutboundFlight, booking.getIdOutboundFlight());
+        assertEquals(ID_OUTBOUND_FLIGHT, booking.getIdOutboundFlight());
         assertEquals(tripType, booking.getTripType());
         assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
 
-        verify(seatsAvailableReducer).reduceAvailableSeats(idOutboundFlight, numPassengers);
+        verify(seatsAvailableReducer).reduceAvailableSeats(flight, numPassengers);
+        verify(flightRepository).save(flight);
         verify(bookingRepository).save(booking);
     }
 
     @Test
     void shouldGenerateUniqueBookingIds() {
         // Arrange
-        String idOutboundFlight = "flight-1";
-        when(flightRepository.findById(idOutboundFlight)).thenReturn(Optional.of(flight));
+        givenFlightInCache();
 
         // Act
-        Booking firstBooking = selectOutboundFlightUseCase.execute(1, 300.0, idOutboundFlight, TripType.ONE_WAY);
-        Booking secondBooking = selectOutboundFlightUseCase.execute(1, 300.0, idOutboundFlight, TripType.ONE_WAY);
+        Booking firstBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
+        Booking secondBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
 
         // Assert
         assertNotEquals(firstBooking.getId(), secondBooking.getId());
@@ -84,44 +88,62 @@ class SelectOutboundFlightUseCaseTest {
     @Test
     void shouldNotSaveBookingNorReduceSeatsWhenCreationFails() {
         // Arrange
-        String idOutboundFlight = "flight-1";
-        when(flightRepository.findById(idOutboundFlight)).thenReturn(Optional.of(flight));
+        givenFlightInCache();
 
         // Act & Assert
         assertThrows(
                 DomainRuleException.class,
-                () -> selectOutboundFlightUseCase.execute(0, 500.0, idOutboundFlight, TripType.ONE_WAY)
+                () -> selectOutboundFlightUseCase.execute(0,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY)
         );
 
-        verify(seatsAvailableReducer, never()).reduceAvailableSeats(anyString(), anyInt());
-        verify(bookingRepository, never()).save(any(Booking.class));
+        verifyNoInteractions(seatsAvailableReducer, flightRepository, bookingRepository);
     }
 
     @Test
-    void shouldThrowWhenOutboundFlightDoesNotExist() {
+    void shouldThrowWhenOutboundFlightIsNotInSearchCache() {
         // Arrange
-        when(flightRepository.findById("missing")).thenReturn(Optional.empty());
+        when(flightSearchCache.findById("missing")).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(
                 DomainRuleException.class,
-                () -> selectOutboundFlightUseCase.execute(1, 500.0, "missing", TripType.ONE_WAY)
+                () -> selectOutboundFlightUseCase.execute(1,  "missing", TripType.ONE_WAY)
         );
 
-        verifyNoInteractions(seatsAvailableReducer, bookingRepository);
+        verifyNoInteractions(seatsAvailableReducer, flightRepository, bookingRepository);
     }
 
     @Test
-    void shouldReduceSeatsBeforeSavingBooking() {
+    void shouldNotSaveAnythingWhenThereAreNotEnoughSeats() {
         // Arrange
-        when(flightRepository.findById("flight-1")).thenReturn(Optional.of(flight));
+        givenFlightInCache();
+        doThrow(new DomainRuleException("There's not enough available seats for the num of passengers"))
+                .when(seatsAvailableReducer).reduceAvailableSeats(flight, 2);
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY));
+
+        verifyNoInteractions(flightRepository, bookingRepository);
+    }
+
+    @Test
+    void shouldReduceSeatsBeforeSavingFlightAndBooking() {
+        // Arrange
+        givenFlightInCache();
 
         // Act
-        Booking booking = selectOutboundFlightUseCase.execute(2, 500.0, "flight-1", TripType.ONE_WAY);
+        Booking booking = selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
 
         // Assert
-        InOrder inOrder = inOrder(seatsAvailableReducer, bookingRepository);
-        inOrder.verify(seatsAvailableReducer).reduceAvailableSeats("flight-1", 2);
+        InOrder inOrder = inOrder(seatsAvailableReducer, flightRepository, bookingRepository);
+        inOrder.verify(seatsAvailableReducer).reduceAvailableSeats(flight, 2);
+        inOrder.verify(flightRepository).save(flight);
         inOrder.verify(bookingRepository).save(booking);
+    }
+
+    private void givenFlightInCache() {
+        when(flightSearchCache.findById(ID_OUTBOUND_FLIGHT)).thenReturn(Optional.of(flight));
+        when(flight.getId()).thenReturn(ID_OUTBOUND_FLIGHT);
     }
 }

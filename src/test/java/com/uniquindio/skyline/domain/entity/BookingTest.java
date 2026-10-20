@@ -240,6 +240,47 @@ public class BookingTest {
         );
     }
 
+    @Test
+    void shouldThrowExceptionWhenAddingReturnFlightToNonPendingBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+        booking.cancelBooking();
+
+        // Act & Assert
+        DomainRuleException exception = assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", 300.0)
+        );
+        assertEquals("Only a pending booking can be modified", exception.getMessage());
+        assertTrue(booking.getIdReturnFlight().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightIsAlreadySelected() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+        booking.addReturnFlight("flight-return", 300.0);
+
+        // Act & Assert
+        DomainRuleException exception = assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("other-return", 400.0)
+        );
+        assertEquals("The booking already has a return flight", exception.getMessage());
+        assertEquals(Optional.of("flight-return"), booking.getIdReturnFlight());
+        assertEquals(1600.0, booking.getPrice(), 0.001);
+    }
+
 
     //Tests add passengers
 

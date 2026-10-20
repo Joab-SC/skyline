@@ -84,17 +84,48 @@ public class Booking {
     }
 
     public void addReturnFlight(String idReturnFlight, double price){
-        if (this.tripType == TripType.ONE_WAY){
-            throw new DomainRuleException("There's no return flight on one way trip");
-        }
-        if (idReturnFlight == null || idReturnFlight.isBlank()){
-            throw new DomainRuleException("id return flight cannot be null or empty");
-        }
-        if (price <= 0 ){
-            throw new DomainRuleException("Price cannot be zero or less");
-        }
+        validateReturnFlight(idReturnFlight, price);
         this.idReturnFlight=Optional.of(idReturnFlight);
         this.price = this.price + price * this.numPassengers;
+    }
+
+    // Public so callers can check the booking before changing other aggregates (e.g. reducing seats).
+    public void validateReturnFlight(String idReturnFlight, double price){
+        if (!isPending()){
+            throw new DomainRuleException("Only a pending booking can be modified");
+        }
+        if (!hasNoReturnFlight()){
+            throw new DomainRuleException("The booking already has a return flight");
+        }
+        if (!isRoundTrip()){
+            throw new DomainRuleException("There's no return flight on one way trip");
+        }
+        if (!isValidReturnFlightId(idReturnFlight)){
+            throw new DomainRuleException("id return flight cannot be null or empty");
+        }
+        if (!isValidReturnFlightPrice(price)){
+            throw new DomainRuleException("Price cannot be zero or less");
+        }
+    }
+
+    private boolean isPending(){
+        return this.bookingStatus == BookingStatus.PENDING;
+    }
+
+    private boolean hasNoReturnFlight(){
+        return this.idReturnFlight.isEmpty();
+    }
+
+    private boolean isRoundTrip(){
+        return this.tripType != TripType.ONE_WAY;
+    }
+
+    private boolean isValidReturnFlightId(String idReturnFlight){
+        return idReturnFlight != null && !idReturnFlight.isBlank();
+    }
+
+    private boolean isValidReturnFlightPrice(double price){
+        return price > 0;
     }
 
     private static void validateBookingData(
@@ -124,9 +155,6 @@ public class Booking {
         }
         if (bookingStatus != BookingStatus.PENDING){
             throw new DomainRuleException("Passengers can only be added to a pending booking");
-        }
-        if (LocalDateTime.now().isAfter(paymentDeadline)){
-            throw new DomainRuleException("The booking payment deadline has expired");
         }
         if (!passengerList.isEmpty()){
             throw new DomainRuleException("Passengers have already been added to this booking");
