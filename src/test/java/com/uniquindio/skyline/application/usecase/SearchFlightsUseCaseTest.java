@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.entity.Flight;
+import com.uniquindio.skyline.domain.repository.FlightSearchCache;
 import com.uniquindio.skyline.domain.service.FlightSearcher;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 
@@ -24,6 +25,9 @@ class SearchFlightsUseCaseTest {
 
     @Mock
     private FlightSearcher flightSearcher;
+
+    @Mock
+    private FlightSearchCache flightSearchCache;
 
 
     @InjectMocks
@@ -49,5 +53,20 @@ class SearchFlightsUseCaseTest {
             airportMock.verify(() -> Airport.getByAcronym("MDE"));
             verify(flightSearcher).searchFlights(origin, destination, DEPARTURE_DAY, 2);
         }
+    }
+
+    @Test
+    void shouldSaveFoundFlightsInSearchCache() {
+        // Arrange
+        Airport origin = Airport.EL_DORADO;
+        Airport destination = Airport.JOSE_MARIA_CORDOVA;
+        List<Flight> expectedFlights = List.of(mock(Flight.class), mock(Flight.class));
+        when(flightSearcher.searchFlights(origin, destination, DEPARTURE_DAY, 2)).thenReturn(expectedFlights);
+
+        // Act
+        useCase.execute("BOG", "MDE", DEPARTURE_DAY, 2);
+
+        // Assert
+        verify(flightSearchCache).saveAll(expectedFlights);
     }
 }
