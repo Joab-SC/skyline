@@ -30,5 +30,11 @@ public class Person{
         this.gender = gender;
     }
 
+    // Creates a person. Validations are pending (AddPassengersToBooking).
+    public static Person createPerson(String idDocument, DocumentType documentType, String firstName, String secondName,
+                                      String lastName1, String lastName2, LocalDate birthDate, Gender gender) {
+        return new Person(idDocument, documentType, firstName, Optional.ofNullable(secondName), lastName1,
+                Optional.ofNullable(lastName2), birthDate, gender);
+    }
 
 }
