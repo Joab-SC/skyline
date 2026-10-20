@@ -88,7 +88,7 @@ public class Booking {
     }
 
     public void addPassengers(List<PassengerData> passengerListParameter){
-        if (passengerListParameter == null || passengerListParameter.contains(null)){
+        if (passengerListParameter == null || passengerListParameter.stream().anyMatch(Objects::isNull)){
             throw new DomainRuleException("Passenger list cannot be null or contain null passengers");
         }
         if (bookingStatus != BookingStatus.PENDING){
