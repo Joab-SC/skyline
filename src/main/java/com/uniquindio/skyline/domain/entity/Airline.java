@@ -11,13 +11,16 @@ public class Airline {
     private String name;
     private List<String> aircraftsId;
     private List<String> legIds;
+    private final int maximumLuggageAmount;
 
 
-    private Airline(String id, String name) {
+    private Airline(String id, String name, int maximumLuggageAmount) {
         this.id = id;
         this.name = name;
+        this.maximumLuggageAmount = maximumLuggageAmount;
         this.aircraftsId = new ArrayList<>();
-        this.legIds = new ArrayList<>()   ;
+        this.legIds = new ArrayList<>();
+
     }
 
 
