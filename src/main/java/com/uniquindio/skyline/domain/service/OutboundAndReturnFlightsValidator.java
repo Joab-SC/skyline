@@ -5,7 +5,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 
 public class OutboundAndReturnFlightsValidator {
 
-    public void validateOutboundAirportEqualsReturnFlight(Flight outboundFlight, Flight returnFlight) {
+    public void validateOutboundAndReturnFlightCompatibility(Flight outboundFlight, Flight returnFlight) {
         if (!outboundFlight.getAirlineId().equals(returnFlight.getAirlineId())) {
             throw new DomainRuleException("Outbound and return flights must be from the same airline");
         }

@@ -67,7 +67,7 @@ class SelectReturnFlightUseCaseTest {
         assertEquals(1600.0, result.getPrice(), 0.001); // 500 x 2 + 300 x 2
 
         verify(outboundAndReturnFlightsValidator)
-                .validateOutboundAirportEqualsReturnFlight(outboundFlight, returnFlight);
+                .validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight);
         verify(seatsAvailableReducer).reduceAvailableSeats(returnFlight, 2);
         verify(flightRepository).save(returnFlight);
         verify(bookingRepository).save(booking);
@@ -159,7 +159,7 @@ class SelectReturnFlightUseCaseTest {
 
         doThrow(new DomainRuleException("Return flight must depart from the outbound destination airport"))
                 .when(outboundAndReturnFlightsValidator)
-                .validateOutboundAirportEqualsReturnFlight(outboundFlight, returnFlight);
+                .validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight);
 
         // Act & Assert
         assertThrows(
