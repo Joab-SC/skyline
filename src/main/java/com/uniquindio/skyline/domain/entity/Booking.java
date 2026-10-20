@@ -131,9 +131,6 @@ public class Booking {
         if (bookingStatus != BookingStatus.PENDING){
             throw new DomainRuleException("Passengers can only be added to a pending booking");
         }
-        if (LocalDateTime.now().isAfter(paymentDeadline)){
-            throw new DomainRuleException("The booking payment deadline has expired");
-        }
         if (!passengerList.isEmpty()){
             throw new DomainRuleException("Passengers have already been added to this booking");
         }
