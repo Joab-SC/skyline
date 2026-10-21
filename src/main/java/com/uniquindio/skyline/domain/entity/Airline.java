@@ -11,21 +11,36 @@ public class Airline {
     private String name;
     private List<String> aircraftsId;
     private List<String> legIds;
-    private final int maximumLuggageAmount;
+    private int maximumLuggageAmount;
+    private double seatPrice;
 
 
-    private Airline(String id, String name, int maximumLuggageAmount) {
+    private Airline(String id, String name, int maximumLuggageAmount, double seatPrice) {
         this.id = id;
         this.name = name;
         this.maximumLuggageAmount = maximumLuggageAmount;
+        this.seatPrice = seatPrice;
         this.aircraftsId = new ArrayList<>();
         this.legIds = new ArrayList<>();
 
     }
 
     // Creates an airline without aircrafts or legs.
-    public static Airline createAirline(String name, int maximumLuggageAmount) {
-        return new Airline(UUID.randomUUID().toString(), name, maximumLuggageAmount);
+    public static Airline createAirline(String name, int maximumLuggageAmount, double seatPrice) {
+        validateAirline(name, maximumLuggageAmount, seatPrice);
+        return new Airline(UUID.randomUUID().toString(), name, maximumLuggageAmount, seatPrice);
+    }
+
+    private static void validateAirline(String name, int maximumLuggageAmount, double seatPrice) {
+        if (name == null || name.isBlank()) {
+            throw new DomainRuleException("The airline name cannot be null or empty");
+        }
+        if (maximumLuggageAmount <= 0) {
+            throw new DomainRuleException("The maximum luggage amount must be greater than 0");
+        }
+        if (seatPrice < 0) {
+            throw new DomainRuleException("The seat price cannot be negative");
+        }
     }
 
 
@@ -34,7 +49,7 @@ public class Airline {
         if(this.legIds.contains(legId)){
             throw new DomainRuleException("Leg already exists in the airline");
         }
-        if(legId == null || legId.isEmpty()){
+        if(legId == null || legId.isBlank()){
             throw new DomainRuleException("Leg id cannot be empty in the airline");
         }
         this.legIds.add(legId);
@@ -44,7 +59,7 @@ public class Airline {
         if(this.aircraftsId.contains(aircraftId)){
             throw new DomainRuleException("Aircraft already exists in the airline");
         }
-        if(aircraftId == null || aircraftId.isEmpty()){
+        if(aircraftId == null || aircraftId.isBlank()){
             throw new DomainRuleException("Aircraft id cannot be empty in the airline");
         }
         this.aircraftsId.add(aircraftId);
