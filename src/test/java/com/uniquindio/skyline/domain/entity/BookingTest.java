@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -238,6 +239,47 @@ public class BookingTest {
                 DomainRuleException.class,
                 () -> booking.addReturnFlight("flight-return", -100.0)
         );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingReturnFlightToNonPendingBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+        booking.cancelBooking();
+
+        // Act & Assert
+        DomainRuleException exception = assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", 300.0)
+        );
+        assertEquals("Only a pending booking can be modified", exception.getMessage());
+        assertTrue(booking.getIdReturnFlight().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightIsAlreadySelected() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(
+                2,
+                500.0,
+                "flight-outbound",
+                TripType.ROUND_TRIP
+        );
+        booking.addReturnFlight("flight-return", 300.0);
+
+        // Act & Assert
+        DomainRuleException exception = assertThrows(
+                DomainRuleException.class,
+                () -> booking.addReturnFlight("other-return", 400.0)
+        );
+        assertEquals("The booking already has a return flight", exception.getMessage());
+        assertEquals(Optional.of("flight-return"), booking.getIdReturnFlight());
+        assertEquals(1600.0, booking.getPrice(), 0.001);
     }
 
 
@@ -466,7 +508,7 @@ public class BookingTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
         );
     }
@@ -503,7 +545,7 @@ public class BookingTest {
     void shouldGetPassengerByIdDocument() {
         Booking booking = createBookingWithPassenger("1001");
 
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
 
         assertEquals("1001", passenger.getPerson().getIdDocument());
     }
@@ -512,13 +554,13 @@ public class BookingTest {
     void shouldThrowExceptionWhenGettingPassengerNotInBooking() {
         Booking booking = createBookingWithPassenger("1001");
 
-        assertThrows(DomainRuleException.class, () -> booking.getPassenger("9999"));
+        assertTrue(booking.getPassenger("9999").isEmpty());
     }
 
     @Test
     void shouldNotThrowWhenPassengerIsInBooking() {
         Booking booking = createBookingWithPassenger("1001");
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
 
         assertDoesNotThrow(() -> booking.isPassengerInBooking(passenger));
     }
@@ -526,7 +568,7 @@ public class BookingTest {
     @Test
     void shouldThrowExceptionWhenPassengerBelongsToAnotherBooking() {
         Booking booking = createBookingWithPassenger("1001");
-        Passenger otherPassenger = createBookingWithPassenger("2002").getPassenger("2002");
+        Passenger otherPassenger = createBookingWithPassenger("2002").getPassenger("2002").orElseThrow();
 
         assertThrows(DomainRuleException.class, () -> booking.isPassengerInBooking(otherPassenger));
     }

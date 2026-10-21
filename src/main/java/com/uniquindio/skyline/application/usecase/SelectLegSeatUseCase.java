@@ -22,7 +22,7 @@ public class SelectLegSeatUseCase {
 
     public Leg execute(String idBooking, String idLegSeat, String  idPassenger, String idLeg){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
-        Passenger passenger = booking.getPassenger(idPassenger);
+        Passenger passenger = booking.getPassenger(idPassenger).orElseThrow();
         Leg leg = legRepository.findById(idLeg).orElseThrow();
         seatAssigner.assignSeat(booking,idLegSeat, passenger,leg);
         legRepository.save(leg);

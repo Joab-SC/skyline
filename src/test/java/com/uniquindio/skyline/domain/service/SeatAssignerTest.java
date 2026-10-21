@@ -37,7 +37,7 @@ class SeatAssignerTest {
         Leg leg = createLeg(airline.getId(), Airport.EL_EDEN, Airport.EL_DORADO);
         Flight flight = createFlight(flightRepository, leg);
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = leg.getSeats().get(0);
 
         SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);
@@ -63,7 +63,7 @@ class SeatAssignerTest {
         Flight returnFlight = createFlight(flightRepository, returnLeg);
         Booking booking = createBooking(outboundFlight.getId(), TripType.ROUND_TRIP);
         booking.addReturnFlight(returnFlight.getId(), 300.0);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = returnLeg.getSeats().get(0);
 
         SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);
@@ -85,7 +85,7 @@ class SeatAssignerTest {
         Leg leg = createLeg(airline.getId(), Airport.EL_EDEN, Airport.EL_DORADO);
         Flight flight = createFlight(flightRepository, leg);
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat oldSeat = leg.getSeats().get(0);
         LegSeat newSeat = leg.getSeats().get(1);
 
@@ -111,7 +111,7 @@ class SeatAssignerTest {
         Leg otherLeg = createLeg(airline.getId(), Airport.EL_DORADO, Airport.EL_EDEN);
         Flight flight = createFlight(flightRepository, bookingLeg);
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = otherLeg.getSeats().get(0);
 
         SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);
@@ -134,7 +134,7 @@ class SeatAssignerTest {
         Leg leg = createLeg(airline.getId(), Airport.EL_EDEN, Airport.EL_DORADO);
         Flight flight = createFlight(flightRepository, leg);
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = leg.getSeats().get(0);
         seat.assignPassengerToLegSeat("2002");
 
@@ -158,7 +158,7 @@ class SeatAssignerTest {
         Leg leg = createLeg(airline.getId(), Airport.EL_EDEN, Airport.EL_DORADO);
         Flight flight = createFlight(flightRepository, leg);
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = leg.getSeats().get(0);
         booking.cancelBooking();
 
@@ -184,7 +184,7 @@ class SeatAssignerTest {
         Booking otherBooking = Booking.createPendingBooking(1, 500.0, flight.getId(), TripType.ONE_WAY);
         otherBooking.addPassengers(List.of(new PassengerData("2002", DocumentType.CITIZENSHIP_ID, "Juan", null,
                 "Perez", null, LocalDate.of(1995, 3, 2), Gender.MALE)));
-        Passenger otherPassenger = otherBooking.getPassenger("2002");
+        Passenger otherPassenger = otherBooking.getPassenger("2002").orElseThrow();
         LegSeat seat = leg.getSeats().get(0);
 
         SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);

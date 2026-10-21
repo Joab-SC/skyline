@@ -1,18 +1,11 @@
 
 package com.uniquindio.skyline.domain.service;
 
-import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.repository.BookingRepository;
-import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.City;
 import com.uniquindio.skyline.domain.valueObject.Seat;
-import com.uniquindio.skyline.domain.valueObject.TripType;
-import com.uniquindio.skyline.infrastructure.persistence.BookingRepositoryInMemory;
-import com.uniquindio.skyline.infrastructure.persistence.FlightRepositoryInMemory;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -22,208 +15,76 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OutboundAndReturnFlightsValidatorTest {
 
+    private static final String AIRLINE_ID = "airline-1";
+    private static final LocalDateTime OUTBOUND_DEPARTURE = LocalDateTime.of(2026, 11, 5, 10, 0);
+    private static final LocalDateTime RETURN_DEPARTURE = LocalDateTime.of(2026, 11, 10, 10, 0);
+
+    private final OutboundAndReturnFlightsValidator validator = new OutboundAndReturnFlightsValidator();
+
     @Test
-    void shouldValidateWhenOutboundDestinationEqualsReturnOrigin() {
+    void shouldValidateWhenFlightsAreCompatible() {
         // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        Airport armenia = Airport.EL_EDEN;
-        Airport bogota = Airport.EL_DORADO;
-
-        Flight outboundFlight = createFlight(
-                "outbound-1", armenia, bogota
-        );
-
-        Flight returnFlight = createFlight(
-                "return-1", bogota, armenia
-        );
-
-        Booking booking = Booking.createPendingBooking(
-                2, 500.0, outboundFlight.getId(), TripType.ROUND_TRIP
-        );
-        booking.addReturnFlight(returnFlight.getId(), 300.0);
-
-        flightRepository.save(outboundFlight);
-        flightRepository.save(returnFlight);
-        bookingRepository.save(booking);
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
+        Flight outboundFlight = createFlight(Airport.EL_EDEN, Airport.EL_DORADO, AIRLINE_ID, OUTBOUND_DEPARTURE);
+        Flight returnFlight = createFlight(Airport.EL_DORADO, Airport.EL_EDEN, AIRLINE_ID, RETURN_DEPARTURE);
 
         // Act & Assert
         assertDoesNotThrow(
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        booking.getId()
-                )
+                () -> validator.validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight)
         );
     }
 
     @Test
-    void shouldThrowExceptionWhenBookingDoesNotExist() {
+    void shouldThrowExceptionWhenFlightsAreFromDifferentAirlines() {
         // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
+        Flight outboundFlight = createFlight(Airport.EL_EDEN, Airport.EL_DORADO, AIRLINE_ID, OUTBOUND_DEPARTURE);
+        Flight returnFlight = createFlight(Airport.EL_DORADO, Airport.EL_EDEN, "airline-2", RETURN_DEPARTURE);
 
         // Act & Assert
-        assertThrows(
-                DomainRuleException.class,
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        "non-existent-booking"
-                )
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenOutboundFlightDoesNotExist() {
-        // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        Booking booking = Booking.createPendingBooking(
-                2, 500.0, "non-existent-flight", TripType.ROUND_TRIP
-        );
-        booking.addReturnFlight("return-1", 300.0);
-        bookingRepository.save(booking);
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
-
-        // Act & Assert
-        assertThrows(
-                DomainRuleException.class,
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        booking.getId()
-                )
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenBookingHasNoReturnFlight() {
-        // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        Airport armenia = Airport.EL_EDEN;
-        Airport bogota = Airport.EL_DORADO;
-
-        Flight outboundFlight = createFlight(
-                "outbound-1", armenia, bogota
-        );
-
-        Booking booking = Booking.createPendingBooking(
-                2, 500.0, "outbound-1", TripType.ROUND_TRIP
-        );
-
-        flightRepository.save(outboundFlight);
-        bookingRepository.save(booking);
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
-
-        // Act & Assert
-        assertThrows(
-                DomainRuleException.class,
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        booking.getId()
-                )
-        );
-    }
-
-    @Test
-    void shouldThrowExceptionWhenReturnFlightDoesNotExist() {
-        // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        Airport armenia = Airport.EL_EDEN;
-        Airport bogota = Airport.EL_DORADO;
-
-        Flight outboundFlight = createFlight(
-                "outbound-1", armenia, bogota
-        );
-
-        Booking booking = Booking.createPendingBooking(
-                2, 500.0, "outbound-1", TripType.ROUND_TRIP
-        );
-        booking.addReturnFlight("non-existent-return", 300.0);
-
-        flightRepository.save(outboundFlight);
-        bookingRepository.save(booking);
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
-
-        // Act & Assert
-        assertThrows(
-                DomainRuleException.class,
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        booking.getId()
-                )
+        assertThrows(DomainRuleException.class,
+                () -> validator.validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight)
         );
     }
 
     @Test
     void shouldThrowExceptionWhenReturnFlightDepartsFromDifferentAirport() {
         // Arrange
-        BookingRepository bookingRepository = new BookingRepositoryInMemory();
-        FlightRepository flightRepository = new FlightRepositoryInMemory();
-
-        Airport armenia = Airport.EL_EDEN;
-        Airport bogota = Airport.EL_DORADO;
-        Airport medellin = Airport.JOSE_MARIA_CORDOVA;
-
-        Flight outboundFlight = createFlight(
-                "outbound-1", armenia, bogota
-        );
-
-        Flight returnFlight = createFlight(
-                "return-1", medellin, armenia
-        );
-
-        Booking booking = Booking.createPendingBooking(
-                2, 500.0, "outbound-1", TripType.ROUND_TRIP
-        );
-        booking.addReturnFlight("return-1", 300.0);
-
-        flightRepository.save(outboundFlight);
-        flightRepository.save(returnFlight);
-        bookingRepository.save(booking);
-
-        OutboundAndReturnFlightsValidator validator =
-                new OutboundAndReturnFlightsValidator(
-                        bookingRepository, flightRepository
-                );
+        Flight outboundFlight = createFlight(Airport.EL_EDEN, Airport.EL_DORADO, AIRLINE_ID, OUTBOUND_DEPARTURE);
+        Flight returnFlight = createFlight(Airport.JOSE_MARIA_CORDOVA, Airport.EL_EDEN, AIRLINE_ID, RETURN_DEPARTURE);
 
         // Act & Assert
-        assertThrows(
-                DomainRuleException.class,
-                () -> validator.validateOutboundAirportEqualsReturnFlight(
-                        booking.getId()
-                )
+        assertThrows(DomainRuleException.class,
+                () -> validator.validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight)
         );
     }
 
-    private Flight createFlight(
-            String id,
-            Airport origin,
-            Airport destination
-    ) {
-        Leg leg = Leg.createLeg(origin, destination, LocalDateTime.of(2026, 11, 5, 10, 0),
-                LocalDateTime.of(2026, 11, 5, 12, 0), "AIR-001", "airline-1",
+    @Test
+    void shouldThrowExceptionWhenReturnFlightArrivesAtDifferentAirport() {
+        // Arrange
+        Flight outboundFlight = createFlight(Airport.EL_EDEN, Airport.EL_DORADO, AIRLINE_ID, OUTBOUND_DEPARTURE);
+        Flight returnFlight = createFlight(Airport.EL_DORADO, Airport.JOSE_MARIA_CORDOVA, AIRLINE_ID, RETURN_DEPARTURE);
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> validator.validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight)
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionWhenReturnFlightDepartsBeforeOutboundArrives() {
+        // Arrange: outbound arrives at 12:00, return departs at 11:00 the same day
+        Flight outboundFlight = createFlight(Airport.EL_EDEN, Airport.EL_DORADO, AIRLINE_ID, OUTBOUND_DEPARTURE);
+        Flight returnFlight = createFlight(Airport.EL_DORADO, Airport.EL_EDEN, AIRLINE_ID, OUTBOUND_DEPARTURE.plusHours(1));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> validator.validateOutboundAndReturnFlightCompatibility(outboundFlight, returnFlight)
+        );
+    }
+
+
+    // Each flight has a single 2-hour leg.
+    private Flight createFlight(Airport origin, Airport destination, String airlineId, LocalDateTime departure) {
+        Leg leg = Leg.createLeg(origin, destination, departure, departure.plusHours(2), "AIR-001", airlineId,
                 List.of(new Seat("001")), 100, 1000);
         return Flight.createFlight(leg.getId(), leg.toSummary());
     }

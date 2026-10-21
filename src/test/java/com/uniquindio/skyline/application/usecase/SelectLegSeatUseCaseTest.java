@@ -48,7 +48,7 @@ class SelectLegSeatUseCaseTest {
         // Arrange
         Booking booking = createBooking();
         Leg leg = createLeg();
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
 
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
@@ -92,7 +92,7 @@ class SelectLegSeatUseCaseTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> useCase.execute(booking.getId(), "seat-1", "9999", "leg-1")
         );
 
@@ -127,7 +127,7 @@ class SelectLegSeatUseCaseTest {
         // Arrange
         Booking booking = createBooking();
         Leg leg = createLeg();
-        Passenger passenger = booking.getPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
 
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));

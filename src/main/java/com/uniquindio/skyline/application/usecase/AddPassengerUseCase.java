@@ -19,7 +19,7 @@ public class AddPassengerUseCase {
 
     public void execute(String idBooking, List<PassengerData> passengers,String idHolder, String email,
                         String phoneNumber, PhonePrefix phonePrefix ){
-        Booking booking = bookingRepository.findById(idBooking).orElseThrow(()-> new DomainRuleException("Booking not found"));
+        Booking booking = bookingRepository.findById(idBooking).orElseThrow();
         booking.addPassengers(passengers);
         booking.choseHolder(idHolder, email, phoneNumber,phonePrefix);
         bookingRepository.save(booking);
