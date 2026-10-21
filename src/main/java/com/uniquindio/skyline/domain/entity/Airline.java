@@ -11,21 +11,23 @@ public class Airline {
     private String name;
     private List<String> aircraftsId;
     private List<String> legIds;
-    private final int maximumLuggageAmount;
+    private int maximumLuggageAmount;
+    private double priceSeats;
 
 
-    private Airline(String id, String name, int maximumLuggageAmount) {
+    private Airline(String id, String name, int maximumLuggageAmount, double priceSeats) {
         this.id = id;
         this.name = name;
         this.maximumLuggageAmount = maximumLuggageAmount;
+        this.priceSeats = priceSeats;
         this.aircraftsId = new ArrayList<>();
         this.legIds = new ArrayList<>();
 
     }
 
     // Creates an airline without aircrafts or legs.
-    public static Airline createAirline(String name, int maximumLuggageAmount) {
-        return new Airline(UUID.randomUUID().toString(), name, maximumLuggageAmount);
+    public static Airline createAirline(String name, int maximumLuggageAmount, double priceSeats) {
+        return new Airline(UUID.randomUUID().toString(), name, maximumLuggageAmount, priceSeats);
     }
 
 
