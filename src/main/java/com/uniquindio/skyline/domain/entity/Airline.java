@@ -49,7 +49,7 @@ public class Airline {
         if(this.legIds.contains(legId)){
             throw new DomainRuleException("Leg already exists in the airline");
         }
-        if(legId == null || legId.isEmpty()){
+        if(legId == null || legId.isBlank()){
             throw new DomainRuleException("Leg id cannot be empty in the airline");
         }
         this.legIds.add(legId);
@@ -59,7 +59,7 @@ public class Airline {
         if(this.aircraftsId.contains(aircraftId)){
             throw new DomainRuleException("Aircraft already exists in the airline");
         }
-        if(aircraftId == null || aircraftId.isEmpty()){
+        if(aircraftId == null || aircraftId.isBlank()){
             throw new DomainRuleException("Aircraft id cannot be empty in the airline");
         }
         this.aircraftsId.add(aircraftId);
