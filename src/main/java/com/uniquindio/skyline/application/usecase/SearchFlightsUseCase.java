@@ -19,8 +19,8 @@ public class SearchFlightsUseCase {
     }
 
     public List<Flight> execute(String originCode, String destinationCode, LocalDate departureDay, int numberOfPassengers){
-        Airport origin = Airport.getByAcronym(originCode);
-        Airport destination = Airport.getByAcronym(destinationCode);
+        Airport origin = Airport.getByAcronym(originCode).orElseThrow();
+        Airport destination = Airport.getByAcronym(destinationCode).orElseThrow();
         List<Flight> flights = flightSearcher.searchFlights(origin, destination, departureDay, numberOfPassengers);
         flightSearchCache.saveAll(flights);
         return flights;

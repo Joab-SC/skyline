@@ -17,7 +17,7 @@ public class AddLuggageUseCase {
 
     // Registers the luggage of a passenger for every leg of the booking.
     public Booking execute(String passengerId, String bookingId, int amount){
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new DomainRuleException("Booking not found"));
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         LuggageDetail luggageDetail = luggageDetailCreator.createDetail(booking, amount);
         booking.registerPassengerLuggage(passengerId, luggageDetail);
         bookingRepository.save(booking);

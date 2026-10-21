@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -507,7 +508,7 @@ public class BookingTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> booking.registerPassengerLuggage("999", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3))
         );
     }

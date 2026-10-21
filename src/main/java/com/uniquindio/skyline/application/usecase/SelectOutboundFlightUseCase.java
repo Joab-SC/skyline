@@ -25,7 +25,7 @@ public class SelectOutboundFlightUseCase {
 
     public Booking execute(int numPassengers, String idOutboundFlight,
                            TripType tripType){
-        Flight flight = flightSearchCache.findById(idOutboundFlight).orElseThrow(()-> new DomainRuleException("OutboundFlight cannot be found"));
+        Flight flight = flightSearchCache.findById(idOutboundFlight).orElseThrow();
         Booking booking = Booking.createPendingBooking(numPassengers, flight.getPrice(), flight.getId(), tripType);
         seatsAvailableReducer.reduceAvailableSeats(flight,numPassengers);
         flightRepository.save(flight);

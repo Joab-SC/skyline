@@ -32,8 +32,8 @@ public class CreateLegUseCase {
     public Leg execute(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                        LocalDateTime arrivalTime, String airlineId, String aircraftId, double luggagePrice, double price) {
 
-        Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the leg"));
-        Aircraft aircraft = aircraftRepository.findById(aircraftId).orElseThrow(() -> new DomainRuleException("Aircraft not found to create the leg"));
+        Airline airline = airlineRepository.findById(airlineId).orElseThrow();
+        Aircraft aircraft = aircraftRepository.findById(aircraftId).orElseThrow();
 
         // Checks that the aircraft has no overlapping legs.
         legOverlapValidator.validateNoOverlap(aircraftId, departureTime, arrivalTime);

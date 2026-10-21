@@ -55,12 +55,10 @@ public class Booking {
 
 
 
-    private Passenger getPassenger(String id){
+    private Optional<Passenger> getPassenger(String id){
         return passengerList.stream()
                 .filter(passenger -> passenger.getPerson().getIdDocument().equals(id))
-                .findFirst()
-                .orElseThrow(() ->
-                        new DomainRuleException("Passenger not found"));
+                .findFirst();
     }
 
     // Creates a luggage detail for a passenger of this booking.
@@ -75,7 +73,7 @@ public class Booking {
         if (luggageDetail == null){
             throw new DomainRuleException("The luggage detail cannot be null");
         }
-        Passenger passenger = getPassenger(idDocument);
+        Passenger passenger = getPassenger(idDocument).orElseThrow();
         if (passenger.getLuggageDetail().isPresent()){
             this.price = this.price - passenger.getLuggageDetail().get().subTotal();
         }

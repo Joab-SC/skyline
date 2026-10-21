@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -42,8 +43,8 @@ class SearchFlightsUseCaseTest {
         List<Flight> expectedFlights = List.of(mock(Flight.class), mock(Flight.class));
 
         try (MockedStatic<Airport> airportMock = mockStatic(Airport.class)) {
-            airportMock.when(() -> Airport.getByAcronym("BOG")).thenReturn(origin);
-            airportMock.when(() -> Airport.getByAcronym("MDE")).thenReturn(destination);
+            airportMock.when(() -> Airport.getByAcronym("BOG")).thenReturn(Optional.of(origin));
+            airportMock.when(() -> Airport.getByAcronym("MDE")).thenReturn(Optional.of(destination));
             when(flightSearcher.searchFlights(origin, destination, DEPARTURE_DAY, 2)).thenReturn(expectedFlights);
 
             List<Flight> flights = useCase.execute("BOG", "MDE", DEPARTURE_DAY, 2);
