@@ -30,10 +30,10 @@ public class SelectReturnFlightUseCase {
     }
 
     public Booking execute(String idBooking, String idReturnFlight){
-        Booking booking = bookingRepository.findById(idBooking).orElseThrow(()-> new DomainRuleException(""));
+        Booking booking = bookingRepository.findById(idBooking).orElseThrow();
 
-        Flight returnFlight = flightSearchCache.findById(idReturnFlight).orElseThrow(()-> new DomainRuleException(""));
-        Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow(()-> new DomainRuleException(""));
+        Flight returnFlight = flightSearchCache.findById(idReturnFlight).orElseThrow();
+        Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow();
         outboundAndReturnFlightsValidator.validateOutboundAndReturnFlightCompatibility(outboundFlight,  returnFlight);
 
         booking.validateReturnFlight(returnFlight.getId(), returnFlight.getPrice());

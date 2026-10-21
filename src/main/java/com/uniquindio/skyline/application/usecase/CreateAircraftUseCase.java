@@ -19,7 +19,7 @@ public class CreateAircraftUseCase {
 
     public Aircraft execute(AircraftModel aircraftModel, String airlineId){
         Aircraft aircraft = Aircraft.createAircraft(aircraftModel);
-        Airline airline = airlineRepository.findById(airlineId).orElseThrow(() -> new DomainRuleException("Airline not found to create the aircraft"));
+        Airline airline = airlineRepository.findById(airlineId).orElseThrow();
         airline.addAircraft(aircraft.getId());
         aircraftRepository.save(aircraft);
         return aircraft;
