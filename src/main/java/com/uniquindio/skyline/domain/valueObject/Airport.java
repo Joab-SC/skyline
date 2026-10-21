@@ -1,9 +1,9 @@
 
 package com.uniquindio.skyline.domain.valueObject;
 
-import com.uniquindio.skyline.domain.exception.DomainRuleException;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum Airport {
 
@@ -141,11 +141,9 @@ public enum Airport {
         return city;
     }
 
-    public static Airport getByAcronym(String acronym) {
+    public static Optional<Airport> getByAcronym(String acronym) {
         return Arrays.stream(values())
                 .filter(airport -> airport.getCode().equalsIgnoreCase(acronym))
-                .findFirst()
-                .orElseThrow(() -> new DomainRuleException(
-                        "There is no airport with the code: " + acronym));
+                .findFirst();
     }
 }
