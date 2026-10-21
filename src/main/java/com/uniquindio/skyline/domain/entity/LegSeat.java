@@ -16,7 +16,7 @@ public class LegSeat {
     private LegSeat(String id, String seatCode) {
         this.id = id;
         this.seatCode = seatCode;
-        this.seatStatus = SeatStatus.AVALIABLE;
+        this.seatStatus = SeatStatus.AVAILABLE;
         this.passengerId = Optional.empty();
     }
 
@@ -29,9 +29,24 @@ public class LegSeat {
         if(id == null || id.isEmpty()){
             throw new DomainRuleException("The legSeat requires an id");
         }
-        return new  LegSeat(id, seatCode);
+        return new LegSeat(id, seatCode);
     }
 
+    public void assignPassengerToLegSeat(String idPassenger){
+         if (idPassenger == null || idPassenger.isBlank()){
+             throw new DomainRuleException("id passenger cannot be null");
+         }
+         if (this.seatStatus == SeatStatus.OCCUPIED){
+             throw new DomainRuleException("The seat is alredy occupied");
+         }
+         this.passengerId = Optional.of(idPassenger);
+         this.seatStatus = SeatStatus.OCCUPIED;
+    }
+
+    public void releaseSeat(){
+        this.passengerId = Optional.empty();
+        this.seatStatus = SeatStatus.AVAILABLE;
+    }
 
     @Override
     public boolean equals(Object o) {
