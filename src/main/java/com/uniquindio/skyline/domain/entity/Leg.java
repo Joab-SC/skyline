@@ -7,10 +7,7 @@ import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class Leg {
@@ -70,6 +67,34 @@ public class Leg {
             throw new DomainRuleException("There's not enough available seats for the num of passengers");
         }
         this.availableSeats = availableSeats - numPassengers;
+    }
+
+    public Optional<LegSeat> getLegSeatById(String idLegSeat){
+        return seats.stream()
+                .filter(found -> found.getId().equals(idLegSeat))
+                .findFirst();
+    }
+
+    // Assigns the seat to the passenger. If the passenger already had a seat on this leg,
+    // the old one is released after the new one is taken.
+    public void assignSeat(String idLegSeat, String idPassenger){
+        LegSeat newLegSeat = getLegSeatById(idLegSeat).orElseThrow();
+        Optional<LegSeat> currentLegSeat = getLegSeatByPassenger(idPassenger);
+        if (currentLegSeat.isPresent() && currentLegSeat.get().equals(newLegSeat)){
+            return;
+        }
+        newLegSeat.assignPassengerToLegSeat(idPassenger);
+        currentLegSeat.ifPresent(LegSeat::releaseSeat);
+    }
+
+    private Optional<LegSeat> getLegSeatByPassenger(String idPassenger){
+        return seats.stream()
+                .filter(legSeat -> legSeat.getPassengerId().map(id -> id.equals(idPassenger)).orElse(false))
+                .findFirst();
+    }
+
+    public boolean hasSeatAssigned(String idPassenger){
+        return getLegSeatByPassenger(idPassenger).isPresent();
     }
 
     private static void validateOriginAirport(Airport originAirport) {
