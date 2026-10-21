@@ -539,6 +539,75 @@ public class BookingTest {
 
     }
 
+    //Tests select leg seat
+
+    @Test
+    void shouldGetPassengerByIdDocument() {
+        Booking booking = createBookingWithPassenger("1001");
+
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
+
+        assertEquals("1001", passenger.getPerson().getIdDocument());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGettingPassengerNotInBooking() {
+        Booking booking = createBookingWithPassenger("1001");
+
+        assertTrue(booking.getPassenger("9999").isEmpty());
+    }
+
+    @Test
+    void shouldNotThrowWhenPassengerIsInBooking() {
+        Booking booking = createBookingWithPassenger("1001");
+        Passenger passenger = booking.getPassenger("1001").orElseThrow();
+
+        assertDoesNotThrow(() -> booking.isPassengerInBooking(passenger));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenPassengerBelongsToAnotherBooking() {
+        Booking booking = createBookingWithPassenger("1001");
+        Passenger otherPassenger = createBookingWithPassenger("2002").getPassenger("2002").orElseThrow();
+
+        assertThrows(DomainRuleException.class, () -> booking.isPassengerInBooking(otherPassenger));
+    }
+
+    @Test
+    void shouldNotThrowWhenBookingIsPending() {
+        Booking booking = createBookingWithPassenger("1001");
+
+        assertDoesNotThrow(booking::validateIsModifiable);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBookingIsCancelled() {
+        Booking booking = createBookingWithPassenger("1001");
+        booking.cancelBooking();
+
+        assertThrows(DomainRuleException.class, booking::validateIsModifiable);
+    }
+
+    @Test
+    void shouldAddSeatsPriceToBooking() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("1001");
+
+        // Act
+        booking.addPriceSeats(40.0);
+
+        // Assert
+        assertEquals(540.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSeatsPriceIsNegative() {
+        Booking booking = createBookingWithPassenger("1001");
+
+        assertThrows(DomainRuleException.class, () -> booking.addPriceSeats(-1.0));
+        assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
     private PassengerData passengerData(String idDocument) {
         return new PassengerData(idDocument, DocumentType.CITIZENSHIP_ID, "Laura", null,
                 "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);

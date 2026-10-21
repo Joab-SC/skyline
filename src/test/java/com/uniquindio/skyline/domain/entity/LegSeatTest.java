@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,7 @@ public class LegSeatTest {
     public void LegSeatIsCreatedAvailable() {
         // Checks the initial seat status.
         LegSeat legSeat = LegSeat.createLegSeat(UUID.randomUUID().toString(), "A32");
-        assertEquals(SeatStatus.AVALIABLE, legSeat.getSeatStatus());
+        assertEquals(SeatStatus.AVAILABLE, legSeat.getSeatStatus());
     }
 
     @Test
@@ -32,5 +33,59 @@ public class LegSeatTest {
         LegSeat legSeatDuplicated = LegSeat.createLegSeat("001", "B2");
 
         assertEquals(legSeatOriginal, legSeatDuplicated);
+    }
+
+    //Tests assign and release leg seat
+
+    @Test
+    public void shouldAssignPassengerAndMarkSeatAsOccupied() {
+        // Arrange
+        LegSeat legSeat = LegSeat.createLegSeat("001", "A1");
+
+        // Act
+        legSeat.assignPassengerToLegSeat("1001");
+
+        // Assert
+        assertEquals(Optional.of("1001"), legSeat.getPassengerId());
+        assertEquals(SeatStatus.OCCUPIED, legSeat.getSeatStatus());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPassengerIdIsNull() {
+        LegSeat legSeat = LegSeat.createLegSeat("001", "A1");
+
+        assertThrows(DomainRuleException.class, () -> legSeat.assignPassengerToLegSeat(null));
+        assertEquals(SeatStatus.AVAILABLE, legSeat.getSeatStatus());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenPassengerIdIsBlank() {
+        LegSeat legSeat = LegSeat.createLegSeat("001", "A1");
+
+        assertThrows(DomainRuleException.class, () -> legSeat.assignPassengerToLegSeat("  "));
+        assertEquals(SeatStatus.AVAILABLE, legSeat.getSeatStatus());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenSeatIsAlreadyOccupied() {
+        LegSeat legSeat = LegSeat.createLegSeat("001", "A1");
+        legSeat.assignPassengerToLegSeat("1001");
+
+        assertThrows(DomainRuleException.class, () -> legSeat.assignPassengerToLegSeat("2002"));
+        assertEquals(Optional.of("1001"), legSeat.getPassengerId());
+    }
+
+    @Test
+    public void shouldReleaseSeat() {
+        // Arrange
+        LegSeat legSeat = LegSeat.createLegSeat("001", "A1");
+        legSeat.assignPassengerToLegSeat("1001");
+
+        // Act
+        legSeat.releaseSeat();
+
+        // Assert
+        assertEquals(Optional.empty(), legSeat.getPassengerId());
+        assertEquals(SeatStatus.AVAILABLE, legSeat.getSeatStatus());
     }
 }

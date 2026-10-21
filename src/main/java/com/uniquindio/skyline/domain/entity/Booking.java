@@ -55,10 +55,27 @@ public class Booking {
 
 
 
-    private Optional<Passenger> getPassenger(String id){
+
+    public Optional<Passenger> getPassenger(String id){
         return passengerList.stream()
                 .filter(passenger -> passenger.getPerson().getIdDocument().equals(id))
                 .findFirst();
+    }
+
+    public void validateIsModifiable(){
+        if (bookingStatus != BookingStatus.PENDING){
+            throw new DomainRuleException("Only pending bookings can be modified");
+        }
+        if (LocalDateTime.now().isAfter(paymentDeadline)){
+            throw new DomainRuleException("The booking payment deadline has expired");
+        }
+    }
+
+    public void addPriceSeats(double priceSeats){
+        if (priceSeats <0){
+            throw new DomainRuleException("Pice cannot be negative");
+        }
+        this.price += priceSeats;
     }
 
     // Creates a luggage detail for a passenger of this booking.
@@ -206,6 +223,14 @@ public class Booking {
 
 
     }
+
+    public void isPassengerInBooking(Passenger passenger){
+        if (!passengerList.stream().anyMatch(found -> found.equals(passenger))){
+            throw new DomainRuleException("Passenger not found");
+        }
+    }
+
+
 
     public void cancelBooking(){
         this.bookingStatus = BookingStatus.CANCELLED;
