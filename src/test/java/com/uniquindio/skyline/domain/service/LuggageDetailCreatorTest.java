@@ -39,7 +39,7 @@ class LuggageDetailCreatorTest {
         airlineRepository = new AirlineRepositoryInMemory();
         luggageDetailCreator = new LuggageDetailCreator(flightRepository, legRepository, airlineRepository);
 
-        airline = Airline.createAirline("Skyline Air", 3);
+        airline = Airline.createAirline("Skyline Air", 3, 0);
         airlineRepository.save(airline);
     }
 

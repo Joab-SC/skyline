@@ -1,0 +1,135 @@
+package com.uniquindio.skyline.domain.entity;
+
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AirlineTest {
+
+    @Test
+    void shouldThrowExceptionWhenNameIsNull() {
+        assertThrows(DomainRuleException.class,
+                () -> Airline.createAirline(null, 3, 100.0));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNameIsBlank() {
+        assertThrows(DomainRuleException.class,
+                () -> Airline.createAirline("   ", 3, 100.0));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenMaximumLuggageAmountIsZero() {
+        assertThrows(DomainRuleException.class,
+                () -> Airline.createAirline("Skyline Air", 0, 100.0));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenMaximumLuggageAmountIsNegative() {
+        assertThrows(DomainRuleException.class,
+                () -> Airline.createAirline("Skyline Air", -1, 100.0));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenSeatPriceIsNegative() {
+        assertThrows(DomainRuleException.class,
+                () -> Airline.createAirline("Skyline Air", 3, -1.0));
+    }
+
+    // addLeg
+
+    @Test
+    void shouldAddLeg() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act
+        airline.addLeg("leg-1");
+
+        // Assert
+        assertEquals(List.of("leg-1"), airline.getLegIds());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLegAlreadyExists() {
+        // Arrange
+        Airline airline = createValidAirline();
+        airline.addLeg("leg-1");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addLeg("leg-1"));
+        assertEquals(1, airline.getLegIds().size());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLegIdIsNull() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addLeg(null));
+        assertTrue(airline.getLegIds().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLegIdIsEmpty() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addLeg(""));
+        assertTrue(airline.getLegIds().isEmpty());
+    }
+
+    // addAircraft
+
+    @Test
+    void shouldAddAircraft() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act
+        airline.addAircraft("aircraft-1");
+
+        // Assert
+        assertEquals(List.of("aircraft-1"), airline.getAircraftsId());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAircraftAlreadyExists() {
+        // Arrange
+        Airline airline = createValidAirline();
+        airline.addAircraft("aircraft-1");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addAircraft("aircraft-1"));
+        assertEquals(1, airline.getAircraftsId().size());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAircraftIdIsNull() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addAircraft(null));
+        assertTrue(airline.getAircraftsId().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAircraftIdIsEmpty() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.addAircraft(""));
+        assertTrue(airline.getAircraftsId().isEmpty());
+    }
+
+    private Airline createValidAirline() {
+        return Airline.createAirline("Skyline Air", 3, 100.0);
+    }
+}
