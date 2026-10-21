@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,7 +61,7 @@ class AddLuggageUseCaseTest {
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(DomainRuleException.class, () -> addLuggageUseCase.execute("123", "missing", 1));
+        assertThrows(NoSuchElementException.class, () -> addLuggageUseCase.execute("123", "missing", 1));
         verify(luggageDetailCreator, never()).createDetail(any(), anyInt());
         verify(bookingRepository, never()).save(any());
     }

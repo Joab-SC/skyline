@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,7 +81,7 @@ class SelectReturnFlightUseCaseTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> useCase.execute("booking-1", ID_RETURN_FLIGHT)
         );
 
@@ -98,7 +99,7 @@ class SelectReturnFlightUseCaseTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> useCase.execute(booking.getId(), ID_RETURN_FLIGHT)
         );
 
@@ -119,7 +120,7 @@ class SelectReturnFlightUseCaseTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> useCase.execute(booking.getId(), ID_RETURN_FLIGHT)
         );
 

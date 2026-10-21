@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,7 +60,7 @@ class AddPassengerUseCaseTest {
 
         // Act & Assert
         assertThrows(
-                DomainRuleException.class,
+                NoSuchElementException.class,
                 () -> useCase.execute("booking-1", List.of(passengerData("1001")),
                         "1001", "laura@mail.com", "3001234567", PhonePrefix.COLOMBIA)
         );
