@@ -15,7 +15,7 @@ public class LegSeatTest {
     public void LegSeatIsCreatedAvailable() {
         // Checks the initial seat status.
         LegSeat legSeat = LegSeat.createLegSeat(UUID.randomUUID().toString(), "A32");
-        assertEquals(SeatStatus.AVALIABLE, legSeat.getSeatStatus());
+        assertEquals(SeatStatus.AVAILABLE, legSeat.getSeatStatus());
     }
 
     @Test
