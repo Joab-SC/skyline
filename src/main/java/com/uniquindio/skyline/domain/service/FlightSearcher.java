@@ -5,7 +5,7 @@ import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.entity.Flight;
-import com.uniquindio.skyline.domain.valueObject.LegSummary;
+import com.uniquindio.skyline.domain.entity.Leg.LegSummary;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -61,18 +61,12 @@ public class FlightSearcher {
 
     private boolean canExtendPath(List<Leg> path, LegSummary previousSummary, LegSummary nextSummary){
         return Flight.isNewLegValid(previousSummary, nextSummary) && Flight.canAddMoreLegs(path.size()) &&
-                Layover.canCreateLayoverWithDuration(Duration.between(previousSummary.arrivalTime(), nextSummary.departureTime())) &&!path.stream().anyMatch(
-                selected -> selected.getOriginAirport().equals(nextSummary.originAirport()));
+                Layover.canCreateLayoverWithDuration(Duration.between(previousSummary.getArrivalTime(), nextSummary.getDepartureTime())) &&!path.stream().anyMatch(
+                selected -> selected.getOriginAirport().equals(nextSummary.getOriginAirport()));
     }
 
     private Flight buildFlight(List<Leg> path) {
-        Leg first = path.getFirst();
-        Flight flight = Flight.createFlight(first.getId(), first.toSummary());
-        for (int i = 1; i < path.size(); i++) {
-            LegSummary nextLegSummary = path.get(i).toSummary();
-            flight.addLeg(path.get(i).getId(), nextLegSummary);
-        }
-        return flight;
+        return Flight.createFlight(path.stream().map(Leg::toSummary).toList());
     }
 
     private Map<Airport, List<Leg>> createGraph(int numberOfPassengers) {
