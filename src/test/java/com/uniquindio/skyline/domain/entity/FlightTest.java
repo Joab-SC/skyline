@@ -37,14 +37,14 @@ class FlightTest {
         miami = Airport.MIAMI_INTERNATIONAL;
 
         firstLeg = buildLeg(armenia, bogota, 1, 2, "AIR1", 100000);
-        flight = Flight.createFlight(firstLeg.getId(), firstLeg.toSummary());
+        flight = Flight.createFlight(List.of(firstLeg.toSummary()));
     }
 
 
 
     @Test
     void createFlightWithNullSummaryIsNotAccepted() {
-        assertThrows(DomainRuleException.class, () -> Flight.createFlight("L1", null));
+        assertThrows(DomainRuleException.class, () -> Flight.createFlight(null));
     }
 
 
@@ -52,30 +52,24 @@ class FlightTest {
     @Test
     void addLegWithDifferentAirlineIsNotAccepted() {
         Leg next = buildLeg(bogota, miami, 4, 5, "AIR2", 150000);
-        assertThrows(DomainRuleException.class, () -> flight.addLeg(next.getId(), next.toSummary()));
+        assertThrows(DomainRuleException.class,
+                () -> Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary())));
     }
 
     @Test
     void addLegWithOriginDifferentFromCurrentDestinationIsNotAccepted() {
         Leg next = buildLeg(medellin, miami, 4, 5, "AIR1", 150000);
-        assertThrows(DomainRuleException.class, () -> flight.addLeg(next.getId(), next.toSummary()));
+        assertThrows(DomainRuleException.class,
+                () -> Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary())));
     }
 
 
     @Test
     void addLegDepartingBeforeCurrentArrivalIsNotAccepted() {
         Leg next = buildLeg(bogota, miami, 1, 3, "AIR1", 150000);
-        assertThrows(DomainRuleException.class, () -> flight.addLeg(next.getId(), next.toSummary()));
+        assertThrows(DomainRuleException.class,
+                () -> Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary())));
     }
-
-    @Test
-    void addLegWithInvalidIdIsNotAccepted() {
-        Leg nextOne = buildLeg(bogota, miami, 4, 5, "AIR1", 150000);
-        assertThrows(DomainRuleException.class, () -> flight.addLeg(null, nextOne.toSummary()));
-        Leg nextTwo = buildLeg(bogota, miami, 4, 5, "AIR1", 150000);
-        assertThrows(DomainRuleException.class, () -> flight.addLeg("   ", nextTwo.toSummary()));
-    }
-
 
     @Test
     void addLegBeyondMaximumLegsThrows() {
@@ -83,13 +77,10 @@ class FlightTest {
         Leg second = buildLeg(bogota, medellin, 3, 4, "AIR1", 100000);
         Leg third = buildLeg(medellin, cali, 5, 6, "AIR1", 100000);
         Leg fourth = buildLeg(cali, cartagena, 7, 8, "AIR1", 100000);
-        flight.addLeg(second.getId(), second.toSummary());
-        flight.addLeg(third.getId(), third.toSummary());
-        flight.addLeg(fourth.getId(), fourth.toSummary());
-
         Leg fifth = buildLeg(cartagena, miami, 9, 10, "AIR1", 100000);
 
-        assertThrows(DomainRuleException.class, () -> flight.addLeg(fifth.getId(), fifth.toSummary()));
+        assertThrows(DomainRuleException.class, () -> Flight.createFlight(List.of(firstLeg.toSummary(),
+                second.toSummary(), third.toSummary(), fourth.toSummary(), fifth.toSummary())));
     }
 
 
@@ -98,7 +89,7 @@ class FlightTest {
     void addValidLegUpdatesFlightState() {
         Leg next = buildLeg(bogota, miami, 4, 6, "AIR1", 150000);
 
-        flight.addLeg(next.getId(), next.toSummary());
+        Flight flight = Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary()));
 
         assertEquals(250000, flight.getPrice(), 0.001);
         assertEquals(next.getArrivalTime(), flight.getArrivalTime());

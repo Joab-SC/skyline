@@ -2,7 +2,6 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
-import com.uniquindio.skyline.domain.valueObject.LegSummary;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
@@ -208,9 +207,33 @@ public class Leg {
     }
 
     public LegSummary toSummary() {
-        return new LegSummary(departureTime, arrivalTime, originAirport,
+        return new LegSummary(id, departureTime, arrivalTime, originAirport,
                 destinationAirport, price, airlineId);
     }
+
+
+    @Getter
+    public static final class LegSummary {
+        private final String id;
+        private final LocalDateTime departureTime;
+        private final LocalDateTime arrivalTime;
+        private final Airport originAirport;
+        private final Airport destinationAirport;
+        private final double price;
+        private final String airlineId;
+
+        private LegSummary(String id, LocalDateTime departureTime, LocalDateTime arrivalTime,
+                           Airport originAirport, Airport destinationAirport, double price, String airlineId) {
+            this.id = id;
+            this.departureTime = departureTime;
+            this.arrivalTime = arrivalTime;
+            this.originAirport = originAirport;
+            this.destinationAirport = destinationAirport;
+            this.price = price;
+            this.airlineId = airlineId;
+        }
+    }
+
 
     @Override
     public boolean equals(Object o) {
