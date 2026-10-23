@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,10 +57,12 @@ class LuggageDetailCreatorTest {
     }
 
     private Flight saveFlight(Leg firstLeg, Leg... nextLegs) {
-        Flight flight = Flight.createFlight(firstLeg.getId(), firstLeg.toSummary());
+        List<Leg.LegSummary> legs = new ArrayList<>();
+        legs.add(firstLeg.toSummary());
         for (Leg leg : nextLegs) {
-            flight.addLeg(leg.getId(), leg.toSummary());
+            legs.add(leg.toSummary());
         }
+        Flight flight = Flight.createFlight(legs);
         flightRepository.save(flight);
         return flight;
     }

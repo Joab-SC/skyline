@@ -185,6 +185,6 @@ class SelectReturnFlightUseCaseTest {
         Leg leg = Leg.createLeg(origin, destination, LocalDateTime.of(2026, 11, 5, 10, 0),
                 LocalDateTime.of(2026, 11, 5, 12, 0), "AIR-001", "airline-1",
                 List.of(new Seat("001")), 100, price);
-        return Flight.createFlight(leg.getId(), leg.toSummary());
+        return Flight.createFlight(List.of(leg.toSummary()));
     }
 }

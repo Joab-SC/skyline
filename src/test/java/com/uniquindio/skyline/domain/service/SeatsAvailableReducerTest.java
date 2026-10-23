@@ -24,7 +24,7 @@ class SeatsAvailableReducerTest {
         LegRepository legRepository = new LegRepositoryInMemory();
         Leg leg = createLeg();
         legRepository.save(leg);
-        Flight flight = Flight.createFlight(leg.getId(), leg.toSummary());
+        Flight flight = Flight.createFlight(List.of(leg.toSummary()));
 
         SeatsAvailableReducer reducer =
                 new SeatsAvailableReducer(legRepository);
@@ -41,7 +41,7 @@ class SeatsAvailableReducerTest {
         // Arrange
         LegRepository legRepository = new LegRepositoryInMemory();
         Leg leg = createLeg(); // not saved in the repository
-        Flight flight = Flight.createFlight(leg.getId(), leg.toSummary());
+        Flight flight = Flight.createFlight(List.of(leg.toSummary()));
 
         SeatsAvailableReducer reducer =
                 new SeatsAvailableReducer(legRepository);
@@ -59,7 +59,7 @@ class SeatsAvailableReducerTest {
         LegRepository legRepository = new LegRepositoryInMemory();
         Leg leg = createLeg();
         legRepository.save(leg);
-        Flight flight = Flight.createFlight(leg.getId(), leg.toSummary());
+        Flight flight = Flight.createFlight(List.of(leg.toSummary()));
 
         SeatsAvailableReducer reducer =
                 new SeatsAvailableReducer(legRepository);

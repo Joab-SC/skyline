@@ -86,6 +86,6 @@ class OutboundAndReturnFlightsValidatorTest {
     private Flight createFlight(Airport origin, Airport destination, String airlineId, LocalDateTime departure) {
         Leg leg = Leg.createLeg(origin, destination, departure, departure.plusHours(2), "AIR-001", airlineId,
                 List.of(new Seat("001")), 100, 1000);
-        return Flight.createFlight(leg.getId(), leg.toSummary());
+        return Flight.createFlight(List.of(leg.toSummary()));
     }
 }

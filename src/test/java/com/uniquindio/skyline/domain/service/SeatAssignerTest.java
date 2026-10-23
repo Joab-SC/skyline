@@ -210,7 +210,7 @@ class SeatAssignerTest {
     }
 
     private Flight createFlight(FlightRepository flightRepository, Leg leg) {
-        Flight flight = Flight.createFlight(leg.getId(), leg.toSummary());
+        Flight flight = Flight.createFlight(List.of(leg.toSummary()));
         flightRepository.save(flight);
         return flight;
     }
