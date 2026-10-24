@@ -3,6 +3,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.FlightScope;
 import com.uniquindio.skyline.domain.valueObject.Layover;
 import com.uniquindio.skyline.domain.entity.Leg.LegSummary;
 import lombok.Getter;
@@ -25,9 +26,11 @@ public class Flight {
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
     private List<Layover> layovers;
+    private final FlightScope flightScope;
 
     private Flight(String id, String airlineId, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
-                   LocalDateTime departureTime, LocalDateTime arrivalTime,  List<Layover> layovers) {
+                   LocalDateTime departureTime, LocalDateTime arrivalTime,  List<Layover> layovers,
+                   FlightScope flightScope) {
         this.id = id;
         this.airlineId = airlineId;
         this.price = price;
@@ -37,6 +40,7 @@ public class Flight {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.layovers = layovers;
+        this.flightScope = flightScope;
     }
 
     public static Flight createFlight(List<LegSummary> legs) {
@@ -65,7 +69,16 @@ public class Flight {
         LegSummary last = legs.getLast();
         return new Flight(UUID.randomUUID().toString(), first.getAirlineId(), price,
                 List.copyOf(idLegs), first.getOriginAirport(), last.getDestinationAirport(),
-                first.getDepartureTime(), last.getArrivalTime(), List.copyOf(layovers));
+                first.getDepartureTime(), last.getArrivalTime(), List.copyOf(layovers),
+                determineFlightScope(legs));
+    }
+
+    // International if any leg connects airports of different countries; otherwise national.
+    private static FlightScope determineFlightScope(List<LegSummary> legs) {
+        boolean crossesBorder = legs.stream()
+                .anyMatch(leg -> leg.getOriginAirport().getCity().getCountry()
+                        != leg.getDestinationAirport().getCity().getCountry());
+        return crossesBorder ? FlightScope.INTERNATIONAL : FlightScope.NATIONAL;
     }
 
 
