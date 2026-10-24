@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.FlightScope;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -135,6 +136,35 @@ class FlightTest {
     }
 
 
+
+    @Test
+    void flightWithAllLegsInTheSameCountryIsNational() {
+        Leg next = buildLeg(bogota, cartagena, 4, 5, "AIR1", 150000);
+
+        Flight created = Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary()));
+
+        assertEquals(FlightScope.NATIONAL, created.getFlightScope());
+    }
+
+    @Test
+    void flightWithOneLegBetweenDifferentCountriesIsInternational() {
+        Leg next = buildLeg(bogota, miami, 4, 5, "AIR1", 150000);
+
+        Flight created = Flight.createFlight(List.of(firstLeg.toSummary(), next.toSummary()));
+
+        assertEquals(FlightScope.INTERNATIONAL, created.getFlightScope());
+    }
+
+    @Test
+    void flightThatLeavesAndReturnsToTheSameCountryIsInternational() {
+        Leg toMiami = buildLeg(bogota, miami, 4, 5, "AIR1", 150000);
+        Leg backToCali = buildLeg(miami, cali, 7, 9, "AIR1", 150000);
+
+        Flight created = Flight.createFlight(
+                List.of(firstLeg.toSummary(), toMiami.toSummary(), backToCali.toSummary()));
+
+        assertEquals(FlightScope.INTERNATIONAL, created.getFlightScope());
+    }
 
     private Leg buildLeg(Airport origin, Airport destination, int departureHour, int arrivalHour,
                     String airlineId, double price) {

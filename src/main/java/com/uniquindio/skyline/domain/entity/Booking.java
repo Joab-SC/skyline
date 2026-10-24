@@ -1,11 +1,7 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.valueObject.BookingStatus;
-import com.uniquindio.skyline.domain.valueObject.PassengerData;
-import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
-import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
-import com.uniquindio.skyline.domain.valueObject.TripType;
+import com.uniquindio.skyline.domain.valueObject.*;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -24,11 +20,11 @@ public class Booking {
     private String idOutboundFlight;
     private Optional<String> idReturnFlight;
     private TripType tripType;
-    private List<String> extraServices;
+    private List<DetailExtraService> detailExtraServices;
     private BookingStatus bookingStatus;
     private LocalDateTime paymentDeadline;
 
-    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight, Optional<String> idReturnFlight, TripType tripType, List<String> extraServices, LocalDateTime paymentDeadline) {
+    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight, Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, LocalDateTime paymentDeadline) {
         this.id = id;
         this.numPassengers = numPassengers;
         this.price = price;
@@ -36,7 +32,7 @@ public class Booking {
         this.idOutboundFlight = idOutboundFlight;
         this.idReturnFlight = idReturnFlight;
         this.tripType = tripType;
-        this.extraServices = extraServices;
+        this.detailExtraServices = detailExtraServices;
         this.bookingStatus = BookingStatus.PENDING;
         this.paymentDeadline = paymentDeadline;
     }
@@ -53,6 +49,25 @@ public class Booking {
                 tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
     }
 
+
+    // Adds an extra service to the booking. If the service was already added,
+    // the new detail replaces the old one and its subtotal is swapped in the price.
+    public void addExtraService(String extraServiceId, int quantity, double unitPrice){
+        validateIsModifiable();
+        DetailExtraService newDetail =
+                new DetailExtraService(extraServiceId, quantity, unitPrice * quantity);
+
+        Optional<DetailExtraService> currentDetail = detailExtraServices.stream()
+                .filter(detail -> detail.idExtraService().equals(extraServiceId))
+                .findFirst();
+        if (currentDetail.isPresent()){
+            this.price -= currentDetail.get().subtotal();
+            detailExtraServices.remove(currentDetail.get());
+        }
+
+        detailExtraServices.add(newDetail);
+        this.price += newDetail.subtotal();
+    }
 
 
 
