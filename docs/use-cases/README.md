@@ -17,6 +17,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 9 | [AddExtraServices](add-extra-services.md) | Adds booking-level extra service details and adds their subtotal (national or international price). | `BookingRepository`, `FlightRepository`, `AirlineRepository` | Not implemented |
 | 10 | [PayBooking](pay-booking.md) | Confirms a `PENDING` booking. | `BookingRepository`, `FlightRepository`, `LegRepository` | In progress |
 | 11 | [CancelBooking](cancel-booking.md) | Cancels a `PENDING` booking and returns its seats. Expiration reuses this logic with `EXPIRED`. | `BookingRepository`, `FlightRepository`, `LegRepository` | Not implemented |
+| 12 | [CreateExtraService](create-extra-service.md) | Creates an extra service with national and international prices and adds it to an airline. | `AirlineRepository` | Implemented |
 
 ## Booking flow
 
