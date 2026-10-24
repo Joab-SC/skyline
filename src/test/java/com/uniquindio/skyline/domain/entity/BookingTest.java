@@ -48,7 +48,7 @@ public class BookingTest {
         assertEquals(Optional.empty(), booking.getIdReturnFlight());
         assertEquals(TripType.ONE_WAY, booking.getTripType());
         assertTrue(booking.getPassengerList().isEmpty());
-        assertTrue(booking.getExtraServices().isEmpty());
+        assertTrue(booking.getDetailExtraServices().isEmpty());
         assertNotNull(booking.getId());
     }
 
