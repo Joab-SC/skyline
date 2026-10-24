@@ -13,20 +13,18 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 
 import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class CreateLegUseCase {
     private final LegRepository legRepository;
     private final AirlineRepository airlineRepository;
     private final LegOverlapValidator legOverlapValidator;
     private final AircraftRepository aircraftRepository;
-
-    public CreateLegUseCase(LegRepository legRepository, AirlineRepository airlineRepository, LegOverlapValidator legOverlapValidator, AircraftRepository aircraftRepository) {
-        this.legRepository = legRepository;
-        this.airlineRepository = airlineRepository;
-        this.legOverlapValidator = legOverlapValidator;
-        this.aircraftRepository = aircraftRepository;
-    }
 
     // Creates a leg and links it to the airline.
     public Leg execute(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,

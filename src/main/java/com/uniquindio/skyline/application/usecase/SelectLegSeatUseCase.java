@@ -6,19 +6,17 @@ import com.uniquindio.skyline.domain.entity.Passenger;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.SeatAssigner;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class SelectLegSeatUseCase {
 
     private final LegRepository legRepository;
     private final BookingRepository bookingRepository;
     private final SeatAssigner seatAssigner;
 
-
-    public SelectLegSeatUseCase(LegRepository legRepository, BookingRepository bookingRepository, SeatAssigner seatAssigner) {
-        this.legRepository = legRepository;
-        this.bookingRepository = bookingRepository;
-        this.seatAssigner = seatAssigner;
-    }
 
     public Leg execute(String idBooking, String idLegSeat, String  idPassenger, String idLeg){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();

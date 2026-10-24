@@ -8,20 +8,17 @@ import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.repository.FlightSearchCache;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import com.uniquindio.skyline.domain.valueObject.TripType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class SelectOutboundFlightUseCase {
 
     private final BookingRepository bookingRepository;
     private final FlightSearchCache flightSearchCache;
     private final SeatsAvailableReducer seatsAvailableReducer;
     private final FlightRepository flightRepository;
-
-    public SelectOutboundFlightUseCase(BookingRepository bookingRepository, FlightSearchCache flightSearchCache, SeatsAvailableReducer seatsAvailableReducer, FlightRepository flightRepository) {
-        this.bookingRepository = bookingRepository;
-        this.flightSearchCache = flightSearchCache;
-        this.seatsAvailableReducer = seatsAvailableReducer;
-        this.flightRepository = flightRepository;
-    }
 
     public Booking execute(int numPassengers, String idOutboundFlight,
                            TripType tripType){
