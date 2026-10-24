@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,6 +128,32 @@ class AirlineTest {
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> airline.addAircraft(""));
         assertTrue(airline.getAircraftsId().isEmpty());
+    }
+
+    // createExtraService
+
+    @Test
+    void shouldCreateExtraServiceAndAddItToAirline() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act
+        ExtraService extraService = airline.createExtraService("Priority boarding", "Board first", 20.0, 35.0);
+
+        // Assert
+        assertEquals(List.of(extraService), airline.getExtraServices());
+        assertEquals(Optional.of(extraService), airline.getExtraService(extraService.getId()));
+    }
+
+    @Test
+    void shouldNotAddExtraServiceWhenDataIsInvalid() {
+        // Arrange
+        Airline airline = createValidAirline();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> airline.createExtraService("", "Board first", 20.0, 35.0));
+        assertTrue(airline.getExtraServices().isEmpty());
     }
 
     private Airline createValidAirline() {
