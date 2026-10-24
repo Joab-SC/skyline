@@ -1,11 +1,10 @@
 package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Airline;
+import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AirlineRepositoryInMemory implements AirlineRepository {
 
@@ -21,5 +20,16 @@ public class AirlineRepositoryInMemory implements AirlineRepository {
     @Override
     public void save(Airline airline) {
         airlines.put(airline.getId(), airline);
+    }
+
+    @Override
+    public List<AirlineAircraftCount> findTopByAircraftCount(int limit) {
+        return airlines.values().stream()
+                .filter(a -> !a.getAircraftIds().isEmpty())
+                .map(a -> new AirlineAircraftCount(a.getId(), a.getName(), (long) a.getAircraftIds().size()))
+                .sorted(Comparator.comparing(AirlineAircraftCount::aircraftCount).reversed()
+                        .thenComparing(AirlineAircraftCount::name))
+                .limit(limit)
+                .toList();
     }
 }

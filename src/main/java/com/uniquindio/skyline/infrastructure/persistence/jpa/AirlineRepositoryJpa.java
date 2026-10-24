@@ -1,5 +1,7 @@
 package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
+import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
@@ -7,6 +9,7 @@ import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.AirlinePersi
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,5 +29,10 @@ public class AirlineRepositoryJpa implements AirlineRepository {
     @Transactional()
     public void save(Airline airline) {
         dataRepository.save(mapper.toEntity(airline));
+    }
+
+    @Override
+    public List<AirlineAircraftCount> findTopByAircraftCount(int limit) {
+        return dataRepository.findTopByAircraftCount(PageRequest.of(0, limit));
     }
 }
