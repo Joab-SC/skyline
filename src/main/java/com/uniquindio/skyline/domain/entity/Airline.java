@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import lombok.Getter;
 
 import java.util.*;
@@ -11,6 +12,7 @@ public class Airline {
     private String name;
     private List<String> aircraftsId;
     private List<String> legIds;
+    private List<ExtraService> extraServices;
     private int maximumLuggageAmount;
     private double priceSeats;
 
@@ -21,7 +23,11 @@ public class Airline {
         this.priceSeats = priceSeats;
         this.aircraftsId = new ArrayList<>();
         this.legIds = new ArrayList<>();
+        this.extraServices = new ArrayList<>();
+    }
 
+    public Optional<ExtraService> getExtraService(String id) {
+        return extraServices.stream().filter(extraService -> extraService.getId().equals(id)).findFirst();
     }
 
     // Creates an airline without aircrafts or legs.
