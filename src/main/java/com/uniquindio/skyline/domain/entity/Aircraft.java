@@ -57,6 +57,9 @@ public class Aircraft {
         return seats;
     }
 
+    public static Aircraft reconstruct(String id, AircraftModel aircraftModel, List<Seat> seats){
+        return new Aircraft(id, aircraftModel, seats);
+    }
 
     @Override
     public boolean equals(Object o) {
