@@ -7,7 +7,17 @@ INSERT INTO airlines (id, name, maximum_luggage_amount, price_seats) VALUES
     ('airline-latam', 'LATAM', 2, 38000),
     ('airline-wingo', 'Wingo', 1, 25000);
 
--- Aircraft ids per airline (the aircrafts table does not exist yet)
+-- Aircrafts (seats are not needed for the tests that use this data)
+INSERT INTO aircrafts (id, aircraft_model) VALUES
+    ('aircraft-a320-01', 'AIRBUS_A320_NEO'),
+    ('aircraft-a320-02', 'AIRBUS_A320_NEO'),
+    ('aircraft-b787-01', 'BOEING_737_9_MAX'),
+    ('aircraft-a321-01', 'AIRBUS_A321_NEO'),
+    ('aircraft-a320-03', 'AIRBUS_A320_NEO'),
+    ('aircraft-b737-01', 'BOEING_737_8_MAX');
+
+-- Aircraft ids per airline
+-- Ranking by aircraft count: Avianca 3, LATAM 2, Wingo 1
 INSERT INTO airline_aircrafts (airline_id, aircraft_id) VALUES
     ('airline-avianca', 'aircraft-a320-01'),
     ('airline-avianca', 'aircraft-a320-02'),
