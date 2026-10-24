@@ -96,7 +96,7 @@ class AirlineTest {
         airline.addAircraft("aircraft-1");
 
         // Assert
-        assertEquals(List.of("aircraft-1"), airline.getAircraftsId());
+        assertEquals(List.of("aircraft-1"), airline.getAircraftIds());
     }
 
     @Test
@@ -107,7 +107,7 @@ class AirlineTest {
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> airline.addAircraft("aircraft-1"));
-        assertEquals(1, airline.getAircraftsId().size());
+        assertEquals(1, airline.getAircraftIds().size());
     }
 
     @Test
@@ -117,7 +117,7 @@ class AirlineTest {
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> airline.addAircraft(null));
-        assertTrue(airline.getAircraftsId().isEmpty());
+        assertTrue(airline.getAircraftIds().isEmpty());
     }
 
     @Test
@@ -127,7 +127,7 @@ class AirlineTest {
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> airline.addAircraft(""));
-        assertTrue(airline.getAircraftsId().isEmpty());
+        assertTrue(airline.getAircraftIds().isEmpty());
     }
 
     // createExtraService

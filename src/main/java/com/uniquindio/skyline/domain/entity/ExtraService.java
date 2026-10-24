@@ -24,6 +24,11 @@ public class ExtraService {
         this.internationalPrice = internationalPrice;
     }
 
+    // Rebuilds an extra service that already exists, keeping its id. Used when loading from persistence.
+    public static ExtraService reconstruct(String id, String nameService, String description, double nationalPrice, double internationalPrice) {
+        return new ExtraService(id, nameService, normalizeDescription(description), nationalPrice, internationalPrice);
+    }
+
     // Creates an extra service with a random id. The description is optional.
     public static ExtraService createExtraService(String nameService, String description, double nationalPrice, double internationalPrice) {
         validateExtraService(nameService, nationalPrice, internationalPrice);

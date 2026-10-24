@@ -1,7 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import lombok.Getter;
 
 import java.util.*;
@@ -10,7 +9,7 @@ import java.util.*;
 public class Airline {
     private String id;
     private String name;
-    private List<String> aircraftsId;
+    private List<String> aircraftIds;
     private List<String> legIds;
     private List<ExtraService> extraServices;
     private int maximumLuggageAmount;
@@ -21,9 +20,24 @@ public class Airline {
         this.name = name;
         this.maximumLuggageAmount = maximumLuggageAmount;
         this.priceSeats = priceSeats;
-        this.aircraftsId = new ArrayList<>();
+        this.aircraftIds = new ArrayList<>();
         this.legIds = new ArrayList<>();
         this.extraServices = new ArrayList<>();
+    }
+
+    private Airline(String id, String name, int maximumLuggageAmount, double priceSeats, List<ExtraService> extraServices, List<String> legIds, List<String> aircraftIds) {
+        this.id = id;
+        this.name = name;
+        this.maximumLuggageAmount = maximumLuggageAmount;
+        this.priceSeats = priceSeats;
+        this.aircraftIds = aircraftIds;
+        this.legIds = legIds;
+        this.extraServices = extraServices;
+    }
+
+    public static Airline reconstruct(String id, String name, int maximumLuggageAmount, double priceSeats, List<ExtraService> extraServices,
+                                      List<String> legIds, List<String> aircraftIds){
+        return new Airline(id,name, maximumLuggageAmount, priceSeats, extraServices, legIds, aircraftIds);
     }
 
     public Optional<ExtraService> getExtraService(String id) {
@@ -61,13 +75,13 @@ public class Airline {
     }
 
     public void addAircraft(String aircraftId){
-        if(this.aircraftsId.contains(aircraftId)){
+        if(this.aircraftIds.contains(aircraftId)){
             throw new DomainRuleException("Aircraft already exists in the airline");
         }
         if(aircraftId == null || aircraftId.isBlank()){
             throw new DomainRuleException("Aircraft id cannot be empty in the airline");
         }
-        this.aircraftsId.add(aircraftId);
+        this.aircraftIds.add(aircraftId);
     }
 
     // Creates an extra service and adds it to the airline.
