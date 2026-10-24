@@ -70,6 +70,13 @@ public class Airline {
         this.aircraftsId.add(aircraftId);
     }
 
+    // Creates an extra service and adds it to the airline.
+    public ExtraService createExtraService(String nameService, String description, double nationalPrice, double internationalPrice) {
+        ExtraService extraService = ExtraService.createExtraService(nameService, description, nationalPrice, internationalPrice);
+        this.extraServices.add(extraService);
+        return extraService;
+    }
+
 
     @Override
     public boolean equals(Object o) {
