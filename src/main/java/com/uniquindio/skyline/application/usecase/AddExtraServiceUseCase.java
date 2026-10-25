@@ -8,19 +8,17 @@ import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.FlightScope;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class AddExtraServiceUseCase {
 
     private final BookingRepository bookingRepository;
     private final AirlineRepository airlineRepository;
     private final FlightRepository flightRepository;
 
-    public AddExtraServiceUseCase(BookingRepository bookingRepository, AirlineRepository airlineRepository,
-                                  FlightRepository flightRepository){
-        this.bookingRepository = bookingRepository;
-        this.airlineRepository = airlineRepository;
-        this.flightRepository = flightRepository;
-    }
 
     public Booking execute(String bookingId,String airlineId, String serviceId, int quantity){
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();

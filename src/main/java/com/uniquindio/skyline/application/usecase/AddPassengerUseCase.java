@@ -6,16 +6,16 @@ import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class AddPassengerUseCase {
 
     private final BookingRepository bookingRepository;
-
-    public AddPassengerUseCase(BookingRepository bookingRepository) {
-        this.bookingRepository = bookingRepository;
-
-    }
 
     public void execute(String idBooking, List<PassengerData> passengers,String idHolder, String email,
                         String phoneNumber, PhonePrefix phonePrefix ){

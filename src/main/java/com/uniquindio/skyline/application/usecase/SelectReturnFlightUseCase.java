@@ -9,7 +9,11 @@ import com.uniquindio.skyline.domain.repository.FlightSearchCache;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.OutboundAndReturnFlightsValidator;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class SelectReturnFlightUseCase {
 
     private final BookingRepository bookingRepository;
@@ -18,16 +22,6 @@ public class SelectReturnFlightUseCase {
     private final SeatsAvailableReducer seatsAvailableReducer;
     private final FlightSearchCache flightSearchCache;
 
-
-    public SelectReturnFlightUseCase(BookingRepository bookingRepository, FlightRepository flightRepository,
-                                     OutboundAndReturnFlightsValidator outboundAndReturnFlightsValidator,
-                                     SeatsAvailableReducer seatsAvailableReducer, FlightSearchCache flightSearchCache) {
-        this.bookingRepository = bookingRepository;
-        this.flightRepository = flightRepository;
-        this.outboundAndReturnFlightsValidator = outboundAndReturnFlightsValidator;
-        this.seatsAvailableReducer = seatsAvailableReducer;
-        this.flightSearchCache = flightSearchCache;
-    }
 
     public Booking execute(String idBooking, String idReturnFlight){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();

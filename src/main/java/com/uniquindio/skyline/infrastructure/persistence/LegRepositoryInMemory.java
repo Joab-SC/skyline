@@ -2,9 +2,11 @@ package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.LegRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class LegRepositoryInMemory implements LegRepository {
 
     private final Map<String, Leg> legs = new HashMap<>();

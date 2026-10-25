@@ -6,16 +6,15 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.AircraftRepository;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.valueObject.AircraftModel;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class CreateAircraftUseCase {
 
     private final AircraftRepository aircraftRepository;
     private final AirlineRepository airlineRepository;
-
-    public CreateAircraftUseCase(AircraftRepository aircraftRepository, AirlineRepository airlineRepository) {
-        this.aircraftRepository = aircraftRepository;
-        this.airlineRepository = airlineRepository;
-    }
 
     public Aircraft execute(AircraftModel aircraftModel, String airlineId){
         Aircraft aircraft = Aircraft.createAircraft(aircraftModel);

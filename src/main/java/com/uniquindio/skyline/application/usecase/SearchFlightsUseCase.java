@@ -6,17 +6,17 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.entity.Flight;
 
 import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
+@Service
+@RequiredArgsConstructor
 public class SearchFlightsUseCase {
 
     private final FlightSearcher flightSearcher;
     private final FlightSearchCache flightSearchCache;
-
-    public SearchFlightsUseCase(FlightSearcher flightSearcher, FlightSearchCache flightSearchCache) {
-        this.flightSearcher = flightSearcher;
-        this.flightSearchCache = flightSearchCache;
-    }
 
     public List<Flight> execute(String originCode, String destinationCode, LocalDate departureDay, int numberOfPassengers){
         Airport origin = Airport.getByAcronym(originCode).orElseThrow();
