@@ -20,7 +20,7 @@ public class AirlineRepositoryJpaTest {
     AirlineRepository airlineRepository;
 
     @Test
-    void shoudSaveAndRecoverAirlineWithAllItsData(){
+    void shouldSaveAndRecoverAirlineWithAllItsData(){
         //Arrange
         Airline airline = Airline.createAirline("Mega airline", 10, 10000);
         airline.addAircraft("air-1");
@@ -42,7 +42,7 @@ public class AirlineRepositoryJpaTest {
     }
 
     @Test
-    void shoudSaveAndRecoverAirlineExtraServiceWithAllItsData(){
+    void shouldSaveAndRecoverAirlineExtraServiceWithAllItsData(){
         //Arrange
         Airline airline = Airline.createAirline("Mega airline", 10, 10000);
         ExtraService extraService = airline.createExtraService("Food", null, 1000, 2000);

@@ -1,4 +1,4 @@
-package com.uniquindio.skyline.infrastructure.rest;
+package com.uniquindio.skyline.infrastructure.rest.exception;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import org.springframework.http.HttpStatus;
