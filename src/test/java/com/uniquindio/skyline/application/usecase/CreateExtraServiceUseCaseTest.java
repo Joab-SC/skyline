@@ -71,4 +71,15 @@ class CreateExtraServiceUseCaseTest {
                 () -> useCase.execute(AIRLINE_ID, "", "Board first", 20.0, 35.0));
         verify(airlineRepository, never()).save(any());
     }
+
+    @Test
+    void shouldNotSaveWhenAirlineDoesNotExist() {
+        // Arrange
+        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class,
+                () -> useCase.execute(AIRLINE_ID, "Priority boarding", "Board first", 20.0, 35.0));
+        verify(airlineRepository, never()).save(any());
+    }
 }
