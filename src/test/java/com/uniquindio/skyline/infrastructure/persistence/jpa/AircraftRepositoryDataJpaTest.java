@@ -23,9 +23,6 @@ class AircraftRepositoryDataJpaTest {
     @Autowired
     private AircraftRepository aircraftRepository;
 
-    @Autowired
-    private EntityManager entityManager;
-
     @Test
     void shouldLoadAircraftFromDataSqlWithItsModel() {
         // Arrange: "aircraft-b787-01" comes from data.sql without seats

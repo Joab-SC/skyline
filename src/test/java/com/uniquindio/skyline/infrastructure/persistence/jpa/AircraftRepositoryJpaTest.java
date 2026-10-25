@@ -21,9 +21,6 @@ class AircraftRepositoryJpaTest {
     @Autowired
     private AircraftRepository aircraftRepository;
 
-    @Autowired
-    private EntityManager entityManager;
-
     @Test
     void shouldSaveAndRecoverAircraftWithItsModelAndSeats() {
         // Arrange
