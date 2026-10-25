@@ -3,11 +3,13 @@ package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Repository
 public class FlightRepositoryInMemory implements FlightRepository {
 
     private final Map<String, Flight> flights = new HashMap<>();

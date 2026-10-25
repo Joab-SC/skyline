@@ -2,12 +2,14 @@ package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.repository.FlightSearchCache;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Repository
 public class FlightSearchCacheInMemory implements FlightSearchCache {
 
     private final Map<String, Flight> flights = new HashMap<>();
