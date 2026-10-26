@@ -32,6 +32,14 @@ public class LegSeat {
         return new LegSeat(id, seatCode);
     }
 
+    // Rebuilds a leg seat that was already persisted, with its status and passenger.
+    public static LegSeat reconstruct(String id, String seatCode, SeatStatus seatStatus, String passengerId) {
+        LegSeat legSeat = new LegSeat(id, seatCode);
+        legSeat.seatStatus = seatStatus;
+        legSeat.passengerId = Optional.ofNullable(passengerId);
+        return legSeat;
+    }
+
     public void assignPassengerToLegSeat(String idPassenger){
          if (idPassenger == null || idPassenger.isBlank()){
              throw new DomainRuleException("id passenger cannot be null");
