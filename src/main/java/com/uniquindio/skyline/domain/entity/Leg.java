@@ -38,6 +38,14 @@ public class Leg {
         this.availableSeats = availableSeats;
     }
 
+    // Rebuilds a leg that was already persisted, without generating new ids or seats.
+    public static Leg reconstruct(String id, Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+                                  LocalDateTime arrivalTime, String aircraftId, String airlineId, double price,
+                                  Luggage luggage, List<LegSeat> seats, int availableSeats) {
+        return new Leg(id, originAirport, destinationAirport, departureTime, arrivalTime, aircraftId, airlineId,
+                price, luggage, seats, availableSeats);
+    }
+
     // Creates a leg with seats and luggage.
     public static Leg createLeg(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
                                 LocalDateTime arrivalTime, String aircraftId, String airlineId, List<Seat> aircraftSeats, double luggagePrice, double price) {
