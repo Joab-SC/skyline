@@ -1,0 +1,14 @@
+## Pruebas avanzadas
+
+### 1. Probar un endpoint con seguridad
+
+Escribe aquí tu explicación.
+
+### 2. `@DataJpaTest` contra `@SpringBootTest`
+
+`@SpringBootTest` levanta toda la aplicación, eso incluye controllers, casos de uso, repositorios y la base de datos H2. Esta anotacion la usamos en `AirlineRepositoryJpaTest` y `AircraftRepositoryJpaTest`, pues en estas necesitabamos guardar una entidad y recuperarla para ver que los datos y los Value Objects volvieran iguales. En cambio `@DataJpaTest` solo levanta la capa de persistencia (entidades, `JpaRepository` y H2), eso hace que sea más rápida, tambien se encarga de que cada prueba haga rollback sola cuando termine. Como no carga nuestras clases propias, en `AirlineRepositoryDataJpaTest`, `AircraftRepositoryDataJpaTest` y `AirlineRankingDataJpaTest` tuvimos que traer el adaptador y los mappers con `@Import` ya que si falta alguno, la prueba falla con "No qualifying bean". 
+En Spring Boot 4 `@DataJpaTest` ya no está en el paquete de antes: el import correcto es `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest` y necesita la dependencia `spring-boot-starter-data-jpa-test` en el `build.gradle`. Por defecto @DataJpaTest no usa la base de application.properties, sino que crea una H2 en memoria aparte; si quisiéramos probar contra la base configurada habría que poner @AutoConfigureTestDatabase(replace = Replace.NONE). En nuestro caso dejamos el comportamiento por defecto porque ya usamos H2. Lo que más nos costó fue la prueba del ranking: `data.sql` tenía los ids de los aviones de cada aerolínea, pero no los aviones como tal, y como la consulta hace JOIN con la tabla `aircrafts`necesitabamos que existieran los aircrafts o el resultado saldría vacío, Por eso mismo los agregamos usando los ids que ya existían.
+
+### 3. Prueba de integración
+
+Una prueba de integración recorre el sistema real sin simular nada. En `CreateExtraServiceIntegrationTest` hacemos un `POST /api/extra_services` con MockMvc; la petición pasa por el controller, el caso de uso, el repositorio JPA y llega a H2, sin ningún `@MockitoBean`. Después de la respuesta 201 buscamos la aerolínea en el repositorio y comprobamos que el servicio extra sí quedó guardado. En cambio, una prueba unitaria prueba una sola clase y simula con Mockito todo lo que esa clase usa, así que es rápida pero no garantiza que las piezas funcionen juntas. La de integración sí detecta errores de conexión entre capas, como un mapeo JPA mal hecho, un bean que no se inyecta o un JSON con nombres distintos. Como es más lenta y depende de `data.sql`, conviene tener pocas y solo para los flujos importantes. Lo que más nos dificultó fue probar la igualdad entre los objetos sin tener el id a mano pues es generado con UUID y entender la anotación de @Autowired qu eliego vimos que era para inyectar Beans automaticamente.
