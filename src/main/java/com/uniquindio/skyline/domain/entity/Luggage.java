@@ -28,6 +28,11 @@ public class Luggage {
         return new Luggage(id,luggagePrice);
     }
 
+    // Rebuilds luggage that was already persisted.
+    public static Luggage reconstruct(String id, double price) {
+        return new Luggage(id, price);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
