@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.usecase.CreateLegUseCase;
+import com.uniquindio.skyline.application.usecase.GetLegSeatMapUseCase;
 import com.uniquindio.skyline.domain.entity.Aircraft;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -22,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,6 +45,9 @@ public class LegControllerTest {
 
     @MockitoBean
     private CreateLegUseCase createLegUseCase;
+
+    @MockitoBean
+    private GetLegSeatMapUseCase getLegSeatMapUseCase;
 
     @MockitoBean
     private LegMapper mapper;
@@ -111,5 +116,31 @@ public class LegControllerTest {
 
         verify(createLegUseCase, never())
                 .execute(any(), any(), any(), any(), any(), any(), anyDouble(), anyDouble());
+    }
+
+    // ---------- GET /api/legs/{id}/seats ----------
+
+    @Test
+    void shouldAnswer200WithSeatMap() throws Exception {
+        // Arrange
+        Aircraft aircraft = Aircraft.createAircraft(AircraftModel.EMBRAER_E175);
+        Leg leg = Leg.createLeg(Airport.EL_DORADO, Airport.EL_EDEN,
+                LocalDateTime.of(2026, 12, 1, 8, 0), LocalDateTime.of(2026, 12, 1, 9, 0),
+                aircraft.getId(), "air-1", aircraft.getSeats(), 50, 200);
+        when(getLegSeatMapUseCase.execute("leg-1")).thenReturn(leg);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs/leg-1/seats"))
+                .andExpect(status().isOk());               // 200
+    }
+
+    @Test
+    void shouldAnswer404WhenLegForSeatMapDoesNotExist() throws Exception {
+        // Arrange
+        when(getLegSeatMapUseCase.execute("leg-1")).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs/leg-1/seats"))
+                .andExpect(status().isNotFound());         // 404
     }
 }
