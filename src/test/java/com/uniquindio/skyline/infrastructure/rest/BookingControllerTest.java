@@ -1,9 +1,6 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
-import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
-import com.uniquindio.skyline.application.usecase.SelectLegSeatUseCase;
-import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
-import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
+import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.TripType;
@@ -58,6 +55,12 @@ public class BookingControllerTest {
         }
         """;
 
+    private static final String LUGGAGE_JSON = """
+        {
+        "passengerId": "1094", "quantity": 2
+        }
+        """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -75,6 +78,9 @@ public class BookingControllerTest {
 
     @MockitoBean
     private BookingMapper mapper;
+
+    @MockitoBean
+    private AddLuggageUseCase addLuggageUseCase;
 
     // ---------- POST /api/bookings ----------
 
@@ -345,5 +351,63 @@ public class BookingControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Valid
 
         verify(selectLegSeatUseCase, never()).execute(any(), any(), any(), any());
+    }
+
+    // ---------- PUT /api/bookings/{id}/luggage ----------
+
+    @Test
+    void shouldAnswer200WhenLuggageIsAdded() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(addLuggageUseCase.execute("1094", "booking-1", 2)).thenReturn(booking);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/luggage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LUGGAGE_JSON))
+                .andExpect(status().isOk());               // 200
+    }
+
+    @Test
+    void shouldAnswer404WhenBookingForLuggageDoesNotExist() throws Exception {
+        // Arrange
+        when(addLuggageUseCase.execute(any(), any(), anyInt())).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/luggage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LUGGAGE_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenLuggageExceedsAirlineMaximum() throws Exception {
+        // Arrange
+        when(addLuggageUseCase.execute(any(), any(), anyInt()))
+                .thenThrow(new DomainRuleException("The luggage quantity cannot exceed the maximum quantity"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/luggage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(LUGGAGE_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenLuggageQuantityIsZero() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "passengerId": "1094", "quantity": 0
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/luggage")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @Positive
+
+        verify(addLuggageUseCase, never()).execute(any(), any(), anyInt());
     }
 }
