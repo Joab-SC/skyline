@@ -4,7 +4,6 @@ package com.uniquindio.skyline.infrastructure.persistence;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Repository
 public class BookingRepositoryInMemory implements BookingRepository {
 
     private final Map<String, Booking> bookings = new HashMap<>();
