@@ -29,6 +29,8 @@ public class FlightEntity {
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "flight_legs", joinColumns = @JoinColumn(name = "flight_id", nullable = false))
+    @OrderColumn(name = "leg_order")
+    @Column(name = "leg_id", nullable = false)
     private List<String> idLegs;
 
     @Enumerated(EnumType.STRING)
@@ -44,6 +46,8 @@ public class FlightEntity {
     private LocalDateTime arrivalTime;
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "flight_layovers", joinColumns = @JoinColumn(name = "flight_id", nullable = false))
+    @OrderColumn(name = "layover_order")
     private List<LayoverEmbeddable> layovers;
 
     @Enumerated(EnumType.STRING)
