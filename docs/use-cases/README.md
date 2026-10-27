@@ -18,9 +18,9 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 10 | [PayBooking](pay-booking.md) | Confirms a `PENDING` booking. | `BookingRepository`, `FlightRepository`, `LegRepository` | In progress |
 | 11 | [CancelBooking](cancel-booking.md) | Cancels a `PENDING` booking and returns its seats. Expiration reuses this logic with `EXPIRED`. | `BookingRepository`, `FlightRepository`, `LegRepository` | Not implemented |
 | 12 | [CreateExtraService](create-extra-service.md) | Creates an extra service with national and international prices and adds it to an airline. | `AirlineRepository` | Implemented |
-
+| 13 | [GetLegSeatMap](get-leg-seat-map.md) | Returns a leg's seats with their status so the client can pick one. | `LegRepository` | Implemented |
 ## Booking flow
 
-`SearchFlights` → `SelectOutboundFlight` → `SelectReturnFlight` (round trip only) → `AddPassengersToBooking` → `AssignSeatToPassenger` / `AddLuggage` / `AddExtraServices` → `PayBooking`
+`SearchFlights` → `SelectOutboundFlight` → `SelectReturnFlight` (round trip only) → `AddPassengersToBooking` → `GetLegSeatMap` → `AssignSeatToPassenger` / `AddLuggage` / `AddExtraServices` → `PayBooking`
 
 A `PENDING` booking can be cancelled at any point (`CancelBooking`), and it expires when `paymentDeadline` (20 min) passes. Only a `PENDING` booking can be modified.
