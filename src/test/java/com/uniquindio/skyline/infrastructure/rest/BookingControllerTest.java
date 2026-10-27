@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
+import com.uniquindio.skyline.application.usecase.SelectLegSeatUseCase;
 import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
 import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
 import com.uniquindio.skyline.domain.entity.Booking;
@@ -51,6 +52,12 @@ public class BookingControllerTest {
         }
         """;
 
+    private static final String SEAT_JSON = """
+        {
+        "legId": "leg-1", "legSeatId": "seat-1", "passengerId": "1094"
+        }
+        """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -62,6 +69,9 @@ public class BookingControllerTest {
 
     @MockitoBean
     private AddPassengerUseCase addPassengerUseCase;
+
+    @MockitoBean
+    private SelectLegSeatUseCase selectLegSeatUseCase;
 
     @MockitoBean
     private BookingMapper mapper;
@@ -277,5 +287,63 @@ public class BookingControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Email
 
         verify(addPassengerUseCase, never()).execute(any(), anyList(), any(), any(), any(), any());
+    }
+
+    // ---------- PUT /api/bookings/{id}/seats ----------
+
+    @Test
+    void shouldAnswer200WhenSeatIsSelected() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(selectLegSeatUseCase.execute("booking-1", "seat-1", "1094", "leg-1")).thenReturn(booking);
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/seats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(SEAT_JSON))
+                .andExpect(status().isOk());               // 200
+    }
+
+    @Test
+    void shouldAnswer404WhenLegOrPassengerDoesNotExist() throws Exception {
+        // Arrange
+        when(selectLegSeatUseCase.execute(any(), any(), any(), any()))
+                .thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/seats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(SEAT_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenSeatIsAlreadyOccupied() throws Exception {
+        // Arrange
+        when(selectLegSeatUseCase.execute(any(), any(), any(), any()))
+                .thenThrow(new DomainRuleException("The seat is already occupied"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/seats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(SEAT_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenLegSeatIdIsBlank() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "legId": "leg-1", "legSeatId": "", "passengerId": "1094"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/seats")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @Valid
+
+        verify(selectLegSeatUseCase, never()).execute(any(), any(), any(), any());
     }
 }

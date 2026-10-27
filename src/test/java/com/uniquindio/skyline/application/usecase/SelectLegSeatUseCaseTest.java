@@ -56,10 +56,10 @@ class SelectLegSeatUseCaseTest {
                 .thenReturn(Optional.of(leg));
 
         // Act
-        Leg result = useCase.execute(booking.getId(), "seat-1", "1001", leg.getId());
+        Booking result = useCase.execute(booking.getId(), "seat-1", "1001", leg.getId());
 
         // Assert
-        assertEquals(leg, result);
+        assertEquals(booking, result);
         verify(seatAssigner).assignSeat(booking, "seat-1", passenger, leg);
         verify(legRepository).save(leg);
         verify(bookingRepository).save(booking);
