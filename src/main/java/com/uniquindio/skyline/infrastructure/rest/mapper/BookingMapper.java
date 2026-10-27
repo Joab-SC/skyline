@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.infrastructure.rest.mapper;
 
+import com.uniquindio.skyline.application.dto.request.PassengerRequest;
 import com.uniquindio.skyline.application.dto.response.BookingExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.dto.response.LuggageDetailResponse;
@@ -9,8 +10,11 @@ import com.uniquindio.skyline.domain.entity.Passenger;
 import com.uniquindio.skyline.domain.entity.Person;
 import com.uniquindio.skyline.domain.valueObject.DetailExtraService;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
+import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class BookingMapper {
@@ -62,5 +66,19 @@ public class BookingMapper {
                 detail.quantity(),
                 detail.subtotal()
         );
+    }
+
+    public List<PassengerData> toPassengerDataList(List<PassengerRequest> requests) {
+        return requests.stream()
+                .map(request -> new PassengerData(
+                        request.idDocument(),
+                        request.documentType(),
+                        request.firstName(),
+                        request.secondName(),
+                        request.lastName1(),
+                        request.lastName2(),
+                        request.birthDate(),
+                        request.gender()))
+                .toList();
     }
 }
