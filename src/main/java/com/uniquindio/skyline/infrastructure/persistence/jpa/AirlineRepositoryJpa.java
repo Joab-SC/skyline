@@ -26,7 +26,6 @@ public class AirlineRepositoryJpa implements AirlineRepository {
     }
 
     @Override
-    @Transactional()
     public void save(Airline airline) {
         dataRepository.save(mapper.toEntity(airline));
     }

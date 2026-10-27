@@ -43,6 +43,15 @@ public class Flight {
         this.flightScope = flightScope;
     }
 
+    public static Flight reconstruct(String id, String airlineId, double price, List<String> idLegs, Airport originAirport, Airport destinationAirport,
+                                     LocalDateTime departureTime, LocalDateTime arrivalTime, List<Layover> layovers,
+                                     FlightScope flightScope) {
+        return new Flight(id, airlineId, price,
+                idLegs, originAirport, destinationAirport,
+                departureTime, arrivalTime, List.copyOf(layovers),
+                flightScope);
+    }
+
     public static Flight createFlight(List<LegSummary> legs) {
         if (legs == null || legs.isEmpty())
             throw new DomainRuleException("A flight needs at least one leg");
