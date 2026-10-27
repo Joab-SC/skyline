@@ -1,14 +1,8 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
-import com.uniquindio.skyline.application.dto.request.AddPassengersRequest;
-import com.uniquindio.skyline.application.dto.request.SelectOutboundFlightRequest;
-import com.uniquindio.skyline.application.dto.request.SelectReturnFlightRequest;
-import com.uniquindio.skyline.application.dto.request.SelectSeatRequest;
+import com.uniquindio.skyline.application.dto.request.*;
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
-import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
-import com.uniquindio.skyline.application.usecase.SelectLegSeatUseCase;
-import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
-import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
+import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.infrastructure.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
@@ -31,15 +25,17 @@ public class BookingController {
     private final SelectReturnFlightUseCase selectReturnFlightUseCase;
     private final AddPassengerUseCase addPassengerUseCase;
     private final SelectLegSeatUseCase selectLegSeatUseCase;
+    private final AddLuggageUseCase addLuggageUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
-                             SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase,
+                             SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase,
                              BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
         this.selectLegSeatUseCase = selectLegSeatUseCase;
+        this.addLuggageUseCase = addLuggageUseCase;
         this.mapper = mapper;
     }
 
@@ -84,4 +80,13 @@ public class BookingController {
                 id, request.legSeatId(), request.passengerId(), request.legId());
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
+
+    @PutMapping("/{id}/luggage")
+    public ResponseEntity<BookingResponse> addLuggage(@PathVariable String id,
+                                                      @Valid @RequestBody AddLuggageRequest request) {
+        Booking booking = addLuggageUseCase.execute(request.passengerId(), id, request.quantity());
+        return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
+
+
 }
