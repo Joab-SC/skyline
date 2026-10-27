@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
+import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
 import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
 import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
 import com.uniquindio.skyline.domain.entity.Booking;
@@ -15,9 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.NoSuchElementException;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +40,17 @@ public class BookingControllerTest {
             }
             """;
 
+    private static final String PASSENGERS_JSON = """
+        {
+        "passengers": [
+            { "idDocument": "1094", "documentType": "CITIZENSHIP_ID", "firstName": "Laura",
+              "lastName1": "Duarte", "birthDate": "2000-05-10", "gender": "FEMALE" }
+        ],
+        "holderIdDocument": "1094", "email": "laura@mail.com",
+        "phoneNumber": "3001234567", "phonePrefix": "COLOMBIA"
+        }
+        """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -49,6 +59,9 @@ public class BookingControllerTest {
 
     @MockitoBean
     private SelectReturnFlightUseCase selectReturnFlightUseCase;
+
+    @MockitoBean
+    private AddPassengerUseCase addPassengerUseCase;
 
     @MockitoBean
     private BookingMapper mapper;
@@ -156,5 +169,113 @@ public class BookingControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Valid
 
         verify(selectReturnFlightUseCase, never()).execute(any(), any());
+    }
+
+    // ---------- PUT /api/bookings/{id}/passengers ----------
+
+    @Test
+    void shouldAnswer200WhenPassengersAreAdded() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(addPassengerUseCase.execute(eq("booking-1"), anyList(), any(), any(), any(), any()))
+                .thenReturn(booking);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PASSENGERS_JSON))
+                .andExpect(status().isOk());               // 200
+    }
+
+    @Test
+    void shouldAnswer404WhenBookingForPassengersDoesNotExist() throws Exception {
+        // Arrange
+        when(addPassengerUseCase.execute(any(), anyList(), any(), any(), any(), any()))
+                .thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PASSENGERS_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenHolderIsUnderage() throws Exception {
+        // Arrange
+        when(addPassengerUseCase.execute(any(), anyList(), any(), any(), any(), any()))
+                .thenThrow(new DomainRuleException("The holder must be at least 18 years old"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PASSENGERS_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenPassengerListIsEmpty() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "passengers": [],
+            "holderIdDocument": "1094", "email": "laura@mail.com",
+            "phoneNumber": "3001234567", "phonePrefix": "COLOMBIA"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @NotEmpty
+
+        verify(addPassengerUseCase, never()).execute(any(), anyList(), any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldAnswer400WhenPassengerHasNoFirstName() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "passengers": [
+                { "idDocument": "1094", "documentType": "CITIZENSHIP_ID",
+                  "lastName1": "Duarte", "birthDate": "2000-05-10", "gender": "FEMALE" }
+            ],
+            "holderIdDocument": "1094", "email": "laura@mail.com",
+            "phoneNumber": "3001234567", "phonePrefix": "COLOMBIA"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @Valid on the list
+
+        verify(addPassengerUseCase, never()).execute(any(), anyList(), any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldAnswer400WhenEmailIsInvalid() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "passengers": [
+                { "idDocument": "1094", "documentType": "CITIZENSHIP_ID", "firstName": "Laura",
+                  "lastName1": "Duarte", "birthDate": "2000-05-10", "gender": "FEMALE" }
+            ],
+            "holderIdDocument": "1094", "email": "not-an-email",
+            "phoneNumber": "3001234567", "phonePrefix": "COLOMBIA"
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/passengers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @Email
+
+        verify(addPassengerUseCase, never()).execute(any(), anyList(), any(), any(), any(), any());
     }
 }

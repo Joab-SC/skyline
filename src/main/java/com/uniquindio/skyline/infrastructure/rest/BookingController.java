@@ -1,8 +1,10 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
+import com.uniquindio.skyline.application.dto.request.AddPassengersRequest;
 import com.uniquindio.skyline.application.dto.request.SelectOutboundFlightRequest;
 import com.uniquindio.skyline.application.dto.request.SelectReturnFlightRequest;
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
+import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
 import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
 import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
 import com.uniquindio.skyline.domain.entity.Booking;
@@ -25,13 +27,15 @@ public class BookingController {
 
     private final SelectOutboundFlightUseCase selectOutboundFlightUseCase;
     private final SelectReturnFlightUseCase selectReturnFlightUseCase;
+    private final AddPassengerUseCase addPassengerUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
-                             SelectReturnFlightUseCase selectReturnFlightUseCase,
+                             SelectReturnFlightUseCase selectReturnFlightUseCase,AddPassengerUseCase addPassengerUseCase,
                              BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
+        this.addPassengerUseCase = addPassengerUseCase;
         this.mapper = mapper;
     }
 
@@ -53,6 +57,19 @@ public class BookingController {
     public ResponseEntity<BookingResponse> selectReturnFlight(@PathVariable String id,
                                                               @Valid @RequestBody SelectReturnFlightRequest request) {
         Booking booking = selectReturnFlightUseCase.execute(id, request.returnFlightId());
+        return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
+
+    @PutMapping("/{id}/passengers")
+    public ResponseEntity<BookingResponse> addPassengers(@PathVariable String id,
+                                                         @Valid @RequestBody AddPassengersRequest request) {
+        Booking booking = addPassengerUseCase.execute(
+                id,
+                mapper.toPassengerDataList(request.passengers()),
+                request.holderIdDocument(),
+                request.email(),
+                request.phoneNumber(),
+                request.phonePrefix());
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
 }
