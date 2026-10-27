@@ -66,6 +66,12 @@ public class Passenger  {
         );
     }
 
+    public static Passenger reconstruct(boolean holder, String email, String phoneNumber,
+                                        PhonePrefix phonePrefix, Person person, LuggageDetail luggageDetail) {
+        return new Passenger(holder, Optional.ofNullable(email), Optional.ofNullable(phoneNumber),
+                Optional.ofNullable(phonePrefix), person, Optional.ofNullable(luggageDetail));
+    }
+
     public void addInfoHolder(String email,
                               String phoneNumber, PhonePrefix phonePrefix){
 

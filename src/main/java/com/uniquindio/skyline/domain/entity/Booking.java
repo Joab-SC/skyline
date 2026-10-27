@@ -37,6 +37,29 @@ public class Booking {
         this.paymentDeadline = paymentDeadline;
     }
 
+    // Receives every field, including the status. Used only by reconstruct.
+    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight, Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus, LocalDateTime paymentDeadline) {
+        this.id = id;
+        this.numPassengers = numPassengers;
+        this.price = price;
+        this.passengerList = passengerList;
+        this.idOutboundFlight = idOutboundFlight;
+        this.idReturnFlight = idReturnFlight;
+        this.tripType = tripType;
+        this.detailExtraServices = detailExtraServices;
+        this.bookingStatus = bookingStatus;
+        this.paymentDeadline = paymentDeadline;
+    }
+
+    // Rebuilds a booking already stored, without running the creation rules again.
+    public static Booking reconstruct(String id, int numPassengers, double price, List<Passenger> passengerList,
+                                      String idOutboundFlight, String idReturnFlight, TripType tripType,
+                                      List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus,
+                                      LocalDateTime paymentDeadline) {
+        return new Booking(id, numPassengers, price, passengerList, idOutboundFlight,
+                Optional.ofNullable(idReturnFlight), tripType, detailExtraServices, bookingStatus, paymentDeadline);
+    }
+
     public static Booking createPendingBooking(int numPassengers, double price, String idOutboundFlight,
                                                TripType tripType){
         validateBookingData(
