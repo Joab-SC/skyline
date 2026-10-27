@@ -17,12 +17,13 @@ public class AddPassengerUseCase {
 
     private final BookingRepository bookingRepository;
 
-    public void execute(String idBooking, List<PassengerData> passengers,String idHolder, String email,
+    public Booking execute(String idBooking, List<PassengerData> passengers,String idHolder, String email,
                         String phoneNumber, PhonePrefix phonePrefix ){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
         booking.addPassengers(passengers);
         booking.choseHolder(idHolder, email, phoneNumber,phonePrefix);
         bookingRepository.save(booking);
+        return booking;
     }
 
 }
