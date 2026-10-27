@@ -3,8 +3,10 @@ package com.uniquindio.skyline.infrastructure.rest;
 import com.uniquindio.skyline.application.dto.request.AddPassengersRequest;
 import com.uniquindio.skyline.application.dto.request.SelectOutboundFlightRequest;
 import com.uniquindio.skyline.application.dto.request.SelectReturnFlightRequest;
+import com.uniquindio.skyline.application.dto.request.SelectSeatRequest;
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.usecase.AddPassengerUseCase;
+import com.uniquindio.skyline.application.usecase.SelectLegSeatUseCase;
 import com.uniquindio.skyline.application.usecase.SelectOutboundFlightUseCase;
 import com.uniquindio.skyline.application.usecase.SelectReturnFlightUseCase;
 import com.uniquindio.skyline.domain.entity.Booking;
@@ -28,14 +30,16 @@ public class BookingController {
     private final SelectOutboundFlightUseCase selectOutboundFlightUseCase;
     private final SelectReturnFlightUseCase selectReturnFlightUseCase;
     private final AddPassengerUseCase addPassengerUseCase;
+    private final SelectLegSeatUseCase selectLegSeatUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
-                             SelectReturnFlightUseCase selectReturnFlightUseCase,AddPassengerUseCase addPassengerUseCase,
+                             SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase,
                              BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
+        this.selectLegSeatUseCase = selectLegSeatUseCase;
         this.mapper = mapper;
     }
 
@@ -70,6 +74,14 @@ public class BookingController {
                 request.email(),
                 request.phoneNumber(),
                 request.phonePrefix());
+        return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
+
+    @PutMapping("/{id}/seats")
+    public ResponseEntity<BookingResponse> selectSeat(@PathVariable String id,
+                                                      @Valid @RequestBody SelectSeatRequest request) {
+        Booking booking = selectLegSeatUseCase.execute(
+                id, request.legSeatId(), request.passengerId(), request.legId());
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
 }
