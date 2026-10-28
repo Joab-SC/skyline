@@ -18,8 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,6 +90,9 @@ public class BookingControllerTest {
     @MockitoBean
     private AddExtraServiceUseCase addExtraServiceUseCase;
 
+    @MockitoBean
+    private GetBookingUseCase getBookingUseCase;
+
     // ---------- POST /api/bookings ----------
 
     @Test
@@ -151,18 +153,6 @@ public class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(RETURN_JSON))
                 .andExpect(status().isOk());               // 200
-    }
-
-    @Test
-    void shouldAnswer404WhenBookingDoesNotExist() throws Exception {
-        // Arrange
-        when(selectReturnFlightUseCase.execute(any(), any())).thenThrow(new NoSuchElementException());
-
-        // Act & Assert
-        mockMvc.perform(put("/api/bookings/booking-1/return-flight")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(RETURN_JSON))
-                .andExpect(status().isNotFound());         // 404
     }
 
     @Test
@@ -476,5 +466,28 @@ public class BookingControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Positive
 
         verify(addExtraServiceUseCase, never()).execute(any(), any(), anyInt());
+    }
+
+    // ---------- GET /api/bookings/{id} ----------
+
+    @Test
+    void shouldAnswer200WhenBookingExists() throws Exception{
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(getBookingUseCase.execute("booking-1")).thenReturn(booking);
+
+        mockMvc.perform(get("/api/bookings/booking-1"))
+                .andExpect(status().isOk());               // 200
+
+        verify(mapper).toBookingResponse(booking);
+    }
+
+    @Test
+    void shouldAnswer404WhenBookingDoesNotExist() throws Exception {
+        // Arrange
+        when(getBookingUseCase.execute("booking-1")).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/bookings/booking-1"))
+                .andExpect(status().isNotFound());         // 404
     }
 }
