@@ -61,6 +61,12 @@ public class BookingControllerTest {
         }
         """;
 
+    private static final String EXTRA_SERVICE_JSON = """
+        {
+        "extraServiceId": "service-1", "quantity": 2
+        }
+        """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -81,6 +87,9 @@ public class BookingControllerTest {
 
     @MockitoBean
     private AddLuggageUseCase addLuggageUseCase;
+
+    @MockitoBean
+    private AddExtraServiceUseCase addExtraServiceUseCase;
 
     // ---------- POST /api/bookings ----------
 
@@ -409,5 +418,63 @@ public class BookingControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Positive
 
         verify(addLuggageUseCase, never()).execute(any(), any(), anyInt());
+    }
+
+    // ---------- PUT /api/bookings/{id}/extra-services ----------
+
+    @Test
+    void shouldAnswer200WhenExtraServiceIsAdded() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(addExtraServiceUseCase.execute("booking-1", "service-1", 2)).thenReturn(booking);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/extra-services")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(EXTRA_SERVICE_JSON))
+                .andExpect(status().isOk());               // 200
+    }
+
+    @Test
+    void shouldAnswer404WhenExtraServiceDoesNotExist() throws Exception {
+        // Arrange
+        when(addExtraServiceUseCase.execute(any(), any(), anyInt())).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/extra-services")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(EXTRA_SERVICE_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenBookingIsNotPending() throws Exception {
+        // Arrange
+        when(addExtraServiceUseCase.execute(any(), any(), anyInt()))
+                .thenThrow(new DomainRuleException("Only pending bookings can be modified"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/extra-services")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(EXTRA_SERVICE_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenExtraServiceQuantityIsZero() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "extraServiceId": "service-1", "quantity": 0
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/extra-services")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400 by @Positive
+
+        verify(addExtraServiceUseCase, never()).execute(any(), any(), anyInt());
     }
 }
