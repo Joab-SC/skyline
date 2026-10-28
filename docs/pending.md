@@ -2,9 +2,11 @@
 
 Open items in the code and docs. Each use case is described in [use-cases/README.md](use-cases/README.md). Items already done were removed; see the git history for them.
 
+## Catalog
+- [ ] `CreateAircraftUseCase` and `CreateLegUseCase` call `airline.addAircraft` / `airline.addLeg` but never save the airline, so with JPA the airline loses the link. Call `airlineRepository.save(airline)`. → `CreateAircraftUseCase`, `CreateLegUseCase`
+
 ## Close the purchase
-- [ ] GetBooking: return a booking by id with `GET /api/bookings/{id}`. `POST /api/bookings` already returns a `Location` header that points there, and it answers 404 today. → new use case, `BookingController`
-- [ ] Decide whether the booking response shows each passenger's seat per leg. Seats live in `LegSeat`, so the booking alone does not know them. → `BookingResponse`, GetBooking
+- [ ] Decide whether the booking response shows each passenger's seat per leg. Seats live in `LegSeat`, so `GET /api/bookings/{id}` does not show them. → `BookingResponse`, `GetBookingUseCase`
 - [ ] Implement PayBooking: `Booking.confirm()` checks `PENDING` and the payment deadline, then sets `CONFIRMED`. Add the endpoint. → `Booking`, new use case, `BookingController`
 - [ ] PayBooking with a passed deadline: only throw `DomainRuleException`. Expiring the booking and releasing its seats belongs to the expiration job. → `pay-booking.md` (step 2 says to expire it there)
 - [ ] `registerPassengerLuggage` checks `PENDING` but not the payment deadline. Use `validateIsModifiable()` like extra services and seats. → `Booking`

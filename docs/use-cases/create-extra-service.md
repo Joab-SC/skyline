@@ -2,6 +2,7 @@
 
 **Status:** Implemented
 **Class:** `application/usecase/CreateExtraServiceUseCase.java`
+**Endpoint:** `POST /api/extra_services`
 
 ## Purpose
 Creates an extra service with its national and international prices and adds it to an airline. `ExtraService` is an entity inside the Airline aggregate, so it has no repository of its own: it is saved with the airline.
@@ -28,7 +29,8 @@ The created `ExtraService`.
 4. Return the extra service.
 
 ## Rules and errors
-- The airline must exist, or `NoSuchElementException` is thrown.
+- The airline must exist, or `NoSuchElementException` is thrown (404 in REST).
+- The client lists the services of an airline with [ListAirlineExtraServices](list-airline-extra-services.md).
 
 The following throw `DomainRuleException`:
 - The name cannot be null or empty.

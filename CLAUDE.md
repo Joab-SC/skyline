@@ -20,22 +20,26 @@ Use `gradlew.bat` on Windows and `./gradlew` in bash.
 
 There is no linter or formatter configured.
 
-`SkylineApplicationTests` is a `@SpringBootTest`. JPA and the MariaDB driver are on the classpath, but `application.properties` configures no datasource. Expect this test to fail when a database is unavailable. Run specific test classes when you only need to check domain or use-case logic.
+The app uses an in-memory H2 database (`application.properties`), created on startup (`ddl-auto=create-drop`) and filled from `src/main/resources/data.sql`. The H2 console is at `/h2-console`. The MariaDB driver is also on the classpath but not configured. `SkylineApplicationTests` is a `@SpringBootTest`. Run specific test classes when you only need to check domain or use-case logic.
 
 ## Architecture
 
 The code is organized in hexagonal/DDD layers under `src/main/java/com/uniquindio/skyline/`:
 
-- `domain/` is plain Java with no Spring annotations. It depends only on Lombok (`@Getter`).
+- `domain/` is plain Java with no Spring annotations. It depends only on Lombok (`@Getter`). One exception today: `BookingExpirationValidator` imports Spring's `@Scheduled` (see pending).
   - `entity/`: aggregates and entities (`Booking`, `Flight`, `Leg`, `Aircraft`, `Airline`, `Passenger`, …). Constructors are private, and objects are built through static factories such as `Booking.createPendingBooking(...)`. These factories validate their input. State changes happen through behavior methods (`addReturnFlight`, …), not through setters.
   - `valueObject/`: immutable value objects and enums (`Seat`, `Layover`, `LuggageDetail`, `BookingStatus`, `TripType`, …). They validate in their constructors.
   - `service/`: domain services for rules that span aggregates (`LegOverlapValidator`, `SeatsAvailableReducer`, `FlightSearcher`, `BookingExpirationValidator`, …). They receive repository interfaces through their constructors.
   - `repository/`: repository **interfaces** (ports).
   - `exception/DomainRuleException`: the single unchecked exception thrown for any violated invariant or business rule.
 - `application/`
-  - `usecase/`: one class per use case. Each has a single `execute(...)` method and gets its repositories and domain services through constructor injection. A use case typically loads data from repositories, delegates rules to entities and domain services, saves the result, and returns it.
-  - `dto/request`, `dto/response`: DTOs for use cases.
-- `infrastructure/persistence/`: `*RepositoryInMemory` implementations of the domain repository interfaces, backed by `HashMap`s. There are no JPA entities or Spring wiring yet; use cases are not registered as beans.
+  - `usecase/`: one class per use case, annotated `@Service` with `@RequiredArgsConstructor`. Each has a single `execute(...)` method and gets its repositories and domain services through constructor injection. A use case typically loads data from repositories, delegates rules to entities and domain services, saves the result, and returns it. A missing entity is usually `findById(...).orElseThrow()`, which throws `NoSuchElementException`.
+  - `dto/request`, `dto/response`: DTOs for use cases. Requests use Jakarta Bean Validation (`@NotBlank`, `@Positive`, …).
+- `infrastructure/`
+  - `config/DomainServiceConfig`: registers the domain services as Spring beans, since the domain has no Spring annotations.
+  - `persistence/jpa/`: the active adapters. For each aggregate there is a `*Entity` (`jpa/entity`), a `*PersistenceMapper` (`jpa/mapper`) with `reconstruct` on the way back to the domain, a Spring Data `*JpaDataRepository`, and a `*RepositoryJpa` that implements the domain port.
+  - `persistence/`: `FlightSearchCacheInMemory` (the only in-memory bean, it keeps searched flights until one is selected) and older `*RepositoryInMemory` classes that are not beans; the domain service tests use them.
+  - `rest/`: one controller per aggregate (`/api/airlines`, `/api/aircrafts`, `/api/legs`, `/api/flights`, `/api/bookings`, `/api/extra_services`), REST mappers in `rest/mapper`, and `GlobalExceptionHandler`, which answers `DomainRuleException` with 400 and `NoSuchElementException` with 404.
 
 Aggregates reference each other by **id (String)**, not by object reference. For example, `Booking` holds `idOutboundFlight` and an `Optional<String> idReturnFlight`.
 
@@ -44,6 +48,9 @@ Aggregates reference each other by **id (String)**, not by object reference. For
 `src/test` mirrors the main package structure, and the tests use JUnit 5.
 - Domain entity, value object, and service tests construct objects directly and assert `DomainRuleException` for rule violations.
 - Use-case tests use Mockito (`@ExtendWith(MockitoExtension.class)`, `@Mock`, `@InjectMocks`) to mock repositories and domain services. They follow Arrange/Act/Assert comments.
+- Controller tests use `@WebMvcTest(XController.class)` with `MockMvc` and `@MockitoBean` for the use cases and mappers.
+- Persistence tests (`infrastructure/persistence/jpa/*DataJpaTest`) use `@DataJpaTest` against H2. `*RepositoryJpaTest` load the full context with `@SpringBootTest`.
+- Domain service tests use the `*RepositoryInMemory` classes instead of mocks.
 
 ## Domain documentation
 

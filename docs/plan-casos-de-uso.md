@@ -12,7 +12,7 @@ Contexto para retomar el trabajo en otro chat.
 - Plazo: 1 mes, haciendo también el front con ayuda de IA.
 - Los detalles de cada caso están en [use-cases/README.md](use-cases/README.md) y lo que falta en [pending.md](pending.md).
 
-## Casos de uso implementados (13)
+## Casos de uso implementados (14)
 
 | # | Caso de uso | Clase | Endpoint REST |
 |---|---|---|---|
@@ -29,41 +29,43 @@ Contexto para retomar el trabajo en otro chat.
 | 11 | Agregar equipaje | `AddLuggageUseCase` | `PUT /api/bookings/{id}/luggage` |
 | 12 | Agregar servicios extra a la reserva | `AddExtraServiceUseCase` | `PUT /api/bookings/{id}/extra-services` |
 | 13 | Listar servicios extra de una aerolínea | `ListAirlineExtraServicesUseCase` | `GET /api/airlines/{id}/extra-services` |
+| 14 | Consultar reserva por id | `GetBookingUseCase` | `GET /api/bookings/{id}` |
 
-## Casos de uso por hacer en el mes (20)
+## Casos de uso por hacer en el mes (19)
 
-### Prioridad 1 – Cerrar el flujo de compra (3)
+### Prioridad 1 – Cerrar el flujo de compra (2)
 1. **Resumen de la reserva (`CalculateBooking`)**: precio desglosado (vuelos, asientos, equipaje, extras, impuestos) antes de pagar. Opcional: la reserva ya acumula el precio total.
 2. **Pagar reserva (`PayBooking`)**: pasa la reserva a `CONFIRMED`. Necesita `Booking.confirm()` que valide `PENDING` y que no esté vencida. El pago puede ser simulado.
-3. **Consultar reserva por id**: ver el estado y el detalle en cualquier momento.
 
 ### Prioridad 2 – Ciclo de vida de la reserva (4)
-4. **Cancelar reserva pendiente (`CancelBooking`)**: valida `PENDING` y devuelve los asientos a los legs. Hoy `Booking.cancelBooking()` no valida el estado.
-5. **Expirar reservas vencidas**: `BookingExpirationValidator` ya existe pero el `for` está vacío y falta `@EnableScheduling`. Debe reutilizar la lógica de cancelar con estado `EXPIRED`.
-6. **Quitar o cambiar asiento de un pasajero.**
-7. **Quitar equipaje o un servicio extra de la reserva.**
+3. **Cancelar reserva pendiente (`CancelBooking`)**: valida `PENDING` y devuelve los asientos a los legs. Hoy `Booking.cancelBooking()` no valida el estado.
+4. **Expirar reservas vencidas**: `BookingExpirationValidator` ya existe pero el `for` está vacío y falta `@EnableScheduling`. Debe reutilizar la lógica de cancelar con estado `EXPIRED`.
+5. **Quitar o cambiar asiento de un pasajero.**
+6. **Quitar equipaje o un servicio extra de la reserva.**
 
 ### Prioridad 3 – Usuarios y seguridad (5)
-8. **Registrar usuario**: `UserEntity` hereda de `PersonEntity`.
-9. **Iniciar sesión (login con JWT).**
-10. **Roles: administrador y cliente** (proteger endpoints de catálogo para admin).
-11. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
-12. **Ver y editar mi perfil.**
+7. **Registrar usuario**: `UserEntity` hereda de `PersonEntity`.
+8. **Iniciar sesión (login con JWT).**
+9. **Roles: administrador y cliente** (proteger endpoints de catálogo para admin).
+10. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
+11. **Ver y editar mi perfil.**
 
 ### Catálogo – Lo que necesita el front (8)
-13. Listar aerolíneas
-14. Ver detalle de aerolínea
-15. Listar aviones
-16. Ver detalle de avión
-17. Listar legs
-18. Ver detalle de leg
-19. Listar servicios extra (todos; los de una aerolínea ya están en el caso 13 implementado)
-20. Ver detalle de servicio extra
+`AirlineRepository` y `AircraftRepository` no tienen `findAll` todavía; `LegRepository` sí.
+
+12. Listar aerolíneas
+13. Ver detalle de aerolínea
+14. Listar aviones
+15. Ver detalle de avión
+16. Listar legs
+17. Ver detalle de leg
+18. Listar servicios extra (todos; los de una aerolínea ya están en el caso 13 implementado)
+19. Ver detalle de servicio extra
 
 ### Opcional si sobra tiempo
 - Check-in simple del pasajero.
 
-**Total al final del mes: 33 casos de uso** (13 actuales + 20 nuevos).
+**Total al final del mes: 33 casos de uso** (14 actuales + 19 nuevos).
 
 ## Fuera del mes (versión 2)
 

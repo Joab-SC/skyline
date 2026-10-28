@@ -15,13 +15,13 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 7 | [AssignSeatToPassenger](assign-seat-to-passenger.md) | Assigns an available seat on a leg to a passenger, marks it occupied and adds the seat price. | `BookingRepository`, `LegRepository`, `FlightRepository`, `AirlineRepository` | `PUT /api/bookings/{id}/seats` | Implemented |
 | 8 | [AddLuggage](add-luggage.md) | Sets the passenger's luggage detail for the whole booking and adds its subtotal. | `BookingRepository`, `FlightRepository`, `LegRepository`, `AirlineRepository` | `PUT /api/bookings/{id}/luggage` | Implemented |
 | 9 | [AddExtraServices](add-extra-services.md) | Adds booking-level extra service details and adds their subtotal (national or international price). | `BookingRepository`, `FlightRepository`, `AirlineRepository` | `PUT /api/bookings/{id}/extra-services` | Implemented |
-| 10 | [PayBooking](pay-booking.md) | Confirms a `PENDING` booking. | `BookingRepository`, `FlightRepository`, `LegRepository` | — | Not implemented |
+| 10 | [PayBooking](pay-booking.md) | Confirms a `PENDING` booking. | `BookingRepository` (plus `FlightRepository`, `LegRepository` if it expires the booking) | — | Not implemented |
 | 11 | [CancelBooking](cancel-booking.md) | Cancels a `PENDING` booking and returns its seats. Expiration reuses this logic with `EXPIRED`. | `BookingRepository`, `FlightRepository`, `LegRepository` | — | Not implemented |
 | 12 | [CreateExtraService](create-extra-service.md) | Creates an extra service with national and international prices and adds it to an airline. | `AirlineRepository` | `POST /api/extra_services` | Implemented |
 | 13 | [GetLegSeatMap](get-leg-seat-map.md) | Returns a leg's seats with their status so the client can pick one. | `LegRepository` | `GET /api/legs/{id}/seats` | Implemented |
 | 14 | [ListAirlineExtraServices](list-airline-extra-services.md) | Returns an airline's extra services so the client can choose them. | `AirlineRepository` | `GET /api/airlines/{id}/extra-services` | Implemented |
 | 15 | [GetBooking](get-booking.md) | Returns a booking with its current state. | `BookingRepository` | `GET /api/bookings/{id}` | Implemented |
-| 16 | CreateAirline | Creates an airline with its maximum luggage amount and seat price. No doc file yet. | `AirlineRepository` | `POST /api/airlines` | Implemented |
+| 16 | [CreateAirline](create-airline.md) | Creates an airline with its maximum luggage amount and seat price. | `AirlineRepository` | `POST /api/airlines` | Implemented |
 
 ## Booking flow
 

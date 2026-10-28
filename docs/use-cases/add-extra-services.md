@@ -2,6 +2,7 @@
 
 **Status:** Implemented
 **Class:** `application/usecase/AddExtraServiceUseCase.java`
+**Endpoint:** `PUT /api/bookings/{id}/extra-services`
 
 ## Purpose
 Adds extra services to a `PENDING` booking as extra service details (service, quantity, subtotal) and adds the subtotal to the booking price. Extra services apply to the **whole booking** (the whole trip), not to a passenger. For example, "bring an instrument" appears on the booking without saying who brings it.
@@ -20,15 +21,17 @@ The updated `Booking`.
 - Repositories: `BookingRepository`, `FlightRepository`, `AirlineRepository`
 
 ## Steps
-1. Find the booking and check that it is `PENDING`.
-2. Find the outbound flight and its airline. The outbound and return flights belong to the same airline.
-3. Decide whether the flight is international (see below).
-4. For each service:
-   1. Find it in the airline. The `ExtraService` entities belong to the Airline aggregate.
-   2. Unit price = `internationalPrice` if international, else `nationalPrice`.
-   3. Create a `DetailExtraService` value object with `subtotal = quantity × unit price`.
-   4. If the booking already has a detail for that service, the new detail **replaces** it: subtract the old subtotal and add the new one. Otherwise add the subtotal.
-5. Save and return the booking.
+1. Find the booking.
+2. Find the outbound flight and its airline (`flight.getAirlineId()`). The outbound and return flights belong to the same airline, so the client does not send the airline.
+3. Find the service in the airline. The `ExtraService` entities belong to the Airline aggregate.
+4. Unit price = `extraService.getPrice(outboundFlight.getFlightScope())`: `internationalPrice` if the flight is international, else `nationalPrice` (see below).
+5. `booking.addExtraService(serviceId, quantity, unitPrice)`:
+   1. checks that the booking can be modified (`PENDING` and before `paymentDeadline`);
+   2. creates a `DetailExtraService` value object with `subtotal = quantity × unit price`;
+   3. if the booking already has a detail for that service, the new detail **replaces** it: subtract the old subtotal and add the new one. Otherwise add the subtotal.
+6. Save and return the booking.
+
+One call adds one service. To add several, the client calls the endpoint once per service.
 
 ## International flight
 - `City` has a `Country`; an `Airport` gets its country through its `City`.
@@ -36,6 +39,8 @@ The updated `Booking`.
 - A flight is `INTERNATIONAL` when **at least one** of its legs connects airports of different countries. Layovers count, so BOG→PTY→MDE is international because BOG→PTY crosses a border. Otherwise the flight is `NATIONAL`.
 - The rule is global per airline: an airline charges the same international price for any international flight (e.g. Miami or Hong Kong).
 
-## Rules and errors (`DomainRuleException`)
-- The service exists in the airline of the booking flights.
-- `quantity > 0`.
+## Rules and errors
+- `DomainRuleException`:
+  - the booking is `PENDING` and its payment deadline has not passed;
+  - `quantity > 0`.
+- The booking, the outbound flight, the airline or the service does not exist: `NoSuchElementException` (404 in REST). A service of another airline is not found.

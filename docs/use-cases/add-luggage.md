@@ -2,6 +2,7 @@
 
 **Status:** Implemented
 **Class:** `application/usecase/AddLuggageUseCase.java`, `domain/service/LuggageDetailCreator.java`
+**Endpoint:** `PUT /api/bookings/{id}/luggage`
 
 ## Purpose
 Registers the luggage detail of a passenger in a `PENDING` booking and adds its subtotal to the booking price. Each passenger has **one** `LuggageDetail` for the whole booking (outbound, or outbound and return). Calling it again **replaces** the previous detail.
@@ -31,14 +32,17 @@ The updated `Booking`.
       - `subTotal` = `amount × Σ leg.getLuggage().getPrice()`.
    5. Returns `booking.createLuggageDetail(luggageIds, amount, subTotal, airline.getMaximumLuggageAmount())`, which builds the `LuggageDetail`.
 3. The use case calls `booking.registerPassengerLuggage(passengerId, luggageDetail)`, which:
-   1. checks that the booking is `PENDING`;
+   1. checks that the booking is `PENDING`. It does not check the payment deadline, unlike seats and extra services (see [pending.md](../pending.md));
    2. finds the passenger by `idDocument`;
    3. subtracts the old `subTotal` if the passenger already had a detail;
    4. replaces the detail and adds the new `subTotal` to the booking price.
 4. The use case saves and returns the booking.
 
-## Rules and errors (`DomainRuleException`)
-- The booking exists and is `PENDING`; the passenger belongs to the booking.
+## Rules and errors
+- The booking or the passenger does not exist: `NoSuchElementException` (404 in REST).
+
+The following throw `DomainRuleException`:
+- The booking is `PENDING`.
 - The flights, legs and airline exist.
 - `LuggageDetail(luggageIds, quantity, subTotal, maxQuantity)` validates in its constructor:
   - `quantity > 0`;

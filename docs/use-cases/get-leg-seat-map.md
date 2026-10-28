@@ -2,6 +2,7 @@
 
 **Status:** Implemented
 **Class:** `application/usecase/GetLegSeatMapUseCase.java`
+**Endpoint:** `GET /api/legs/{id}/seats`
 
 ## Purpose
 Returns a leg with its seats so the client can show the seat map before choosing a seat with AssignSeatToPassenger. It only reads data and changes nothing.
@@ -22,5 +23,5 @@ The `Leg`, including its `LegSeat` list with each seat's code and status.
 2. Return the leg.
 
 ## Rules and errors
-- The leg must exist, or `NoSuchElementException` is thrown.
+- The leg must exist, or `NoSuchElementException` is thrown (404 in REST).
 - The REST response does not include the passenger of each seat, so other bookings' document ids are never exposed.

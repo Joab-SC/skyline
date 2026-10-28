@@ -1,7 +1,8 @@
 # CreateAircraft
 
-**Status:** Implemented
+**Status:** Implemented (no use-case test yet)
 **Class:** `application/usecase/CreateAircraftUseCase.java`
+**Endpoint:** `POST /api/aircrafts`
 
 ## Purpose
 Creates an aircraft from its model, generates its seats and links it to an airline.
@@ -19,16 +20,19 @@ The created `Aircraft`.
 - Repositories: `AircraftRepository`, `AirlineRepository`
 
 ## Steps
-1. Create the aircraft with `Aircraft.createAircraft(aircraftModel)`. This generates its seats:
-   - `rows = ceil(maxSeats / seatColumns.size())`
-   - Seat codes are `row + column` (`1A`, `1B`, …). Generation stops at `maxSeats`.
+1. Create the aircraft with `Aircraft.createAircraft(aircraftModel)`. It gets a UUID and its seats:
+   - `rows = ceil(maxSeats / seatColumns.size())`;
+   - seat codes are `row + column` (`1A`, `1B`, …). Generation stops at `maxSeats`.
 2. Find the airline by `airlineId`.
 3. Link the aircraft with `airline.addAircraft(aircraft.getId())`.
 4. Save the aircraft in `AircraftRepository`.
 5. Return the aircraft.
 
-## Rules and errors (`DomainRuleException`)
-- `aircraftModel` cannot be null.
-- The airline must exist ("Airline not found to create the aircraft").
-- The aircraft id cannot already be in the airline, and cannot be empty.
+The airline is **not saved** after step 3, so the link is lost with JPA. See [pending.md](../pending.md).
+
+## Rules and errors
+- `DomainRuleException`:
+  - `aircraftModel` cannot be null;
+  - the aircraft id cannot already be in the airline, and cannot be empty.
+- The airline must exist, or `NoSuchElementException` is thrown (404 in REST).
 - Aircraft invariants: see [aircraft-aggregate/invariants.md](../aircraft-aggregate/invariants.md).

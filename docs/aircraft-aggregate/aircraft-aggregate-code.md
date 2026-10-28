@@ -2,24 +2,18 @@
 classDiagram
 direction TB
 namespace AircraftAggregate {
-class Aircraft {
-<<AggregateRoot>>
-- String id
-- AircraftModel aircraftModel
-- int numSeats
-- List~Seat~ seats
-+ createAircraft(String id, AircraftModel aircraftModel) Aircraft$
-}
-
-    class Seat {
-        <<Entity>>
+    class Aircraft {
+        <<AggregateRoot>>
         - String id
-        - String code
-        - SeatStatus seatStatus
+        - AircraftModel aircraftModel
+        - List~Seat~ seats
+        + createAircraft(AircraftModel aircraftModel) Aircraft$
+        + reconstruct(String id, AircraftModel aircraftModel, List~Seat~ seats) Aircraft$
     }
 
-    class SeatStatus {
-        <<enumeration>>
+    class Seat {
+        <<ValueObject>>
+        String code
     }
 
     class AircraftModel {
@@ -30,10 +24,13 @@ class Aircraft {
         BOEING_737_8_MAX
         BOEING_737_9_MAX
         EMBRAER_E175
+        - int maxSeats
+        - List~String~ seatColumns
     }
 }
 
 Aircraft "1" *-- "1..*" Seat : seats
-Aircraft "1" *-- "1" AircraftModel : aircraftModel
-Seat "1" --> "1" SeatStatus : seatStatus
+Aircraft "1" --> "1" AircraftModel : aircraftModel
 ```
+
+A `Seat` is only a code (`1A`, `1B`, …). Its status per leg lives in `LegSeat`, inside the Leg aggregate.
