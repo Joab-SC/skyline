@@ -8,11 +8,16 @@ import lombok.Setter;
 
 
 @Entity
+@IdClass(PassengerId.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(name = "passengers")
 public class PassengerEntity extends PersonEntity {
+
+    @Id
+    @Column(name = "booking_id", length = 50)
+    private String bookingId;
 
     @Column(nullable = false)
     private boolean holder;

@@ -27,7 +27,7 @@ public class BookingPersistenceMapper {
         bookingEntity.setNumPassengers(booking.getNumPassengers());
         bookingEntity.setPrice(booking.getPrice());
         bookingEntity.setPassengerList(booking.getPassengerList().stream()
-                .map(this::toPassengerEntity)
+                .map(passenger -> toPassengerEntity(passenger, booking.getId()))
                 .collect(Collectors.toCollection(ArrayList::new)));
         bookingEntity.setIdOutboundFlight(booking.getIdOutboundFlight());
         bookingEntity.setIdReturnFlight(booking.getIdReturnFlight().orElse(null));
@@ -62,9 +62,10 @@ public class BookingPersistenceMapper {
 
 
 
-    private PassengerEntity toPassengerEntity(Passenger passenger) {
+    private PassengerEntity toPassengerEntity(Passenger passenger, String bookingId) {
         PassengerEntity passengerEntity = new PassengerEntity();
         personMapper.fillEntity(passenger.getPerson(), passengerEntity);
+        passengerEntity.setBookingId(bookingId);
         passengerEntity.setHolder(passenger.isHolder());
         passengerEntity.setEmail(passenger.getEmail().orElse(null));
         passengerEntity.setPhoneNumber(passenger.getPhoneNumber().orElse(null));

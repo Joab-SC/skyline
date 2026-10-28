@@ -17,7 +17,10 @@ import java.util.List;
 public class LuggageDetailEmbeddable {
 
     @ElementCollection
-    @CollectionTable(name = "passenger_luggages", joinColumns = @JoinColumn(name = "passenger_id"))
+    // The passenger key is composite, so the luggage rows point to it with both columns.
+    @CollectionTable(name = "passenger_luggages", joinColumns = {
+            @JoinColumn(name = "booking_id", referencedColumnName = "booking_id"),
+            @JoinColumn(name = "id_document", referencedColumnName = "id_document")})
     @Column(name = "luggage_id", nullable = false, length = 50)
     private List<String> luggageIds = new ArrayList<>();
 

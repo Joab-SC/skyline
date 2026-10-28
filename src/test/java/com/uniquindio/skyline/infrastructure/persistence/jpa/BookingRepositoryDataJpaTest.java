@@ -156,6 +156,27 @@ class BookingRepositoryDataJpaTest {
     }
 
     @Test
+    void shouldSaveSamePersonAsPassengerInTwoBookings() {
+        // Arrange: the passenger key is (booking, document), so the same person can be in both bookings
+        Booking firstBooking = createBooking();
+        Booking secondBooking = createBooking();
+
+        // Act
+        bookingRepository.save(firstBooking);
+        bookingRepository.save(secondBooking);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        Booking firstRecovered = bookingRepository.findById(firstBooking.getId()).orElseThrow();
+        Booking secondRecovered = bookingRepository.findById(secondBooking.getId()).orElseThrow();
+        assertTrue(firstRecovered.getPassenger(HOLDER_DOCUMENT).isPresent());
+        assertTrue(secondRecovered.getPassenger(HOLDER_DOCUMENT).isPresent());
+        assertEquals(2, firstRecovered.getPassengerList().size());
+        assertEquals(2, secondRecovered.getPassengerList().size());
+    }
+
+    @Test
     void shouldReturnEmptyWhenBookingDoesNotExist() {
         // Arrange
         bookingRepository.save(createBooking());
