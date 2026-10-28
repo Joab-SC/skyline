@@ -10,7 +10,7 @@ Adds extra services to a `PENDING` booking as extra service details (service, qu
 | Name | Type | Description |
 |------|------|-------------|
 | `bookingId` | `String` | Booking id. |
-| `serviceId` | `String` | Extra service id. It must belong to the airline of the outbound flight. |
+| `serviceId` | `String` | Extra service id. It must belong to the airline of the outbound flight. The client gets the available ids from [ListAirlineExtraServices](list-airline-extra-services.md). |
 | `quantity` | `int` | How many units of the service. |
 
 ## Output
