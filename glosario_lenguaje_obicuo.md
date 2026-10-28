@@ -50,7 +50,8 @@
 **Estados validos:**
 - PENDIENTE: Reserva recien creada, en ella el usuario está llenando sus datos y preferencias.
 - CONFIRMADA: Reserva paga, el usuario ya realizó la transacción y es el mismo comprobante del proceso.   
-- CANCELADA: Reserva finalizada sin haber sido pagada, el usuario decide no pagar o seguir con el proceso, o tarda mucho en hacerlo. 
+- CANCELADA: Reserva finalizada sin haber sido pagada, porque el usuario decide no pagar o no seguir con el proceso.
+- EXPIRADA: Reserva finalizada sin haber sido pagada, porque pasó su plazo de pago (20 minutos desde que se creó). Al expirar, sus asientos se liberan igual que al cancelarla.
 ---
 
 ### Comision

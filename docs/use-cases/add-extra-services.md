@@ -30,10 +30,10 @@ The updated `Booking`.
    4. If the booking already has a detail for that service, the new detail **replaces** it: subtract the old subtotal and add the new one. Otherwise add the subtotal.
 5. Save and return the booking.
 
-## International flight (proposal, to be confirmed)
-- Add a `Country` enum and a country attribute to `City`; an `Airport` gets its country through its `City`.
-- A flight is international when the country of the outbound flight's origin airport differs from the country of its destination airport.
-- Only the origin and destination count. Layovers do not, so BOG→PTY→MDE is national.
+## International flight
+- `City` has a `Country`; an `Airport` gets its country through its `City`.
+- The outbound flight's `flightScope` decides the price. It is set when the flight is created (`Flight.determineFlightScope`).
+- A flight is `INTERNATIONAL` when **at least one** of its legs connects airports of different countries. Layovers count, so BOG→PTY→MDE is international because BOG→PTY crosses a border. Otherwise the flight is `NATIONAL`.
 - The rule is global per airline: an airline charges the same international price for any international flight (e.g. Miami or Hong Kong).
 
 ## Rules and errors (`DomainRuleException`)
