@@ -5,12 +5,12 @@
 **Endpoint:** `GET /api/airlines/{id}/extra-services`
 
 ## Purpose
-Returns the extra services of an airline so the client can show them before adding them to a booking with AddExtraServices. It only reads data and changes nothing.
+Returns the extra services of an airline so the client can show them before adding them to a booking with [AddExtraServices](add-extra-services.md) (`PUT /api/bookings/{id}/extra-services`). It only reads data and changes nothing.
 
 ## Inputs
 | Name | Type | Description |
 |------|------|-------------|
-| `airlineId` | `String` | Airline whose extra services are requested. |
+| `airlineId` | `String` | Airline whose extra services are requested. The client takes it from the `airlineId` of the selected flight (`FlightResponse`). |
 
 ## Output
 The airline's `ExtraService` list. The REST response maps each one to an `ExtraServiceResponse`.
