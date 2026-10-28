@@ -1,7 +1,8 @@
 # SelectReturnFlight
 
-**Status:** Implemented, but differs from the design (see [pending.md](../pending.md)).
+**Status:** Implemented
 **Class:** `application/usecase/SelectReturnFlightUseCase.java`
+**Endpoint:** `PUT /api/bookings/{id}/return-flight`
 
 ## Purpose
 Adds the return flight to a `PENDING` `ROUND_TRIP` booking, reduces the available seats on that flight's legs, adds its price and returns the booking.
@@ -10,37 +11,31 @@ Adds the return flight to a `PENDING` `ROUND_TRIP` booking, reduces the availabl
 | Name | Type | Description |
 |------|------|-------------|
 | `idBooking` | `String` | Booking id. |
-| `idReturnFlight` | `String` | Id of the chosen return flight. |
+| `idReturnFlight` | `String` | Id of the chosen return flight, from the [SearchFlights](search-flights.md) results. |
 
 ## Output
 The updated `Booking`.
 
 ## Dependencies
-- Repositories: `BookingRepository`, `FlightRepository`, `LegRepository` (through `SeatsAvailableReducer`)
+- Repositories: `BookingRepository`, `FlightRepository`, `FlightSearchCache`, `LegRepository` (through `SeatsAvailableReducer`)
 - Domain services: `OutboundAndReturnFlightsValidator`, `SeatsAvailableReducer`
-- Target design: `FlightSearchCache` (does not exist yet; separate from `FlightRepository`)
 
-## Steps (current code)
+## Steps
 1. Find the booking.
-2. Find the return flight in `FlightRepository`.
-3. Add it with `booking.addReturnFlight(flight.getId(), flight.getPrice())`. This adds the flight price to the booking.
-4. Check that the return flight departs from the outbound destination airport (`OutboundAndReturnFlightsValidator`).
-5. Reduce `availableSeats` by `numPassengers` on every leg of the return flight.
-6. Return the booking. The booking is not saved.
+2. Get the return flight from `FlightSearchCache` and the outbound flight from `FlightRepository`.
+3. Validate before changing anything:
+   1. `OutboundAndReturnFlightsValidator`: the two flights are compatible (see rules).
+   2. `booking.validateReturnFlight`: the booking accepts a return flight (see rules).
+4. Reduce `availableSeats` by `numPassengers` on every leg of the return flight.
+5. `booking.addReturnFlight`: store the flight id and add `flight.price × numPassengers` to the price.
+6. Save the return flight and the booking, then return the booking.
 
-## Target design (pending)
-1. Find the booking and check that it is `PENDING`.
-2. Get the return flight from `FlightSearchCache` and save it in `FlightRepository`.
-3. Validate before changing the booking:
-   - the return flight departs from the outbound destination airport;
-   - the outbound and return flights belong to the **same airline**.
-4. Add the return flight; the price added is `flight.price × numPassengers`.
-5. Reduce the available seats.
-6. Save and return the booking.
-
-## Rules and errors (`DomainRuleException`)
-- A `ONE_WAY` booking cannot have a return flight.
-- `idReturnFlight` is not empty; the price is greater than 0.
-- Return flight origin = outbound flight destination.
-- Every leg must have enough available seats.
-- Current code: the "not found" errors for the booking and the flight have an empty message.
+## Rules and errors
+- `DomainRuleException`:
+  - the outbound and return flights belong to the **same airline**;
+  - the return flight departs from the outbound destination and arrives at the outbound origin;
+  - the return flight departs after the outbound flight arrives;
+  - the booking is `PENDING`, is `ROUND_TRIP` and has no return flight yet;
+  - `idReturnFlight` is not empty and the price is greater than 0;
+  - every leg has enough available seats.
+- The booking or the outbound flight does not exist, or the return flight is not in the search cache: `NoSuchElementException` (404 in REST).

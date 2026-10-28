@@ -1,6 +1,6 @@
 # PayBooking
 
-**Status:** In progress (no code in the repository yet)
+**Status:** Not implemented. Open decision: whether step 2 expires the booking here or only throws and leaves it to the expiration job (see [pending.md](../pending.md)).
 **Class:** none yet
 
 ## Purpose

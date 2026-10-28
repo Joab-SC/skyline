@@ -1,10 +1,11 @@
 # SearchFlights
 
-**Status:** Implemented. The design adds `FlightSearchCache`, which is pending (see [pending.md](../pending.md)).
+**Status:** Implemented
 **Class:** `application/usecase/SearchFlightsUseCase.java`
+**Endpoint:** `GET /api/flights`
 
 ## Purpose
-Returns the possible flights (combinations of legs) from an origin to a destination on a given day, for a number of passengers. The resulting `Flight`s exist only in memory; they are not saved in `FlightRepository`.
+Returns the possible flights (combinations of legs) from an origin to a destination on a given day, for a number of passengers. The resulting `Flight`s are not saved in `FlightRepository`; they are kept in `FlightSearchCache` so that [SelectOutboundFlight](select-outbound-flight.md) and [SelectReturnFlight](select-return-flight.md) can find the chosen one by its id.
 
 ## Inputs
 | Name | Type | Description |
@@ -18,7 +19,7 @@ Returns the possible flights (combinations of legs) from an origin to a destinat
 `List<Flight>`, with an empty list when there are no combinations.
 
 ## Dependencies
-- Repositories: `LegRepository` (through `FlightSearcher`)
+- Repositories: `LegRepository` (through `FlightSearcher`), `FlightSearchCache`
 - Domain services: `FlightSearcher`
 
 ## Steps
@@ -26,8 +27,9 @@ Returns the possible flights (combinations of legs) from an origin to a destinat
 2. `FlightSearcher.searchFlights`:
    1. Load the legs with at least `numberOfPassengers` available seats (`findLegsWithAtLeastAvailableSeats`) and group them by origin airport.
    2. Start a path with each leg that leaves the origin on `departureDay`.
-   3. Extend the paths breadth-first. A path that reaches the destination becomes a `Flight` (`Flight.createFlight` + `addLeg`).
-3. Return the flights.
+   3. Extend the paths breadth-first. A path that reaches the destination becomes a `Flight` (`Flight.createFlight`).
+3. Save the flights in `FlightSearchCache`.
+4. Return the flights.
 
 ## Rules for extending a path
 - All legs belong to the same airline.
@@ -36,9 +38,7 @@ Returns the possible flights (combinations of legs) from an origin to a destinat
 - Each layover lasts between 1 and 12 hours (`Layover`).
 - A path does not pass through the same origin airport twice.
 - The flight price is the sum of its leg prices.
+- The flight is `INTERNATIONAL` when at least one of its legs connects airports of different countries; otherwise it is `NATIONAL` (`FlightScope`).
 
-## Errors (`DomainRuleException`)
-- Unknown airport code ("There is no airport with the code: …").
-
-## Target design (pending)
-- The search results are saved in `FlightSearchCache` (a temporary cache, separate from `FlightRepository`) so that `SelectOutboundFlight` and `SelectReturnFlight` can find the chosen flight by its id.
+## Errors
+- Unknown airport code: `NoSuchElementException` (404 in REST).
