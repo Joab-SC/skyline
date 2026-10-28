@@ -26,16 +26,18 @@ public class BookingController {
     private final AddPassengerUseCase addPassengerUseCase;
     private final SelectLegSeatUseCase selectLegSeatUseCase;
     private final AddLuggageUseCase addLuggageUseCase;
+    private final AddExtraServiceUseCase addExtraServiceUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
-                             SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase,
+                             SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase, AddExtraServiceUseCase addExtraServiceUseCase,
                              BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
         this.selectLegSeatUseCase = selectLegSeatUseCase;
         this.addLuggageUseCase = addLuggageUseCase;
+        this.addExtraServiceUseCase = addExtraServiceUseCase;
         this.mapper = mapper;
     }
 
@@ -88,5 +90,10 @@ public class BookingController {
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
 
-
+    @PutMapping("/{id}/extra-services")
+    public ResponseEntity<BookingResponse> addExtraService(@PathVariable String id,
+                                                           @Valid @RequestBody AddExtraServiceRequest request) {
+        Booking booking = addExtraServiceUseCase.execute(id, request.extraServiceId(), request.quantity());
+        return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
 }
