@@ -20,16 +20,14 @@ public class AddExtraServiceUseCase {
     private final FlightRepository flightRepository;
 
 
-    public Booking execute(String bookingId,String airlineId, String serviceId, int quantity){
+    public Booking execute(String bookingId, String serviceId, int quantity) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
-        Airline airline = airlineRepository.findById(airlineId).orElseThrow();
+
+        Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow();
+        Airline airline = airlineRepository.findById(outboundFlight.getAirlineId()).orElseThrow();
         ExtraService extraService = airline.getExtraService(serviceId).orElseThrow();
 
-        // The outbound flight decides whether the national or international price applies.
-        Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow();
-        FlightScope flightScope = outboundFlight.getFlightScope();
-
-        booking.addExtraService(extraService.getId(), quantity, extraService.getPrice(flightScope));
+        booking.addExtraService(extraService.getId(), quantity, extraService.getPrice(outboundFlight.getFlightScope()));
         bookingRepository.save(booking);
         return booking;
     }
