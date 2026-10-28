@@ -25,9 +25,8 @@ public class BookingEntity {
     @Column(nullable = false, length = 50)
     private double price;
 
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "booking_id")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "booking_id", insertable = false, updatable = false)
     private List<PassengerEntity> passengerList;
 
     @Column(name = "id_outbound_flight", nullable = false, length = 50)
