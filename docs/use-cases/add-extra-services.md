@@ -1,7 +1,7 @@
 # AddExtraServices
 
-**Status:** Not implemented
-**Class:** none yet
+**Status:** Implemented
+**Class:** `application/usecase/AddExtraServiceUseCase.java`
 
 ## Purpose
 Adds extra services to a `PENDING` booking as extra service details (service, quantity, subtotal) and adds the subtotal to the booking price. Extra services apply to the **whole booking** (the whole trip), not to a passenger. For example, "bring an instrument" appears on the booking without saying who brings it.
@@ -10,7 +10,8 @@ Adds extra services to a `PENDING` booking as extra service details (service, qu
 | Name | Type | Description |
 |------|------|-------------|
 | `bookingId` | `String` | Booking id. |
-| services | list of (`extraServiceId`, `quantity`) | Services and quantities. |
+| `serviceId` | `String` | Extra service id. It must belong to the airline of the outbound flight. |
+| `quantity` | `int` | How many units of the service. |
 
 ## Output
 The updated `Booking`.

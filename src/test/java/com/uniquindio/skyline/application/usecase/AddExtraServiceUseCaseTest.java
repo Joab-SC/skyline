@@ -59,19 +59,19 @@ class AddExtraServiceUseCaseTest {
         Booking booking = createBooking(outboundFlight.getId());
 
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
         when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
         when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.of(extraService));
-        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
         when(extraService.getId()).thenReturn(SERVICE_ID);
         when(extraService.getPrice(FlightScope.INTERNATIONAL)).thenReturn(80.0);
 
         // Act
-        Booking result = useCase.execute(booking.getId(), AIRLINE_ID, SERVICE_ID, 2);
+        Booking result = useCase.execute(booking.getId(), SERVICE_ID, 2);
 
         // Assert
         assertEquals(List.of(new DetailExtraService(SERVICE_ID, 2, 160.0)), result.getDetailExtraServices());
         assertEquals(660.0, result.getPrice(), 0.001);
-        verify(extraService).getPrice(FlightScope.INTERNATIONAL);
+        verify(airlineRepository).findById(AIRLINE_ID);
         verify(bookingRepository).save(booking);
     }
 
@@ -82,19 +82,18 @@ class AddExtraServiceUseCaseTest {
         Booking booking = createBooking(outboundFlight.getId());
 
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
         when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
         when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.of(extraService));
-        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
         when(extraService.getId()).thenReturn(SERVICE_ID);
         when(extraService.getPrice(FlightScope.NATIONAL)).thenReturn(30.0);
 
         // Act
-        Booking result = useCase.execute(booking.getId(), AIRLINE_ID, SERVICE_ID, 2);
+        Booking result = useCase.execute(booking.getId(), SERVICE_ID, 2);
 
         // Assert
         assertEquals(List.of(new DetailExtraService(SERVICE_ID, 2, 60.0)), result.getDetailExtraServices());
         assertEquals(560.0, result.getPrice(), 0.001);
-        verify(extraService).getPrice(FlightScope.NATIONAL);
         verify(extraService, never()).getPrice(FlightScope.INTERNATIONAL);
         verify(bookingRepository).save(booking);
     }
@@ -106,43 +105,10 @@ class AddExtraServiceUseCaseTest {
 
         // Act & Assert
         assertThrows(NoSuchElementException.class,
-                () -> useCase.execute("missing", AIRLINE_ID, SERVICE_ID, 2));
+                () -> useCase.execute("missing", SERVICE_ID, 2));
 
         verifyNoInteractions(airlineRepository, flightRepository);
         verify(bookingRepository, never()).save(any(Booking.class));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenAirlineDoesNotExist() {
-        // Arrange
-        Booking booking = createBooking("flight-1");
-        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
-        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(NoSuchElementException.class,
-                () -> useCase.execute(booking.getId(), AIRLINE_ID, SERVICE_ID, 2));
-
-        verifyNoInteractions(flightRepository);
-        verify(bookingRepository, never()).save(any(Booking.class));
-        assertTrue(booking.getDetailExtraServices().isEmpty());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenExtraServiceIsNotInAirline() {
-        // Arrange
-        Booking booking = createBooking("flight-1");
-        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
-        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
-        when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(NoSuchElementException.class,
-                () -> useCase.execute(booking.getId(), AIRLINE_ID, SERVICE_ID, 2));
-
-        verifyNoInteractions(flightRepository);
-        verify(bookingRepository, never()).save(any(Booking.class));
-        assertTrue(booking.getDetailExtraServices().isEmpty());
     }
 
     @Test
@@ -150,18 +116,51 @@ class AddExtraServiceUseCaseTest {
         // Arrange
         Booking booking = createBooking("flight-1");
         when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
-        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
-        when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.of(extraService));
         when(flightRepository.findById("flight-1")).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NoSuchElementException.class,
-                () -> useCase.execute(booking.getId(), AIRLINE_ID, SERVICE_ID, 2));
+                () -> useCase.execute(booking.getId(), SERVICE_ID, 2));
 
-        verify(extraService, never()).getPrice(any());
+        verifyNoInteractions(airlineRepository);
         verify(bookingRepository, never()).save(any(Booking.class));
         assertTrue(booking.getDetailExtraServices().isEmpty());
         assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAirlineDoesNotExist() {
+        // Arrange
+        Flight outboundFlight = createNationalFlight();
+        Booking booking = createBooking(outboundFlight.getId());
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
+        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class,
+                () -> useCase.execute(booking.getId(), SERVICE_ID, 2));
+
+        verify(bookingRepository, never()).save(any(Booking.class));
+        assertTrue(booking.getDetailExtraServices().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenExtraServiceIsNotInAirline() {
+        // Arrange
+        Flight outboundFlight = createNationalFlight();
+        Booking booking = createBooking(outboundFlight.getId());
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
+        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
+        when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class,
+                () -> useCase.execute(booking.getId(), SERVICE_ID, 2));
+
+        verify(bookingRepository, never()).save(any(Booking.class));
+        assertTrue(booking.getDetailExtraServices().isEmpty());
     }
 
     private Booking createBooking(String idOutboundFlight) {
