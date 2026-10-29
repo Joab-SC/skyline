@@ -190,10 +190,10 @@ class BookingRepositoryDataJpaTest {
 
     @Test
     void shouldFindOnlyPendingBookingsWhosePaymentDeadlineHasPassed() {
-        // Arrange: reconstruct lets us choose the status and the deadline
-        LocalDateTime now = LocalDateTime.of(2026, 12, 1, 12, 0);
+        // Arrange: a new booking has its deadline 20 minutes ahead, so it is not expired yet
+        LocalDateTime now = LocalDateTime.now();
         Booking pendingExpired = createBookingWith(BookingStatus.PENDING, now.minusMinutes(5));
-        Booking pendingNotExpired = createBookingWith(BookingStatus.PENDING, now.plusMinutes(10));
+        Booking pendingNotExpired = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY);
         Booking cancelledExpired = createBookingWith(BookingStatus.CANCELLED, now.minusMinutes(5));
         bookingRepository.save(pendingExpired);
         bookingRepository.save(pendingNotExpired);
@@ -223,8 +223,10 @@ class BookingRepositoryDataJpaTest {
     }
 
     // One way booking without passengers or extras, with the given status and payment deadline.
+    // Only for bookings whose payment deadline already passed: createPendingBooking always sets
+    // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking createBookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct(UUID.randomUUID().toString(), 1, 300000, new ArrayList<>(),
-                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline);
+                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
     }
 }
