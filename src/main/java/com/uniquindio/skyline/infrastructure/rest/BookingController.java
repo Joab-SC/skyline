@@ -24,12 +24,12 @@ public class BookingController {
     private final AddExtraServiceUseCase addExtraServiceUseCase;
     private final GetBookingUseCase getBookingUseCase;
     private final CancelBookingUseCase cancelBookingUseCase;
-    private final PayBooking payBooking;
+    private final PayBookingUseCase payBookingUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
                              SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase, AddExtraServiceUseCase addExtraServiceUseCase, GetBookingUseCase getBookingUseCase,
-                             CancelBookingUseCase cancelBookingUseCase, PayBooking payBooking, BookingMapper mapper) {
+                             CancelBookingUseCase cancelBookingUseCase, PayBookingUseCase payBookingUseCase, BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
@@ -38,7 +38,7 @@ public class BookingController {
         this.addExtraServiceUseCase = addExtraServiceUseCase;
         this.getBookingUseCase = getBookingUseCase;
         this.cancelBookingUseCase = cancelBookingUseCase;
-        this.payBooking = payBooking;
+        this.payBookingUseCase = payBookingUseCase;
         this.mapper = mapper;
     }
 
@@ -113,7 +113,7 @@ public class BookingController {
     @PostMapping("/{id}/payment")
     public ResponseEntity<BookingResponse> pay(@PathVariable String id,
                                                @Valid @RequestBody PayBookingRequest request) {
-        Booking booking = payBooking.execute(request.paymentToken(), id);
+        Booking booking = payBookingUseCase.execute(request.paymentToken(), id);
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
 }

@@ -103,7 +103,7 @@ public class BookingControllerTest {
     private CancelBookingUseCase cancelBookingUseCase;
 
     @MockitoBean
-    private PayBooking payBooking;
+    private PayBookingUseCase payBookingUseCase;
 
     // ---------- POST /api/bookings ----------
 
@@ -545,7 +545,7 @@ public class BookingControllerTest {
     void shouldAnswer200WhenPaymentIsApproved() throws Exception {
         // Arrange
         Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
-        when(payBooking.execute("tok_test", "booking-1")).thenReturn(booking);
+        when(payBookingUseCase.execute("tok_test", "booking-1")).thenReturn(booking);
 
         // Act & Assert
         mockMvc.perform(post("/api/bookings/booking-1/payment")
@@ -553,14 +553,14 @@ public class BookingControllerTest {
                         .content(PAYMENT_JSON))
                 .andExpect(status().isOk());               // 200
 
-        verify(payBooking).execute("tok_test", "booking-1");
+        verify(payBookingUseCase).execute("tok_test", "booking-1");
         verify(mapper).toBookingResponse(booking);
     }
 
     @Test
     void shouldAnswer404WhenPayingMissingBooking() throws Exception {
         // Arrange
-        when(payBooking.execute(any(), any())).thenThrow(new NoSuchElementException());
+        when(payBookingUseCase.execute(any(), any())).thenThrow(new NoSuchElementException());
 
         // Act & Assert
         mockMvc.perform(post("/api/bookings/booking-1/payment")
@@ -572,7 +572,7 @@ public class BookingControllerTest {
     @Test
     void shouldAnswer400WhenPaymentIsDeclined() throws Exception {
         // Arrange
-        when(payBooking.execute(any(), any()))
+        when(payBookingUseCase.execute(any(), any()))
                 .thenThrow(new DomainRuleException("The payment was declined: Insufficient funds"));
 
         // Act & Assert
@@ -585,7 +585,7 @@ public class BookingControllerTest {
     @Test
     void shouldAnswer400WhenBookingIsAlreadyPaid() throws Exception {
         // Arrange
-        when(payBooking.execute(any(), any()))
+        when(payBookingUseCase.execute(any(), any()))
                 .thenThrow(new DomainRuleException("The booking is already paid"));
 
         // Act & Assert
@@ -609,7 +609,7 @@ public class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400
-        verify(payBooking, never()).execute(any(), any());
+        verify(payBookingUseCase, never()).execute(any(), any());
     }
 
     @Test
@@ -620,6 +620,6 @@ public class BookingControllerTest {
                         .content("{}"))
                 .andExpect(status().isBadRequest());       // 400
 
-        verify(payBooking, never()).execute(any(), any());
+        verify(payBookingUseCase, never()).execute(any(), any());
     }
 }

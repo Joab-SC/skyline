@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PayBookingTest {
+class PayBookingUseCaseTest {
 
     private static final String PAYMENT_TOKEN = "tok_test";
     private static final String HOLDER_DOCUMENT = "1001";
@@ -45,7 +45,7 @@ class PayBookingTest {
     private PaymentGateway paymentGateway;
 
     @InjectMocks
-    private PayBooking useCase;
+    private PayBookingUseCase useCase;
 
     // ---------- Payment processed by the gateway ----------
 

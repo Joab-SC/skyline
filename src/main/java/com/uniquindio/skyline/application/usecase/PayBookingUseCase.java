@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PayBooking {
+public class PayBookingUseCase {
 
     private final BookingRepository bookingRepository;
     private final PaymentGateway paymentGateway;
