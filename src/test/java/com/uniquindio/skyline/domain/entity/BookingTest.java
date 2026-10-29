@@ -691,6 +691,205 @@ public class BookingTest {
         assertEquals(List.of("flight-outbound", "flight-return"), booking.getFlightIds());
     }
 
+    // Tests payments
+
+    @Test
+    void shouldCreateBookingWithoutPayments() {
+        // Act
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight001", TripType.ONE_WAY);
+
+        // Assert
+        assertTrue(booking.getPayments().isEmpty());
+        assertTrue(booking.findPendingPayment().isEmpty());
+    }
+
+    @Test
+    void shouldStartPendingPaymentForTheBookingPrice() {
+        // Arrange
+        Booking booking = createPayableBooking();
+
+        // Act
+        Payment payment = booking.startPayment();
+
+        // Assert
+        assertEquals(PaymentStatus.PENDING, payment.getStatus());
+        assertEquals(booking.getPrice(), payment.getAmount(), 0.001);
+        assertEquals(List.of(payment), booking.getPayments());
+        assertEquals(Optional.of(payment), booking.findPendingPayment());
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartingPaymentWithoutAllPassengers() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight001", TripType.ONE_WAY);
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::startPayment);
+        assertTrue(booking.getPayments().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartingPaymentWithoutHolder() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("1001");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::startPayment);
+        assertTrue(booking.getPayments().isEmpty());
+    }
+
+    @Test
+    void shouldResumePendingPaymentInsteadOfCreatingAnother() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment pending = booking.startPayment();
+
+        // Act
+        Payment resumed = booking.startPayment();
+
+        // Assert
+        assertEquals(pending.getId(), resumed.getId());
+        assertEquals(List.of(pending), booking.getPayments());
+        assertTrue(resumed.isPending());
+    }
+
+    @Test
+    void shouldStartNewPaymentAfterADeclinedOne() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment declined = booking.startPayment();
+        booking.registerPaymentResult(declined.getId(), PaymentStatus.DECLINED, null, "Insufficient funds");
+
+        // Act
+        Payment retry = booking.startPayment();
+
+        // Assert
+        assertNotEquals(declined.getId(), retry.getId());
+        assertEquals(List.of(declined, retry), booking.getPayments());
+        assertEquals(Optional.of(retry), booking.findPendingPayment());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartingPaymentOnConfirmedBooking() {
+        // Arrange
+        Booking booking = createConfirmedBooking();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::startPayment);
+        assertEquals(1, booking.getPayments().size());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartingPaymentOnCancelledBooking() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        booking.cancelBooking();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::startPayment);
+        assertTrue(booking.getPayments().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartingPaymentAfterDeadline() {
+        // Arrange
+        Booking booking = bookingWith(BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::startPayment);
+        assertTrue(booking.getPayments().isEmpty());
+    }
+
+    @Test
+    void shouldConfirmBookingWhenPaymentIsApproved() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment payment = booking.startPayment();
+
+        // Act
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null);
+
+        // Assert
+        assertEquals(BookingStatus.CONFIRMED, booking.getBookingStatus());
+        assertTrue(payment.isApproved());
+        assertEquals(Optional.of("TX-1"), payment.getTransactionId());
+        assertTrue(booking.findPendingPayment().isEmpty());
+    }
+
+    @Test
+    void shouldKeepBookingPendingWhenPaymentIsDeclined() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment payment = booking.startPayment();
+
+        // Act
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.DECLINED, null, "Insufficient funds");
+
+        // Assert
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+        assertEquals(PaymentStatus.DECLINED, payment.getStatus());
+        assertEquals(Optional.of("Insufficient funds"), payment.getMessage());
+    }
+
+    @Test
+    void shouldKeepBookingPendingWhenPaymentEndsWithError() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment payment = booking.startPayment();
+
+        // Act
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.ERROR, null, "Provider unavailable");
+
+        // Assert
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+        assertEquals(PaymentStatus.ERROR, payment.getStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegisteringResultOfUnknownPayment() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        booking.startPayment();
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class,
+                () -> booking.registerPaymentResult("payment-not-in-booking", PaymentStatus.APPROVED, "TX-1", null));
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegisteringResultTwice() {
+        // Arrange
+        Booking booking = createPayableBooking();
+        Payment payment = booking.startPayment();
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.DECLINED, null, "Insufficient funds");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null));
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+        assertEquals(PaymentStatus.DECLINED, payment.getStatus());
+    }
+
+    @Test
+    void shouldReturnHolderEmail() {
+        // Arrange
+        Booking booking = createPayableBooking();
+
+        // Act & Assert
+        assertEquals("laura@mail.com", booking.getHolderEmail());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBookingHasNoHolderEmail() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("1001");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::getHolderEmail);
+    }
+
     // Pending booking with its passenger and holder, ready to be paid.
     private Booking createPayableBooking() {
         Booking booking = createBookingWithPassenger("1001");
