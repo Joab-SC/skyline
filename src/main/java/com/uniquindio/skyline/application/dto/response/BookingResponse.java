@@ -13,5 +13,6 @@ public record BookingResponse(
         String bookingStatus,
         LocalDateTime paymentDeadline,
         List<PassengerResponse> passengers,
-        List<BookingExtraServiceResponse> extraServices
+        List<BookingExtraServiceResponse> extraServices,
+        List<PaymentResponse> payments
 ) {}

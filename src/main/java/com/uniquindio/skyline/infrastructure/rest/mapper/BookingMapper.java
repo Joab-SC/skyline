@@ -5,8 +5,10 @@ import com.uniquindio.skyline.application.dto.response.BookingExtraServiceRespon
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.dto.response.LuggageDetailResponse;
 import com.uniquindio.skyline.application.dto.response.PassengerResponse;
+import com.uniquindio.skyline.application.dto.response.PaymentResponse;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
+import com.uniquindio.skyline.domain.entity.Payment;
 import com.uniquindio.skyline.domain.entity.Person;
 import com.uniquindio.skyline.domain.valueObject.DetailExtraService;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
@@ -30,7 +32,8 @@ public class BookingMapper {
                 booking.getBookingStatus().name(),
                 booking.getPaymentDeadline(),
                 booking.getPassengerList().stream().map(this::toPassengerResponse).toList(),
-                booking.getDetailExtraServices().stream().map(this::toExtraServiceResponse).toList()
+                booking.getDetailExtraServices().stream().map(this::toExtraServiceResponse).toList(),
+                booking.getPayments().stream().map(this::toPaymentResponse).toList()
         );
     }
 
@@ -65,6 +68,17 @@ public class BookingMapper {
                 detail.idExtraService(),
                 detail.quantity(),
                 detail.subtotal()
+        );
+    }
+
+    private PaymentResponse toPaymentResponse(Payment payment) {
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getAmount(),
+                payment.getStatus().name(),
+                payment.getTransactionId().orElse(null),
+                payment.getMessage().orElse(null),
+                payment.getCreatedAt()
         );
     }
 
