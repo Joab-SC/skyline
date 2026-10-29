@@ -23,11 +23,12 @@ public class BookingController {
     private final AddLuggageUseCase addLuggageUseCase;
     private final AddExtraServiceUseCase addExtraServiceUseCase;
     private final GetBookingUseCase getBookingUseCase;
+    private final CancelBookingUseCase cancelBookingUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
                              SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase, AddExtraServiceUseCase addExtraServiceUseCase, GetBookingUseCase getBookingUseCase,
-                             BookingMapper mapper) {
+                             CancelBookingUseCase cancelBookingUseCase, BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
@@ -35,6 +36,7 @@ public class BookingController {
         this.addLuggageUseCase = addLuggageUseCase;
         this.addExtraServiceUseCase = addExtraServiceUseCase;
         this.getBookingUseCase = getBookingUseCase;
+        this.cancelBookingUseCase = cancelBookingUseCase;
         this.mapper = mapper;
     }
 
@@ -98,5 +100,11 @@ public class BookingController {
     public ResponseEntity<BookingResponse> getById(@PathVariable String id){
         Booking booking = getBookingUseCase.execute(id);
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); //200
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<BookingResponse> cancel(@PathVariable String id){
+        Booking booking = cancelBookingUseCase.execute(id);
+        return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
     }
 }
