@@ -66,6 +66,12 @@ public class BookingControllerTest {
         }
         """;
 
+    private static final String PAYMENT_JSON = """
+        {
+        "paymentToken": "tok_test"
+        }
+        """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -95,6 +101,9 @@ public class BookingControllerTest {
 
     @MockitoBean
     private CancelBookingUseCase cancelBookingUseCase;
+
+    @MockitoBean
+    private PayBooking payBooking;
 
     // ---------- POST /api/bookings ----------
 
@@ -528,5 +537,89 @@ public class BookingControllerTest {
         // Act & Assert
         mockMvc.perform(put("/api/bookings/booking-1/cancel"))
                 .andExpect(status().isBadRequest());       // 400
+    }
+
+    // ---------- POST /api/bookings/{id}/payment ----------
+
+    @Test
+    void shouldAnswer200WhenPaymentIsApproved() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(payBooking.execute("tok_test", "booking-1")).thenReturn(booking);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PAYMENT_JSON))
+                .andExpect(status().isOk());               // 200
+
+        verify(payBooking).execute("tok_test", "booking-1");
+        verify(mapper).toBookingResponse(booking);
+    }
+
+    @Test
+    void shouldAnswer404WhenPayingMissingBooking() throws Exception {
+        // Arrange
+        when(payBooking.execute(any(), any())).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PAYMENT_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenPaymentIsDeclined() throws Exception {
+        // Arrange
+        when(payBooking.execute(any(), any()))
+                .thenThrow(new DomainRuleException("The payment was declined: Insufficient funds"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PAYMENT_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenBookingIsAlreadyPaid() throws Exception {
+        // Arrange
+        when(payBooking.execute(any(), any()))
+                .thenThrow(new DomainRuleException("The booking is already paid"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PAYMENT_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswer400WhenPaymentTokenIsBlank() throws Exception {
+        // Arrange
+        String requestJson = """
+            {
+            "paymentToken": " "
+            }
+            """;
+
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest());       // 400
+        verify(payBooking, never()).execute(any(), any());
+    }
+
+    @Test
+    void shouldAnswer400WhenPaymentTokenIsMissing() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/api/bookings/booking-1/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());       // 400
+
+        verify(payBooking, never()).execute(any(), any());
     }
 }
