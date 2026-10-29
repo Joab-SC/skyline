@@ -93,6 +93,9 @@ public class BookingControllerTest {
     @MockitoBean
     private GetBookingUseCase getBookingUseCase;
 
+    @MockitoBean
+    private CancelBookingUseCase cancelBookingUseCase;
+
     // ---------- POST /api/bookings ----------
 
     @Test
@@ -489,5 +492,41 @@ public class BookingControllerTest {
         // Act & Assert
         mockMvc.perform(get("/api/bookings/booking-1"))
                 .andExpect(status().isNotFound());         // 404
+    }
+
+    // ---------- PUT /api/bookings/{id}/cancel ----------
+
+    @Test
+    void shouldAnswer200WhenBookingIsCancelled() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
+        when(cancelBookingUseCase.execute("booking-1")).thenReturn(booking);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/cancel"))
+                .andExpect(status().isOk());               // 200
+
+        verify(mapper).toBookingResponse(booking);
+    }
+
+    @Test
+    void shouldAnswer404WhenCancellingMissingBooking() throws Exception {
+        // Arrange
+        when(cancelBookingUseCase.execute("booking-1")).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/cancel"))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer400WhenCancellingNonPendingBooking() throws Exception {
+        // Arrange
+        when(cancelBookingUseCase.execute("booking-1"))
+                .thenThrow(new DomainRuleException("Only a pending booking can be cancelled or expired"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/bookings/booking-1/cancel"))
+                .andExpect(status().isBadRequest());       // 400
     }
 }

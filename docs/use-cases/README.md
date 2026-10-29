@@ -16,12 +16,13 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 8 | [AddLuggage](add-luggage.md) | Sets the passenger's luggage detail for the whole booking and adds its subtotal. | `BookingRepository`, `FlightRepository`, `LegRepository`, `AirlineRepository` | `PUT /api/bookings/{id}/luggage` | Implemented |
 | 9 | [AddExtraServices](add-extra-services.md) | Adds booking-level extra service details and adds their subtotal (national or international price). | `BookingRepository`, `FlightRepository`, `AirlineRepository` | `PUT /api/bookings/{id}/extra-services` | Implemented |
 | 10 | [PayBooking](pay-booking.md) | Confirms a `PENDING` booking. | `BookingRepository` (plus `FlightRepository`, `LegRepository` if it expires the booking) | — | Not implemented |
-| 11 | [CancelBooking](cancel-booking.md) | Cancels a `PENDING` booking and returns its seats. Expiration reuses this logic with `EXPIRED`. | `BookingRepository`, `FlightRepository`, `LegRepository` | — | Not implemented |
+| 11 | [CancelBooking](cancel-booking.md) | Cancels a `PENDING` booking and returns its seats. | `BookingRepository`, `FlightRepository`, `LegRepository` | `PUT /api/bookings/{id}/cancel` | Implemented |
 | 12 | [CreateExtraService](create-extra-service.md) | Creates an extra service with national and international prices and adds it to an airline. | `AirlineRepository` | `POST /api/extra_services` | Implemented |
 | 13 | [GetLegSeatMap](get-leg-seat-map.md) | Returns a leg's seats with their status so the client can pick one. | `LegRepository` | `GET /api/legs/{id}/seats` | Implemented |
 | 14 | [ListAirlineExtraServices](list-airline-extra-services.md) | Returns an airline's extra services so the client can choose them. | `AirlineRepository` | `GET /api/airlines/{id}/extra-services` | Implemented |
 | 15 | [GetBooking](get-booking.md) | Returns a booking with its current state. | `BookingRepository` | `GET /api/bookings/{id}` | Implemented |
 | 16 | [CreateAirline](create-airline.md) | Creates an airline with its maximum luggage amount and seat price. | `AirlineRepository` | `POST /api/airlines` | Implemented |
+| 17 | [ExpireBooking](expire-booking.md) | Expires a `PENDING` booking whose payment deadline passed and returns its seats, like CancelBooking. | `BookingRepository`, `FlightRepository`, `LegRepository` | — (scheduled every 10 s) | Implemented |
 
 ## Booking flow
 
@@ -29,4 +30,4 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 
 `GetBooking` can be called at any step to read the booking again.
 
-A `PENDING` booking can be cancelled at any point (`CancelBooking`), and it expires when `paymentDeadline` (20 min) passes. Only a `PENDING` booking can be modified.
+A `PENDING` booking can be cancelled at any point (`CancelBooking`), and it expires when `paymentDeadline` (20 min) passes (`ExpireBooking`). Only a `PENDING` booking can be modified.

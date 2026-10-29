@@ -80,6 +80,23 @@ public class Leg {
         this.availableSeats = availableSeats - numPassengers;
     }
 
+    // The opposite of reduceAvailableSeats: gives back the seats a booking had taken.
+    public boolean canRestoreAvailableSeats(int numPassengers){
+        return numPassengers > 0 && availableSeats + numPassengers <= seats.size();
+    }
+
+    public void restoreAvailableSeats(int numPassengers){
+        if (!canRestoreAvailableSeats(numPassengers)){
+            throw new DomainRuleException("Available seats cannot exceed the total seats of the leg");
+        }
+        this.availableSeats = availableSeats + numPassengers;
+    }
+
+    // Frees the seat the passenger holds on this leg, if any.
+    public void releaseSeatOfPassenger(String idPassenger){
+        getLegSeatByPassenger(idPassenger).ifPresent(LegSeat::releaseSeat);
+    }
+
     public Optional<LegSeat> getLegSeatById(String idLegSeat){
         return seats.stream()
                 .filter(found -> found.getId().equals(idLegSeat))

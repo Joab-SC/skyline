@@ -11,6 +11,7 @@ import com.uniquindio.skyline.domain.valueObject.TripType;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -606,6 +607,92 @@ public class BookingTest {
 
         assertThrows(DomainRuleException.class, () -> booking.addPriceSeats(-1.0));
         assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
+    // Tests cancel and expire
+
+    @Test
+    void shouldCancelPendingBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight001", TripType.ONE_WAY);
+
+        // Act
+        booking.cancelBooking();
+
+        // Assert
+        assertEquals(BookingStatus.CANCELLED, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCancellingConfirmedBooking() {
+        // Arrange
+        Booking booking = bookingWith(BookingStatus.CONFIRMED, LocalDateTime.now().plusMinutes(10));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::cancelBooking);
+        assertEquals(BookingStatus.CONFIRMED, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCancellingCancelledBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight001", TripType.ONE_WAY);
+        booking.cancelBooking();
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::cancelBooking);
+    }
+
+    @Test
+    void shouldExpireBookingWhenPaymentDeadlinePassed() {
+        // Arrange
+        Booking booking = bookingWith(BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1));
+
+        // Act
+        booking.expireBooking();
+
+        // Assert
+        assertEquals(BookingStatus.EXPIRED, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenExpiringBeforePaymentDeadline() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight001", TripType.ONE_WAY);
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::expireBooking);
+        assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenExpiringNonPendingBooking() {
+        // Arrange
+        Booking booking = bookingWith(BookingStatus.CANCELLED, LocalDateTime.now().minusMinutes(1));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, booking::expireBooking);
+        assertEquals(BookingStatus.CANCELLED, booking.getBookingStatus());
+    }
+
+    @Test
+    void shouldReturnOnlyOutboundFlightIdWhenThereIsNoReturnFlight() {
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ONE_WAY);
+
+        assertEquals(List.of("flight-outbound"), booking.getFlightIds());
+    }
+
+    @Test
+    void shouldReturnOutboundAndReturnFlightIds() {
+        Booking booking = Booking.createPendingBooking(1, 500.0, "flight-outbound", TripType.ROUND_TRIP);
+        booking.addReturnFlight("flight-return", 300.0);
+
+        assertEquals(List.of("flight-outbound", "flight-return"), booking.getFlightIds());
+    }
+
+    private Booking bookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
+        return Booking.reconstruct("booking-1", 1, 500.0, new ArrayList<>(), "flight001", null,
+                TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline);
     }
 
     private PassengerData passengerData(String idDocument) {

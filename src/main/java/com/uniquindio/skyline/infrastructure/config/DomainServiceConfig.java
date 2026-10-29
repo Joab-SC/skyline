@@ -4,23 +4,12 @@ import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
-import com.uniquindio.skyline.domain.service.BookingExpirationValidator;
-import com.uniquindio.skyline.domain.service.FlightSearcher;
-import com.uniquindio.skyline.domain.service.LegOverlapValidator;
-import com.uniquindio.skyline.domain.service.LuggageDetailCreator;
-import com.uniquindio.skyline.domain.service.OutboundAndReturnFlightsValidator;
-import com.uniquindio.skyline.domain.service.SeatAssigner;
-import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
+import com.uniquindio.skyline.domain.service.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DomainServiceConfig {
-
-    @Bean
-    public BookingExpirationValidator bookingExpirationValidator(BookingRepository  bookingRepository) {
-        return new BookingExpirationValidator(bookingRepository);
-    }
 
     @Bean
     public LegOverlapValidator legOverlapValidator(LegRepository legRepository) {
@@ -51,5 +40,16 @@ public class DomainServiceConfig {
     @Bean
     public OutboundAndReturnFlightsValidator outboundAndReturnFlightsValidator() {
         return new OutboundAndReturnFlightsValidator();
+    }
+
+    @Bean
+    public BookingSeatsReleaser bookingSeatsReleaser(FlightRepository flightRepository, LegRepository legRepository) {
+        return new BookingSeatsReleaser(flightRepository, legRepository);
+    }
+
+    @Bean
+    public BookingExpirationValidator bookingExpirationValidator(BookingRepository bookingRepository,
+                                                                 BookingSeatsReleaser bookingSeatsReleaser) {
+        return new BookingExpirationValidator(bookingRepository, bookingSeatsReleaser);
     }
 }

@@ -270,8 +270,33 @@ public class Booking {
 
 
 
+    // The person leaves the booking process. Only a pending booking can be cancelled.
     public void cancelBooking(){
+        validateCanBeClosed();
         this.bookingStatus = BookingStatus.CANCELLED;
+    }
+
+    // The payment deadline passed without payment. Only a pending booking can expire.
+    public void expireBooking(){
+        validateCanBeClosed();
+        if (LocalDateTime.now().isBefore(paymentDeadline)){
+            throw new DomainRuleException("The booking payment deadline has not passed yet");
+        }
+        this.bookingStatus = BookingStatus.EXPIRED;
+    }
+
+    private void validateCanBeClosed(){
+        if (!isPending()){
+            throw new DomainRuleException("Only a pending booking can be cancelled or expired");
+        }
+    }
+
+    // Ids of the outbound flight and, if there is one, the return flight.
+    public List<String> getFlightIds(){
+        List<String> flightIds = new ArrayList<>();
+        flightIds.add(idOutboundFlight);
+        idReturnFlight.ifPresent(flightIds::add);
+        return flightIds;
     }
     @Override
     public boolean equals(Object o) {

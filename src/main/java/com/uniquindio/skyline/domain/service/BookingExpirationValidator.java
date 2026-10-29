@@ -3,29 +3,29 @@ package com.uniquindio.skyline.domain.service;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
-import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-@RequiredArgsConstructor
+// Expires pending bookings whose payment deadline passed and gives their seats back.
 public class BookingExpirationValidator {
 
     private final BookingRepository bookingRepository;
+    private final BookingSeatsReleaser bookingSeatsReleaser;
 
-    @Scheduled(fixedDelay = 10000)
-    public void expirePendingBookings() {
-        LocalDateTime now = LocalDateTime.now();
+    public BookingExpirationValidator(BookingRepository bookingRepository,
+                                      BookingSeatsReleaser bookingSeatsReleaser) {
+        this.bookingRepository = bookingRepository;
+        this.bookingSeatsReleaser = bookingSeatsReleaser;
+    }
 
-        List<Booking> expiredBookings =
-                bookingRepository.findByStatusAndPaymentDeadlineLessThanEqual(
-                        BookingStatus.PENDING, now);
+    public List<Booking> findExpiredPendingBookings(LocalDateTime now) {
+        return bookingRepository.findByStatusAndPaymentDeadlineLessThanEqual(BookingStatus.PENDING, now);
+    }
 
-        for (Booking booking : expiredBookings) {
-            //cancelar reserva
-        }
+    public void expire(Booking booking) {
+        booking.expireBooking();
+        bookingSeatsReleaser.releaseSeats(booking);
+        bookingRepository.save(booking);
     }
 }
