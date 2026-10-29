@@ -2,7 +2,9 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
+import com.uniquindio.skyline.domain.entity.Payment;
 import com.uniquindio.skyline.domain.entity.Person;
+import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.valueObject.*;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.BookingPersistenceMapper;
@@ -220,6 +222,169 @@ class BookingRepositoryDataJpaTest {
         // Assert
         assertEquals(TripType.ONE_WAY, recovered.getTripType());
         assertTrue(recovered.getIdReturnFlight().isEmpty());
+    }
+
+    // Tests payments. Payments are saved with their booking, because they belong to the Booking aggregate.
+
+    @Test
+    void shouldSaveAndRecoverBookingWithoutPayments() {
+        // Arrange
+        Booking booking = createBooking();
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertTrue(recovered.getPayments().isEmpty());
+    }
+
+    @Test
+    void shouldSaveAndRecoverPendingPaymentWithAllItsData() {
+        // Arrange
+        Booking booking = createBooking();
+        Payment payment = booking.startPayment();
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert: the only test that checks every column of the payment
+        assertEquals(List.of(payment), recovered.getPayments());
+        Payment actual = recovered.getPayments().get(0);
+        assertEquals(payment.getAmount(), actual.getAmount());
+        assertEquals(PaymentStatus.PENDING, actual.getStatus());
+        assertTrue(actual.getTransactionId().isEmpty());
+        assertTrue(actual.getMessage().isEmpty());
+        assertTrue(Duration.between(payment.getCreatedAt(), actual.getCreatedAt()).abs().toMillis() < 1);
+        assertEquals(Optional.of(actual), recovered.findPendingPayment());
+    }
+
+    @Test
+    void shouldSaveAndRecoverApprovedPaymentAndConfirmedBooking() {
+        // Arrange: same two saves as the PayBooking use case
+        Booking booking = createBooking();
+        Payment payment = booking.startPayment();
+        saveAndRecover(booking);
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null);
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertEquals(BookingStatus.CONFIRMED, recovered.getBookingStatus());
+        assertEquals(List.of(payment), recovered.getPayments());
+        Payment actual = recovered.getPayments().get(0);
+        assertEquals(PaymentStatus.APPROVED, actual.getStatus());
+        assertEquals(Optional.of("TX-1"), actual.getTransactionId());
+        assertTrue(actual.getMessage().isEmpty());
+    }
+
+    @Test
+    void shouldSaveAndRecoverDeclinedPaymentWithItsMessage() {
+        // Arrange
+        Booking booking = createBooking();
+        Payment payment = booking.startPayment();
+        saveAndRecover(booking);
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.DECLINED, null, "Insufficient funds");
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertEquals(BookingStatus.PENDING, recovered.getBookingStatus());
+        assertEquals(List.of(payment), recovered.getPayments());
+        Payment actual = recovered.getPayments().get(0);
+        assertEquals(PaymentStatus.DECLINED, actual.getStatus());
+        assertEquals(Optional.of("Insufficient funds"), actual.getMessage());
+        assertTrue(actual.getTransactionId().isEmpty());
+        assertTrue(recovered.findPendingPayment().isEmpty());
+    }
+
+    @Test
+    void shouldSaveAndRecoverEveryPaymentAttempt() {
+        // Arrange: the first attempt is declined and the second one is approved
+        Booking booking = createBooking();
+        Payment declined = booking.startPayment();
+        booking.registerPaymentResult(declined.getId(), PaymentStatus.DECLINED, null, "Insufficient funds");
+        Payment approved = booking.startPayment();
+        booking.registerPaymentResult(approved.getId(), PaymentStatus.APPROVED, "TX-2", null);
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert: the database does not keep the order, so the attempts are found by equals
+        assertEquals(2, recovered.getPayments().size());
+        assertTrue(recovered.getPayments().containsAll(List.of(declined, approved)));
+        assertEquals(PaymentStatus.DECLINED, findPayment(recovered, declined).getStatus());
+        assertEquals(PaymentStatus.APPROVED, findPayment(recovered, approved).getStatus());
+        assertEquals(BookingStatus.CONFIRMED, recovered.getBookingStatus());
+    }
+
+    @Test
+    void shouldUpdatePaymentResultWithoutDuplicatingIt() {
+        // Arrange
+        Booking booking = createBooking();
+        Payment payment = booking.startPayment();
+        saveAndRecover(booking);
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null);
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertEquals(List.of(payment), recovered.getPayments());
+        assertEquals(PaymentStatus.APPROVED, recovered.getPayments().get(0).getStatus());
+    }
+
+    @Test
+    void shouldRecoverOnlyThePaymentsOfEachBooking() {
+        // Arrange
+        Booking firstBooking = createBooking();
+        Booking secondBooking = createBooking();
+        Payment firstPayment = firstBooking.startPayment();
+        Payment secondPayment = secondBooking.startPayment();
+
+        // Act
+        Booking firstRecovered = saveAndRecover(firstBooking);
+        Booking secondRecovered = saveAndRecover(secondBooking);
+
+        // Assert
+        assertEquals(List.of(firstPayment), firstRecovered.getPayments());
+        assertEquals(List.of(secondPayment), secondRecovered.getPayments());
+    }
+
+    @Test
+    void shouldResumePendingPaymentOfRecoveredBooking() {
+        // Arrange
+        Booking booking = createBooking();
+        Payment pending = booking.startPayment();
+        Booking recovered = saveAndRecover(booking);
+
+        // Act
+        Payment resumed = recovered.startPayment();
+
+        // Assert
+        assertEquals(pending, resumed);
+        assertEquals(List.of(pending), recovered.getPayments());
+    }
+
+    @Test
+    void shouldNotStartPaymentOnRecoveredConfirmedBooking() {
+        // Arrange
+        Booking booking = createBooking();
+        Payment payment = booking.startPayment();
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null);
+        Booking recovered = saveAndRecover(booking);
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, recovered::startPayment);
+        assertEquals(List.of(payment), recovered.getPayments());
+    }
+
+    private Payment findPayment(Booking booking, Payment expected) {
+        return booking.getPayments().stream()
+                .filter(expected::equals)
+                .findFirst()
+                .orElseThrow();
     }
 
     // One way booking without passengers or extras, with the given status and payment deadline.
