@@ -29,6 +29,8 @@ namespace BookingAggregate {
         + addExtraService(String extraServiceId, int quantity, double unitPrice) void
         + validateIsModifiable() void
         + cancelBooking() void
+        + expireBooking() void
+        + getFlightIds() List~String~
     }
 
     class Passenger {

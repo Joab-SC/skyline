@@ -1,10 +1,11 @@
 # CancelBooking
 
-**Status:** Not implemented. `Booking.cancelBooking()` exists, but it only sets `CANCELLED` and does not validate the current status.
-**Class:** none yet
+**Status:** Implemented
+**Class:** `application/usecase/CancelBookingUseCase.java`
+**Endpoint:** `PUT /api/bookings/{id}/cancel`
 
 ## Purpose
-Cancels a `PENDING` booking and returns everything it held on the legs.
+Cancels a `PENDING` booking when the person leaves the booking process, and returns everything it held on the legs. [ExpireBooking](expire-booking.md) reuses the same seat release with status `EXPIRED`.
 
 ## Inputs
 | Name | Type | Description |
@@ -16,18 +17,23 @@ The `CANCELLED` `Booking`.
 
 ## Dependencies
 - Repositories: `BookingRepository`, `FlightRepository`, `LegRepository`
+- Domain services: `BookingSeatsReleaser`
 
 ## Steps
-1. Find the booking and check that it is `PENDING`. `CONFIRMED` bookings cannot be cancelled.
-2. For the outbound flight and, if there is one, the return flight: increase `availableSeats` by `numPassengers` on every leg. `Leg` has no method for this yet.
-3. On every one of those legs, release the `LegSeat`s taken by the booking's passengers (`LegSeat.releaseSeat()`: back to `AVAILABLE`, no `passengerId`). Seats are stored only in the legs; the passengers have no seat field.
-4. Change the status to `CANCELLED`.
-5. Save the legs and the booking, then return the booking.
+1. Find the booking by `bookingId`.
+2. `Booking.cancelBooking()` checks that it is `PENDING` and changes the status to `CANCELLED`.
+3. `BookingSeatsReleaser.releaseSeats(booking)`, for every leg of the outbound flight and, if there is one, the return flight (`Booking.getFlightIds()`):
+   1. First pass: load every flight and leg, and check that `availableSeats + numPassengers` does not exceed the leg's total seats. If one fails, nothing changes.
+   2. Second pass: `Leg.restoreAvailableSeats(numPassengers)`, release the `LegSeat` of each passenger (`Leg.releaseSeatOfPassenger`) and save the leg.
+4. Save the booking and return it.
+
+The use case is `@Transactional`: if the seat release fails, the booking is not saved as cancelled.
 
 Soft delete of the booking and its flights is still to be decided (see [pending.md](../pending.md)).
 
-## Expiration (automatic)
-`BookingExpirationValidator` is meant to run every 10 s (`@Scheduled`) and find `PENDING` bookings whose `paymentDeadline` has passed. For each one it should reuse steps 2–3 above, but set the status to `EXPIRED` instead of `CANCELLED`. Today the loop body is empty and `@EnableScheduling` is missing, so it never runs.
-
-## Rules and errors (`DomainRuleException`)
-- Only a `PENDING` booking can be cancelled or expired.
+## Rules and errors
+- The booking must exist, or `NoSuchElementException` is thrown (404 in REST).
+- Only a `PENDING` booking can be cancelled (`DomainRuleException`, 400). A `CONFIRMED`, `CANCELLED` or `EXPIRED` booking cannot.
+- A flight or leg of the booking that cannot be found throws `DomainRuleException`.
+- Available seats can never exceed the leg's total seats (`DomainRuleException`).
+- Known issue: `LegSeat` stores only the passenger's document, so if the same person is in two bookings that share a leg, the seat released may belong to the other booking (see [pending.md](../pending.md), Seats).

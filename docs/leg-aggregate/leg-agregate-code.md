@@ -22,6 +22,9 @@ direction TB
             + reconstruct(...) Leg$
             + hasAvailableSeats(int numPassengers) boolean
             + reduceAvailableSeats(int numPassengers) void
+            + canRestoreAvailableSeats(int numPassengers) boolean
+            + restoreAvailableSeats(int numPassengers) void
+            + releaseSeatOfPassenger(String idPassenger) void
             + getLegSeatById(String idLegSeat) Optional~LegSeat~
             + assignSeat(String idLegSeat, String idPassenger) void
             + hasSeatAssigned(String idPassenger) boolean
