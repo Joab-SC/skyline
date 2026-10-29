@@ -54,6 +54,23 @@
 - EXPIRADA: Reserva finalizada sin haber sido pagada, porque pasó su plazo de pago (20 minutos desde que se creó). Al expirar, sus asientos se liberan igual que al cancelarla.
 ---
 
+### Pago
+**Definición:** Intento de cobrar una reserva a través de la pasarela de pagos. Una reserva puede tener varios pagos (por ejemplo, uno rechazado y otro aprobado), y queda confirmada cuando uno de ellos es aprobado.
+
+**Sinónimos aceptados:** Payment
+
+**No usar:** Factura, Transacción (la transacción es el registro que guarda la pasarela; su id se guarda en el pago como `transactionId`)
+
+**Ejemplo de uso:**
+- "El primer pago fue rechazado por fondos insuficientes y el segundo fue aprobado"
+
+**Estados validos:**
+- PENDIENTE: Pago iniciado del que todavía no se conoce el resultado.
+- APROBADO: La pasarela cobró el pago. Confirma la reserva.
+- RECHAZADO: La pasarela no cobró por un problema de la tarjeta, por ejemplo fondos insuficientes.
+- ERROR: La pasarela no cobró por una falla técnica. Se puede intentar de nuevo.
+---
+
 ### Comision
 **Definición:** Valor descontado por la plataforma a las aerolineas  sobre cada operación de reserva realizada a través de la página.
 
