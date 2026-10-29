@@ -2,12 +2,14 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa.mapper;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
+import com.uniquindio.skyline.domain.entity.Payment;
 import com.uniquindio.skyline.domain.valueObject.DetailExtraService;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.BookingEntity;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.DetailExtraServiceEmbeddable;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.LuggageDetailEmbeddable;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.PassengerEntity;
+import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.PaymentEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +39,9 @@ public class BookingPersistenceMapper {
                         detailExtraService.idExtraService(), detailExtraService.quantity(), detailExtraService.subtotal())).collect(Collectors.toCollection(ArrayList::new)));
         bookingEntity.setBookingStatus(booking.getBookingStatus());
         bookingEntity.setPaymentDeadline(booking.getPaymentDeadline());
+        bookingEntity.setPayments(booking.getPayments().stream()
+                .map(this::toPaymentEntity)
+                .collect(Collectors.toCollection(ArrayList::new)));
         return bookingEntity;
     }
 
@@ -56,7 +61,31 @@ public class BookingPersistenceMapper {
                                 detail.getIdExtraService(), detail.getQuantity(), detail.getSubtotal()))
                         .collect(Collectors.toCollection(ArrayList::new)),
                 bookingEntity.getBookingStatus(),
-                bookingEntity.getPaymentDeadline());
+                bookingEntity.getPaymentDeadline(),
+                bookingEntity.getPayments().stream()
+                        .map(this::toPaymentDomain)
+                        .collect(Collectors.toCollection(ArrayList::new)));
+    }
+
+    private PaymentEntity toPaymentEntity(Payment payment) {
+        PaymentEntity paymentEntity = new PaymentEntity();
+        paymentEntity.setId(payment.getId());
+        paymentEntity.setAmount(payment.getAmount());
+        paymentEntity.setStatus(payment.getStatus());
+        paymentEntity.setTransactionId(payment.getTransactionId().orElse(null));
+        paymentEntity.setMessage(payment.getMessage().orElse(null));
+        paymentEntity.setCreatedAt(payment.getCreatedAt());
+        return paymentEntity;
+    }
+
+    private Payment toPaymentDomain(PaymentEntity paymentEntity) {
+        return Payment.reconstruct(
+                paymentEntity.getId(),
+                paymentEntity.getAmount(),
+                paymentEntity.getStatus(),
+                paymentEntity.getTransactionId(),
+                paymentEntity.getMessage(),
+                paymentEntity.getCreatedAt());
     }
 
 
