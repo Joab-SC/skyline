@@ -35,10 +35,12 @@ The code is organized in hexagonal/DDD layers under `src/main/java/com/uniquindi
 - `application/`
   - `usecase/`: one class per use case, annotated `@Service` with `@RequiredArgsConstructor`. Each has a single `execute(...)` method and gets its repositories and domain services through constructor injection. A use case typically loads data from repositories, delegates rules to entities and domain services, saves the result, and returns it. A missing entity is usually `findById(...).orElseThrow()`, which throws `NoSuchElementException`.
   - `dto/request`, `dto/response`: DTOs for use cases. Requests use Jakarta Bean Validation (`@NotBlank`, `@Positive`, …).
+  - `port/`: ports to external services used by the use cases. `PaymentGateway` (with `PaymentRequest` and `PaymentResult`) charges a booking through a payment provider.
 - `infrastructure/`
   - `config/DomainServiceConfig`: registers the domain services as Spring beans, since the domain has no Spring annotations.
   - `persistence/jpa/`: the active adapters. For each aggregate there is a `*Entity` (`jpa/entity`), a `*PersistenceMapper` (`jpa/mapper`) with `reconstruct` on the way back to the domain, a Spring Data `*JpaDataRepository`, and a `*RepositoryJpa` that implements the domain port.
   - `persistence/`: `FlightSearchCacheInMemory` (the only in-memory bean, it keeps searched flights until one is selected) and older `*RepositoryInMemory` classes that are not beans; the domain service tests use them.
+  - `payment/`: `FakePaymentGateway`, the only `PaymentGateway` adapter. It simulates a provider: it approves every token except `tok_declined` and `tok_error`.
   - `rest/`: one controller per aggregate (`/api/airlines`, `/api/aircrafts`, `/api/legs`, `/api/flights`, `/api/bookings`, `/api/extra_services`), REST mappers in `rest/mapper`, and `GlobalExceptionHandler`, which answers `DomainRuleException` with 400 and `NoSuchElementException` with 404.
 
 Aggregates reference each other by **id (String)**, not by object reference. For example, `Booking` holds `idOutboundFlight` and an `Optional<String> idReturnFlight`.

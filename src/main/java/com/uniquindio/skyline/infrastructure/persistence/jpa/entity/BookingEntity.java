@@ -49,4 +49,8 @@ public class BookingEntity {
 
     @Column(nullable = false, length = 100)
     private LocalDateTime paymentDeadline;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "booking_id", nullable = false)
+    private List<PaymentEntity> payments;
 }

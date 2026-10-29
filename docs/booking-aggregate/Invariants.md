@@ -6,3 +6,7 @@
 * All the passengers in a Booking are unique.
 * Only a PENDING booking can be modified, confirmed, canceled, or expired.
 * A CANCELLED, EXPIRED or CONFIRMED booking cannot change its status.
+* A booking becomes CONFIRMED only when one of its payments is APPROVED.
+* A payment can start only when the booking is PENDING, before its payment deadline, with every passenger and a holder.
+* A booking has at most one PENDING payment.
+* A payment gets its result only once, and an APPROVED payment always has a transaction id.

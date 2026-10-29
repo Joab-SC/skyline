@@ -23,8 +23,10 @@ public class Booking {
     private List<DetailExtraService> detailExtraServices;
     private BookingStatus bookingStatus;
     private LocalDateTime paymentDeadline;
+    private List<Payment> payments;
 
-    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight, Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, LocalDateTime paymentDeadline) {
+    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight,
+                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, LocalDateTime paymentDeadline, List<Payment> payments) {
         this.id = id;
         this.numPassengers = numPassengers;
         this.price = price;
@@ -33,12 +35,14 @@ public class Booking {
         this.idReturnFlight = idReturnFlight;
         this.tripType = tripType;
         this.detailExtraServices = detailExtraServices;
+        this.payments = payments;
         this.bookingStatus = BookingStatus.PENDING;
         this.paymentDeadline = paymentDeadline;
     }
 
     // Receives every field, including the status. Used only by reconstruct.
-    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight, Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus, LocalDateTime paymentDeadline) {
+    private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight,
+                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus, LocalDateTime paymentDeadline, List<Payment> payments) {
         this.id = id;
         this.numPassengers = numPassengers;
         this.price = price;
@@ -49,15 +53,16 @@ public class Booking {
         this.detailExtraServices = detailExtraServices;
         this.bookingStatus = bookingStatus;
         this.paymentDeadline = paymentDeadline;
+        this.payments = payments;
     }
 
     // Rebuilds a booking already stored, without running the creation rules again.
     public static Booking reconstruct(String id, int numPassengers, double price, List<Passenger> passengerList,
                                       String idOutboundFlight, String idReturnFlight, TripType tripType,
                                       List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus,
-                                      LocalDateTime paymentDeadline) {
+                                      LocalDateTime paymentDeadline, List<Payment> payments) {
         return new Booking(id, numPassengers, price, passengerList, idOutboundFlight,
-                Optional.ofNullable(idReturnFlight), tripType, detailExtraServices, bookingStatus, paymentDeadline);
+                Optional.ofNullable(idReturnFlight), tripType, detailExtraServices, bookingStatus, paymentDeadline, payments);
     }
 
     public static Booking createPendingBooking(int numPassengers, double price, String idOutboundFlight,
@@ -69,7 +74,64 @@ public class Booking {
         );
 
         return new Booking(UUID.randomUUID().toString(), numPassengers, price * numPassengers, new ArrayList<>(), idOutboundFlight, Optional.empty(),
-                tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20));
+                tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20), new ArrayList<>());
+    }
+
+    // Starts a payment attempt. If one is still pending, it is resumed instead of creating another,
+    // assuming it was never charged. The booking must be payable.
+    public Payment startPayment() {
+        validateCanBeConfirmed();
+        Optional<Payment> pending = findPendingPayment();
+        if (pending.isPresent()) {
+            return pending.get();
+        }
+        Payment payment = Payment.createPending(this.price);
+        payments.add(payment);
+        return payment;
+    }
+
+    // Saves the provider's answer in the attempt. An approved payment confirms the booking.
+    // The deadline is not checked here: it was checked when the attempt started, and the money was already charged.
+    public void registerPaymentResult(String paymentId, PaymentStatus status, String transactionId, String message) {
+        Payment payment = getPayment(paymentId);
+        payment.registerResult(status, transactionId, message);
+        if (payment.isApproved()) {
+            this.bookingStatus = BookingStatus.CONFIRMED;
+        }
+    }
+
+    public Optional<Payment> findPendingPayment() {
+        return payments.stream().filter(Payment::isPending).findFirst();
+    }
+
+    // The payment provider sends the receipt to the holder.
+    public String getHolderEmail() {
+        return passengerList.stream()
+                .filter(Passenger::isHolder)
+                .findFirst()
+                .flatMap(Passenger::getEmail)
+                .orElseThrow(() -> new DomainRuleException("The booking has no holder"));
+    }
+
+    private Payment getPayment(String paymentId) {
+        return payments.stream()
+                .filter(payment -> payment.getId().equals(paymentId))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    // A booking can be paid when it is pending, before its deadline, with every passenger and a holder.
+    private void validateCanBeConfirmed() {
+        if (bookingStatus == BookingStatus.CONFIRMED) {
+            throw new DomainRuleException("The booking is already paid");
+        }
+        validateIsModifiable();
+        if (passengerList.size() != numPassengers) {
+            throw new DomainRuleException("All passengers must be added before paying");
+        }
+        if (passengerList.stream().noneMatch(Passenger::isHolder)) {
+            throw new DomainRuleException("The booking must have a holder before paying");
+        }
     }
 
 

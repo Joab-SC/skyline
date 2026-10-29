@@ -15,6 +15,7 @@ namespace BookingAggregate {
         - List~DetailExtraService~ detailExtraServices
         - BookingStatus bookingStatus
         - LocalDateTime paymentDeadline
+        - List~Payment~ payments
         + createPendingBooking(int numPassengers, double price, String idOutboundFlight, TripType tripType) Booking$
         + reconstruct(...) Booking$
         + validateReturnFlight(String idReturnFlight, double price) void
@@ -31,6 +32,34 @@ namespace BookingAggregate {
         + cancelBooking() void
         + expireBooking() void
         + getFlightIds() List~String~
+        + startPayment() Payment
+        + registerPaymentResult(String paymentId, PaymentStatus status, String transactionId, String message) void
+        + findPendingPayment() Optional~Payment~
+        + getHolderEmail() String
+    }
+
+    class Payment {
+        <<Entity>>
+        - String id
+        - double amount
+        - PaymentStatus status
+        - Optional~String~ transactionId
+        - Optional~String~ message
+        - LocalDateTime createdAt
+        ~ createPending(double amount) Payment$
+        + reconstruct(...) Payment$
+        + registerResult(PaymentStatus status, String transactionId, String message) void
+        + validateApproved() void
+        + isPending() boolean
+        + isApproved() boolean
+    }
+
+    class PaymentStatus {
+        <<enumeration>>
+        PENDING
+        APPROVED
+        DECLINED
+        ERROR
     }
 
     class Passenger {
@@ -104,5 +133,7 @@ Passenger "1" *-- "0..1" LuggageDetail : luggageDetail
 Booking "1" *-- "0..*" DetailExtraService : detailExtraServices
 Booking "1" --> "1" TripType : tripType
 Booking "1" --> "1" BookingStatus : bookingStatus
+Booking "1" *-- "0..*" Payment : payments
+Payment "1" --> "1" PaymentStatus : status
 Booking "1" ..> "1..2" Flight : idOutboundFlight / idReturnFlight
 ```
