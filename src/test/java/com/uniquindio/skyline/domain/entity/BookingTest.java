@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
+import com.uniquindio.skyline.domain.valueObject.PaymentStatus;
 import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.TripType;
@@ -626,7 +627,7 @@ public class BookingTest {
     @Test
     void shouldThrowExceptionWhenCancellingConfirmedBooking() {
         // Arrange
-        Booking booking = bookingWith(BookingStatus.CONFIRMED, LocalDateTime.now().plusMinutes(10));
+        Booking booking = createConfirmedBooking();
 
         // Act & Assert
         assertThrows(DomainRuleException.class, booking::cancelBooking);
@@ -690,9 +691,26 @@ public class BookingTest {
         assertEquals(List.of("flight-outbound", "flight-return"), booking.getFlightIds());
     }
 
+    // Pending booking with its passenger and holder, ready to be paid.
+    private Booking createPayableBooking() {
+        Booking booking = createBookingWithPassenger("1001");
+        booking.choseHolder("1001", "laura@mail.com", "3001234567", PhonePrefix.COLOMBIA);
+        return booking;
+    }
+
+    // Pays the booking through its payment flow, so it ends CONFIRMED.
+    private Booking createConfirmedBooking() {
+        Booking booking = createPayableBooking();
+        Payment payment = booking.startPayment();
+        booking.registerPaymentResult(payment.getId(), PaymentStatus.APPROVED, "TX-1", null);
+        return booking;
+    }
+
+    // Only for bookings whose payment deadline already passed: createPendingBooking always sets
+    // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking bookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct("booking-1", 1, 500.0, new ArrayList<>(), "flight001", null,
-                TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline);
+                TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
     }
 
     private PassengerData passengerData(String idDocument) {
