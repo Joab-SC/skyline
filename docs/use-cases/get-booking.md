@@ -13,7 +13,7 @@ Returns a booking so the client can see its current state at any step of the boo
 | `bookingId` | `String` | Booking that is requested. |
 
 ## Output
-The `Booking`, with its flights, status, price, payment deadline, passengers, luggage and extra services. The response does not include the passengers' seats: they are stored in the legs (`LegSeat`), not in the booking.
+The `Booking`, with its flights, status, price, payment deadline, passengers, luggage, extra services and payment attempts. The response does not include the passengers' seats: they are stored in the legs (`LegSeat`), not in the booking.
 
 ## Dependencies
 - Repositories: `BookingRepository`
