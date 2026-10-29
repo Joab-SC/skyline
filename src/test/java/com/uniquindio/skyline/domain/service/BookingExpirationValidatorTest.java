@@ -12,6 +12,7 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import com.uniquindio.skyline.infrastructure.persistence.BookingRepositoryInMemory;
@@ -39,7 +40,7 @@ class BookingExpirationValidatorTest {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
         Booking expired = booking("booking-1", BookingStatus.PENDING, now.minusMinutes(1), "flight-1");
-        Booking onTime = booking("booking-2", BookingStatus.PENDING, now.plusMinutes(10), "flight-1");
+        Booking onTime = Booking.createPendingBooking(1, 500.0, "flight-1", TripType.ONE_WAY);
         Booking cancelled = booking("booking-3", BookingStatus.CANCELLED, now.minusMinutes(1), "flight-1");
         List.of(expired, onTime, cancelled).forEach(bookingRepository::save);
 
@@ -73,21 +74,25 @@ class BookingExpirationValidatorTest {
         // Arrange
         Leg leg = saveLegWithSeatTakenBy("1001");
         Flight flight = saveFlight(leg);
-        Booking booking = booking("booking-1", BookingStatus.PENDING, LocalDateTime.now().plusMinutes(10), flight.getId());
+        Booking booking = Booking.createPendingBooking(1, 500.0, flight.getId(), TripType.ONE_WAY);
+        booking.addPassengers(List.of(new PassengerData("1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE)));
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> validator.expire(booking));
         assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
         assertEquals(2, leg.getAvailableSeats());
         assertTrue(leg.hasSeatAssigned("1001"));
-        assertTrue(bookingRepository.findById("booking-1").isEmpty());
+        assertTrue(bookingRepository.findById(booking.getId()).isEmpty());
     }
 
+    // Only for bookings whose payment deadline already passed: createPendingBooking always sets
+    // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking booking(String id, BookingStatus status, LocalDateTime deadline, String idOutboundFlight) {
         Passenger passenger = Passenger.createPassenger("1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
                 "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);
         return Booking.reconstruct(id, 1, 500.0, new ArrayList<>(List.of(passenger)), idOutboundFlight, null,
-                TripType.ONE_WAY, new ArrayList<>(), status, deadline);
+                TripType.ONE_WAY, new ArrayList<>(), status, deadline, new ArrayList<>());
     }
 
     private Leg saveLegWithSeatTakenBy(String idPassenger) {
