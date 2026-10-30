@@ -32,7 +32,7 @@ The updated `Booking`.
       - `subTotal` = `amount × Σ leg.getLuggage().getPrice()`.
    5. Returns `booking.createLuggageDetail(luggageIds, amount, subTotal, airline.getMaximumLuggageAmount())`, which builds the `LuggageDetail`.
 3. The use case calls `booking.registerPassengerLuggage(passengerId, luggageDetail)`, which:
-   1. checks that the booking is `PENDING`. It does not check the payment deadline, unlike seats and extra services (see [pending.md](../pending.md));
+   1. `validateIsModifiable()` checks that the booking is `PENDING` and that its payment deadline has not passed;
    2. finds the passenger by `idDocument`;
    3. subtracts the old `subTotal` if the passenger already had a detail;
    4. replaces the detail and adds the new `subTotal` to the booking price.
@@ -42,7 +42,7 @@ The updated `Booking`.
 - The booking or the passenger does not exist: `NoSuchElementException` (404 in REST).
 
 The following throw `DomainRuleException`:
-- The booking is `PENDING`.
+- The booking is `PENDING` and its payment deadline has not passed.
 - The flights, legs and airline exist.
 - `LuggageDetail(luggageIds, quantity, subTotal, maxQuantity)` validates in its constructor:
   - `quantity > 0`;
@@ -59,7 +59,7 @@ The following throw `DomainRuleException`:
   - flight, leg or airline not found.
 - `BookingTest`:
   - `createLuggageDetail`;
-  - `registerPassengerLuggage`: registration, replacement and price, passenger not found, null detail, non-pending booking.
+  - `registerPassengerLuggage`: registration, replacement and price, passenger not found, null detail, non-pending booking, deadline passed.
 - `AddLuggageUseCaseTest` (Mockito):
   - coordination (creator → register → save);
   - booking not found;
