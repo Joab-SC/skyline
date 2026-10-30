@@ -259,7 +259,7 @@ public class BookingTest {
                 DomainRuleException.class,
                 () -> booking.addReturnFlight("flight-return", 300.0)
         );
-        assertEquals("Only a pending booking can be modified", exception.getMessage());
+        assertEquals("Only pending bookings can be modified", exception.getMessage());
         assertTrue(booking.getIdReturnFlight().isEmpty());
     }
 
@@ -691,6 +691,52 @@ public class BookingTest {
         assertEquals(List.of("flight-outbound", "flight-return"), booking.getFlightIds());
     }
 
+    // Tests payment deadline on modifications
+
+    @Test
+    void shouldThrowExceptionWhenAddingReturnFlightAfterDeadline() {
+        // Arrange
+        Booking booking = expiredBooking(TripType.ROUND_TRIP, new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> booking.addReturnFlight("flight-return", 300.0));
+        assertTrue(booking.getIdReturnFlight().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingPassengersAfterDeadline() {
+        // Arrange
+        Booking booking = expiredBooking(TripType.ONE_WAY, new ArrayList<>());
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> booking.addPassengers(List.of(passengerData("1001"))));
+        assertTrue(booking.getPassengerList().isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChoosingHolderAfterDeadline() {
+        // Arrange
+        Booking booking = expiredBooking(TripType.ONE_WAY, new ArrayList<>(List.of(passenger("1001"))));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> booking.choseHolder("1001", "laura@mail.com", "3001234567", PhonePrefix.COLOMBIA));
+        assertFalse(booking.getPassengerList().getFirst().isHolder());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRegisteringLuggageAfterDeadline() {
+        // Arrange
+        Booking booking = expiredBooking(TripType.ONE_WAY, new ArrayList<>(List.of(passenger("1001"))));
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class,
+                () -> booking.registerPassengerLuggage("1001", new LuggageDetail(List.of("luggage-1"), 1, 50.0, 3)));
+        assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
     // Tests payments
 
     @Test
@@ -910,6 +956,17 @@ public class BookingTest {
     private Booking bookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct("booking-1", 1, 500.0, new ArrayList<>(), "flight001", null,
                 TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
+    }
+
+    // A pending booking whose payment deadline passed one minute ago.
+    private Booking expiredBooking(TripType tripType, List<Passenger> passengers) {
+        return Booking.reconstruct("booking-1", 1, 500.0, passengers, "flight001", null,
+                tripType, new ArrayList<>(), BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1), new ArrayList<>());
+    }
+
+    private Passenger passenger(String idDocument) {
+        return Passenger.createPassenger(idDocument, DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);
     }
 
     private PassengerData passengerData(String idDocument) {

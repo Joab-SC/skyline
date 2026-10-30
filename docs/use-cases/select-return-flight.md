@@ -35,7 +35,7 @@ The updated `Booking`.
   - the outbound and return flights belong to the **same airline**;
   - the return flight departs from the outbound destination and arrives at the outbound origin;
   - the return flight departs after the outbound flight arrives;
-  - the booking is `PENDING`, is `ROUND_TRIP` and has no return flight yet;
+  - the booking is `PENDING`, its payment deadline has not passed (`validateIsModifiable()`), it is `ROUND_TRIP` and it has no return flight yet;
   - `idReturnFlight` is not empty and the price is greater than 0;
   - every leg has enough available seats.
 - The booking or the outbound flight does not exist, or the return flight is not in the search cache: `NoSuchElementException` (404 in REST).

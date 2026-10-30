@@ -4,7 +4,6 @@ Open items in the code and docs. Each use case is described in [use-cases/README
 
 ## Close the purchase
 - [ ] Decide whether the booking response shows each passenger's seat per leg. Seats live in `LegSeat`, so `GET /api/bookings/{id}` does not show them. → `BookingResponse`, `GetBookingUseCase`
-- [ ] `registerPassengerLuggage` checks `PENDING` but not the payment deadline. Use `validateIsModifiable()` like extra services and seats. → `Booking`
 
 ## Payments
 - [ ] A `PENDING` payment attempt is charged again with the same reference, assuming it was never charged. With a real provider, ask the provider what happened to that reference before charging again, and register its result. → `PaymentGateway`, `PayBooking`, `Booking.startPayment`

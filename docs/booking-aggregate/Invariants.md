@@ -5,6 +5,7 @@
 * Once the passengers are registered, exactly one of them is the holder.
 * All the passengers in a Booking are unique.
 * Only a PENDING booking can be modified, confirmed, canceled, or expired.
+* A booking cannot be modified after its payment deadline. Every change (return flight, passengers, holder, seats, luggage, extra services) checks it with `validateIsModifiable()`.
 * A CANCELLED, EXPIRED or CONFIRMED booking cannot change its status.
 * A booking becomes CONFIRMED only when one of its payments is APPROVED.
 * A payment can start only when the booking is PENDING, before its payment deadline, with every passenger and a holder.

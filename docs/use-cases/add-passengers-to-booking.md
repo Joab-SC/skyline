@@ -30,7 +30,7 @@ The updated `Booking`.
 4. Save and return the booking.
 
 ## Rules and errors (`DomainRuleException`)
-- The booking is `PENDING`.
+- The booking is `PENDING` and its payment deadline has not passed (`validateIsModifiable()`, checked by `addPassengers` and `choseHolder`).
 - Passengers can be added only once. A booking that already has passengers is rejected; the list does not replace them.
 - The list is not null, has no null items and has exactly `numPassengers` passengers.
 - No two passengers have the same document (`documentType` + `idDocument`).

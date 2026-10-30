@@ -184,9 +184,7 @@ public class Booking {
     }
 
     public void registerPassengerLuggage(String idDocument, LuggageDetail luggageDetail){
-        if (this.bookingStatus != BookingStatus.PENDING){
-            throw new DomainRuleException("Only a pending booking can be modified");
-        }
+        validateIsModifiable();
         if (luggageDetail == null){
             throw new DomainRuleException("The luggage detail cannot be null");
         }
@@ -206,9 +204,7 @@ public class Booking {
 
     // Public so callers can check the booking before changing other aggregates (e.g. reducing seats).
     public void validateReturnFlight(String idReturnFlight, double price){
-        if (!isPending()){
-            throw new DomainRuleException("Only a pending booking can be modified");
-        }
+        validateIsModifiable();
         if (!hasNoReturnFlight()){
             throw new DomainRuleException("The booking already has a return flight");
         }
@@ -268,9 +264,7 @@ public class Booking {
         if (passengerListParameter == null || passengerListParameter.stream().anyMatch(Objects::isNull)){
             throw new DomainRuleException("Passenger list cannot be null or contain null passengers");
         }
-        if (bookingStatus != BookingStatus.PENDING){
-            throw new DomainRuleException("Passengers can only be added to a pending booking");
-        }
+        validateIsModifiable();
         if (!passengerList.isEmpty()){
             throw new DomainRuleException("Passengers have already been added to this booking");
         }
@@ -293,7 +287,7 @@ public class Booking {
 
     public void choseHolder(String idDocument, String email,
                             String phoneNumber, PhonePrefix phonePrefix){
-
+        validateIsModifiable();
         if (idDocument == null || idDocument.isBlank()) {
             throw new DomainRuleException("Document ID cannot be empty");
         }
