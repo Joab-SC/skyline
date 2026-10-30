@@ -1,6 +1,6 @@
 # CreateLeg
 
-**Status:** Implemented (no use-case test yet)
+**Status:** Implemented
 **Class:** `application/usecase/CreateLegUseCase.java`
 **Endpoint:** `POST /api/legs`
 
@@ -31,19 +31,22 @@ The created `Leg`.
 ## Steps
 1. Find the airline by `airlineId`.
 2. Find the aircraft by `aircraftId`.
-3. Check that the aircraft has no overlapping leg (`LegOverlapValidator.validateNoOverlap`).
-4. Create the leg with `Leg.createLeg(...)`:
+3. Check that the aircraft belongs to the airline (`airline.validateHasAircraft(aircraftId)`, which throws `DomainRuleException` otherwise).
+4. Check that the aircraft has no overlapping leg (`LegOverlapValidator.validateNoOverlap`).
+5. Create the leg with `Leg.createLeg(...)`:
    - one `LegSeat` per aircraft seat, all `AVAILABLE`;
    - `availableSeats` = number of seats;
    - one `Luggage` with `luggagePrice` (max weight 23 kg).
-5. Link the leg with `airline.addLeg(leg.getId())`.
-6. Save the leg in `LegRepository`.
-7. Return the leg.
+6. Link the leg with `airline.addLeg(leg.getId())`.
+7. Save the leg in `LegRepository`.
+8. Save the airline in `AirlineRepository`, so the link (`airline_legs`) is stored.
+9. Return the leg.
 
-The airline is **not saved** after step 5, so the link is lost with JPA. See [pending.md](../pending.md).
+The use case is `@Transactional`: the leg and the airline are saved together, or neither is.
 
 ## Rules and errors
 - `DomainRuleException`:
+  - the aircraft must belong to the airline;
   - there must be at least 5 minutes between legs of the same aircraft;
   - origin, destination, departure time, arrival time, `aircraftId` and `airlineId` are required;
   - `arrivalTime` must be after `departureTime`;

@@ -1,6 +1,6 @@
 # CreateAircraft
 
-**Status:** Implemented (no use-case test yet)
+**Status:** Implemented
 **Class:** `application/usecase/CreateAircraftUseCase.java`
 **Endpoint:** `POST /api/aircrafts`
 
@@ -26,9 +26,10 @@ The created `Aircraft`.
 2. Find the airline by `airlineId`.
 3. Link the aircraft with `airline.addAircraft(aircraft.getId())`.
 4. Save the aircraft in `AircraftRepository`.
-5. Return the aircraft.
+5. Save the airline in `AirlineRepository`, so the link (`airline_aircrafts`) is stored.
+6. Return the aircraft.
 
-The airline is **not saved** after step 3, so the link is lost with JPA. See [pending.md](../pending.md).
+The use case is `@Transactional`: the aircraft and the airline are saved together, or neither is.
 
 ## Rules and errors
 - `DomainRuleException`:

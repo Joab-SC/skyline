@@ -2,9 +2,6 @@
 
 Open items in the code and docs. Each use case is described in [use-cases/README.md](use-cases/README.md). Items already done were removed; see the git history for them.
 
-## Catalog
-- [ ] `CreateAircraftUseCase` and `CreateLegUseCase` call `airline.addAircraft` / `airline.addLeg` but never save the airline, so with JPA the airline loses the link. Call `airlineRepository.save(airline)`. → `CreateAircraftUseCase`, `CreateLegUseCase`
-
 ## Close the purchase
 - [ ] Decide whether the booking response shows each passenger's seat per leg. Seats live in `LegSeat`, so `GET /api/bookings/{id}` does not show them. → `BookingResponse`, `GetBookingUseCase`
 - [ ] `registerPassengerLuggage` checks `PENDING` but not the payment deadline. Use `validateIsModifiable()` like extra services and seats. → `Booking`
@@ -21,6 +18,3 @@ Open items in the code and docs. Each use case is described in [use-cases/README
 
 ## Flight search cache
 - [ ] `FlightSearchCacheInMemory` uses a `HashMap` with no expiration: it is not thread-safe and keeps every searched flight forever. Use a `ConcurrentHashMap` and remove entries after ~20 min. → `FlightSearchCacheInMemory`
-
-## Tests
-- [ ] `CreateAircraftUseCase` and `CreateLegUseCase` have no use-case tests. → `application/usecase`
