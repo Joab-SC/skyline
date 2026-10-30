@@ -84,6 +84,16 @@ public class Airline {
         this.aircraftIds.add(aircraftId);
     }
 
+    public boolean hasAircraft(String aircraftId){
+        return aircraftIds.contains(aircraftId);
+    }
+
+    public void validateHasAircraft(String aircraftId){
+        if (!hasAircraft(aircraftId)){
+            throw new DomainRuleException("The aircraft does not belong to the airline");
+        }
+    }
+
     // Creates an extra service and adds it to the airline.
     public ExtraService createExtraService(String nameService, String description, double nationalPrice, double internationalPrice) {
         ExtraService extraService = ExtraService.createExtraService(nameService, description, nationalPrice, internationalPrice);

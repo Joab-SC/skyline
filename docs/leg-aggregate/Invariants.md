@@ -6,3 +6,4 @@
 * The origin airport must be different from the destination airport.
 * The departure time must be earlier than the arrival time.
 * A Leg must have the same number of seats as the seats provided during its creation.
+* The aircraft that flies a Leg must belong to the Leg's airline (checked in `CreateLegUseCase` with `Airline.validateHasAircraft`).

@@ -85,6 +85,35 @@ class AirlineTest {
         assertTrue(airline.getLegIds().isEmpty());
     }
 
+    @Test
+    void shouldHaveAircraftWhenItWasAdded() {
+        // Arrange
+        Airline airline = createValidAirline();
+        airline.addAircraft("aircraft-1");
+
+        // Act & Assert
+        assertTrue(airline.hasAircraft("aircraft-1"));
+    }
+
+    @Test
+    void shouldNotHaveAircraftOfAnotherAirline() {
+        // Arrange
+        Airline airline = createValidAirline();
+        airline.addAircraft("aircraft-1");
+
+        // Act & Assert
+        assertFalse(airline.hasAircraft("aircraft-2"));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValidatingAircraftOfAnotherAirline() {
+        // Arrange
+        Airline airline = createValidAirline();
+        airline.addAircraft("aircraft-1");
+
+        // Act & Assert
+        assertThrows(DomainRuleException.class, () -> airline.validateHasAircraft("aircraft-2"));
+    }
     // addAircraft
 
     @Test
