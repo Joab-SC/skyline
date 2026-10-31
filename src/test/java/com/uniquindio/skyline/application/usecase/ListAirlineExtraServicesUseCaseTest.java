@@ -47,6 +47,22 @@ class ListAirlineExtraServicesUseCaseTest {
     }
 
     @Test
+    void shouldNotReturnDeletedExtraServices() {
+        // Arrange
+        Airline airline = Airline.createAirline("Mega airline", 10, 100);
+        ExtraService meal = airline.createExtraService("Meal", "Hot meal", 20, 40);
+        ExtraService pet = airline.createExtraService("Pet", null, 50, 80);
+        airline.deleteExtraService(pet.getId());
+        when(airlineRepository.findById(airline.getId())).thenReturn(Optional.of(airline));
+
+        // Act
+        List<ExtraService> result = useCase.execute(airline.getId());
+
+        // Assert
+        assertEquals(List.of(meal), result);
+    }
+
+    @Test
     void shouldReturnEmptyListWhenAirlineHasNoExtraServices() {
         // Arrange
         Airline airline = Airline.createAirline("Mega airline", 10, 100);

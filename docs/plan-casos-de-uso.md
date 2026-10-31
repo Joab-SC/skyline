@@ -12,7 +12,7 @@ Contexto para retomar el trabajo en otro chat.
 - Plazo: 1 mes, haciendo también el front con ayuda de IA.
 - Los detalles de cada caso están en [use-cases/README.md](use-cases/README.md) y lo que falta en [pending.md](pending.md).
 
-## Casos de uso implementados (19)
+## Casos de uso implementados (20)
 
 | # | Caso de uso | Clase | Endpoint REST |
 |---|---|---|---|
@@ -35,6 +35,7 @@ Contexto para retomar el trabajo en otro chat.
 | 17 | Expirar reservas vencidas | `ExpireBookingUseCase` (+ `FindExpiredBookingsUseCase`) | — (scheduler cada 10 s) |
 | 18 | Ranking de aerolíneas por cantidad de aviones | `GetTopAirlinesUseCase` | `GET /api/airlines/top` |
 | 19 | Listar aerolíneas | `ListAirlinesUseCase` | `GET /api/airlines` |
+| 20 | Eliminar servicio extra (soft delete) | `DeleteExtraServiceUseCase` | `DELETE /api/airlines/{id}/extra-services/{extraServiceId}` |
 
 ## Casos de uso por hacer en el mes (15)
 
@@ -68,12 +69,12 @@ Cancelar y expirar ya están implementados (casos 16 y 17).
 ### Opcional si sobra tiempo
 - Check-in simple del pasajero.
 
-**Total al final del mes: 34 casos de uso** (19 actuales + 15 nuevos).
+**Total al final del mes: 35 casos de uso** (20 actuales + 15 nuevos).
 
 ## Fuera del mes (versión 2)
 
 - Pase de abordar, cancelación de reserva confirmada con reembolso, cambio de vuelo, correo de confirmación.
-- Editar y dar de baja en el catálogo (cambiar horario de un leg, cancelar un leg, retirar avión, editar precios de extras).
+- Editar y dar de baja en el catálogo (cambiar horario de un leg, cancelar un leg, retirar avión, editar precios de extras). Eliminar un servicio extra ya está (caso 20).
 - Reportes: ocupación por leg, ventas, reservas por estado. El ranking de aerolíneas ya está (caso 18).
 
 ## Plan por semanas

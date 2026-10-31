@@ -25,6 +25,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 17 | [ExpireBooking](expire-booking.md) | Expires a `PENDING` booking whose payment deadline passed and returns its seats, like CancelBooking. | `BookingRepository`, `FlightRepository`, `LegRepository` | — (scheduled every 10 s) | Implemented |
 | 18 | [GetTopAirlines](get-top-airlines.md) | Returns the airlines with the most aircraft, most first (report). | `AirlineRepository` | `GET /api/airlines/top` | Implemented |
 | 19 | [ListAirlines](list-airlines.md) | Returns every airline, ordered by name, so the client can choose one. | `AirlineRepository` | `GET /api/airlines` | Implemented |
+| 20 | [DeleteExtraService](delete-extra-service.md) | Soft delete of an airline's extra service: it is no longer offered, but old bookings keep it. | `AirlineRepository` | `DELETE /api/airlines/{id}/extra-services/{extraServiceId}` | Implemented |
 
 ## Booking flow
 
