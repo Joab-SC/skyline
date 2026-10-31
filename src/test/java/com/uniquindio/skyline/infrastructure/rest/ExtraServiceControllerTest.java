@@ -73,7 +73,7 @@ public class ExtraServiceControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenBusinessRuleIsBroken() throws Exception {
+    void shouldAnswer422WhenBusinessRuleIsBroken() throws Exception {
         when(createExtraServiceUseCase.execute(any(), any(), any(), anyDouble(), anyDouble())).
                 thenThrow(new DomainRuleException("The price must be greater than 0."));
 
@@ -86,7 +86,7 @@ public class ExtraServiceControllerTest {
         mockMvc.perform(post("/api/extra_services")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableContent());  //422
 
     }
 

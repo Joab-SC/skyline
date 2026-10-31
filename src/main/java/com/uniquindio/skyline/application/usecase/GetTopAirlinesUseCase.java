@@ -21,7 +21,7 @@ public class GetTopAirlinesUseCase {
     @Transactional(readOnly = true)
     public List<AirlineAircraftCount> execute(int limit) {
         if (limit < 1 || limit > MAX_RANKING) {
-            throw new DomainRuleException("The limit must be between 1 and " + MAX_RANKING);
+            throw new IllegalArgumentException("The limit must be between 1 and " + MAX_RANKING);
         }
         return airlineRepository.findTopByAircraftCount(limit);
     }

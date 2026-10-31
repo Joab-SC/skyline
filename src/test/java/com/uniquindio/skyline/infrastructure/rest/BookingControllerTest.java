@@ -168,7 +168,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenBookingIsOneWay() throws Exception {
+    void shouldAnswer422WhenBookingIsOneWay() throws Exception {
         // Arrange
         when(selectReturnFlightUseCase.execute(any(), any()))
                 .thenThrow(new DomainRuleException("A one way booking cannot have a return flight"));
@@ -177,7 +177,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/return-flight")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(RETURN_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
@@ -228,7 +228,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenHolderIsUnderage() throws Exception {
+    void shouldAnswer422WhenHolderIsUnderage() throws Exception {
         // Arrange
         when(addPassengerUseCase.execute(any(), anyList(), any(), any(), any(), any()))
                 .thenThrow(new DomainRuleException("The holder must be at least 18 years old"));
@@ -237,7 +237,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/passengers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PASSENGERS_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
@@ -334,7 +334,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenSeatIsAlreadyOccupied() throws Exception {
+    void shouldAnswer422WhenSeatIsAlreadyOccupied() throws Exception {
         // Arrange
         when(selectLegSeatUseCase.execute(any(), any(), any(), any()))
                 .thenThrow(new DomainRuleException("The seat is already occupied"));
@@ -343,7 +343,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/seats")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(SEAT_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
@@ -392,7 +392,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenLuggageExceedsAirlineMaximum() throws Exception {
+    void shouldAnswer422WhenLuggageExceedsAirlineMaximum() throws Exception {
         // Arrange
         when(addLuggageUseCase.execute(any(), any(), anyInt()))
                 .thenThrow(new DomainRuleException("The luggage quantity cannot exceed the maximum quantity"));
@@ -401,7 +401,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/luggage")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(LUGGAGE_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
@@ -450,7 +450,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenBookingIsNotPending() throws Exception {
+    void shouldAnswer422WhenBookingIsNotPending() throws Exception {
         // Arrange
         when(addExtraServiceUseCase.execute(any(), any(), anyInt()))
                 .thenThrow(new DomainRuleException("Only pending bookings can be modified"));
@@ -459,7 +459,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/extra-services")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(EXTRA_SERVICE_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
@@ -529,14 +529,14 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenCancellingNonPendingBooking() throws Exception {
+    void shouldAnswer422WhenCancellingNonPendingBooking() throws Exception {
         // Arrange
         when(cancelBookingUseCase.execute("booking-1"))
                 .thenThrow(new DomainRuleException("Only a pending booking can be cancelled or expired"));
 
         // Act & Assert
         mockMvc.perform(put("/api/bookings/booking-1/cancel"))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     // ---------- POST /api/bookings/{id}/payment ----------
@@ -570,7 +570,7 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenPaymentIsDeclined() throws Exception {
+    void shouldAnswer422WhenPaymentIsDeclined() throws Exception {
         // Arrange
         when(payBookingUseCase.execute(any(), any()))
                 .thenThrow(new DomainRuleException("The payment was declined: Insufficient funds"));
@@ -579,11 +579,11 @@ public class BookingControllerTest {
         mockMvc.perform(post("/api/bookings/booking-1/payment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PAYMENT_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
-    void shouldAnswer400WhenBookingIsAlreadyPaid() throws Exception {
+    void shouldAnswer422WhenBookingIsAlreadyPaid() throws Exception {
         // Arrange
         when(payBookingUseCase.execute(any(), any()))
                 .thenThrow(new DomainRuleException("The booking is already paid"));
@@ -592,7 +592,7 @@ public class BookingControllerTest {
         mockMvc.perform(post("/api/bookings/booking-1/payment")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PAYMENT_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
