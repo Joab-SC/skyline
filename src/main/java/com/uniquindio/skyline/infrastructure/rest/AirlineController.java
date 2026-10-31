@@ -4,10 +4,7 @@ import com.uniquindio.skyline.application.dto.request.CreateAirlineRequest;
 import com.uniquindio.skyline.application.dto.response.AirlineResponse;
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
-import com.uniquindio.skyline.application.usecase.CreateAirlineUseCase;
-import com.uniquindio.skyline.application.usecase.GetTopAirlinesUseCase;
-import com.uniquindio.skyline.application.usecase.ListAirlineExtraServicesUseCase;
-import com.uniquindio.skyline.application.usecase.ListAirlinesUseCase;
+import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
@@ -27,16 +24,18 @@ public class AirlineController {
     private final ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
     private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final ListAirlinesUseCase listAirlinesUseCase;
+    private final DeleteExtraServiceUseCase deleteExtraServiceUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
 
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
-                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
+                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase, DeleteExtraServiceUseCase deleteExtraServiceUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
         this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.listAirlinesUseCase = listAirlinesUseCase;
+        this.deleteExtraServiceUseCase = deleteExtraServiceUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
     }
@@ -69,6 +68,13 @@ public class AirlineController {
                 .map(extraServiceMapper::toExtraServiceResponse)
                 .toList();
         return ResponseEntity.ok(response); // 200
+    }
+
+    // Soft delete of an extra service: it is no longer offered, but old bookings keep it.
+    @DeleteMapping("/{id}/extra-services/{extraServiceId}")
+    public ResponseEntity<Void> deleteExtraService(@PathVariable String id, @PathVariable String extraServiceId) {
+        deleteExtraServiceUseCase.execute(id, extraServiceId);
+        return ResponseEntity.noContent().build(); // 204
     }
 
     // Ranking of the airlines with the most aircraft. limit is 5 by default.

@@ -27,7 +27,7 @@ public class AddExtraServiceUseCase {
         Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow();
         Airline airline = airlineRepository.findById(outboundFlight.getAirlineId()).orElseThrow();
         ExtraService extraService = airline.getExtraService(serviceId).orElseThrow();
-
+        extraService.validateIsNotDeleted();
         booking.addExtraService(extraService.getId(), quantity, extraService.getPrice(outboundFlight.getFlightScope()));
         bookingRepository.save(booking);
         return booking;
