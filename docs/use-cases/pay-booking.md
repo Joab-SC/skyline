@@ -48,12 +48,12 @@ The use case is **not** `@Transactional`: the pending attempt of step 3 must sta
 | `createdAt` | When the attempt started. |
 
 ## Rules and errors
-- `DomainRuleException` (400 in REST) before charging, so nothing is charged or saved:
+- `DomainRuleException` (422 in REST) before charging, so nothing is charged or saved:
   - the booking is already paid (`CONFIRMED`);
   - the booking is not `PENDING` (`CANCELLED`, `EXPIRED`);
   - the payment deadline passed. Expiring the booking and releasing its seats belongs to [ExpireBooking](expire-booking.md);
   - not every passenger was added, or there is no holder.
-- `DomainRuleException` (400) after charging, with the attempt saved and the booking still `PENDING`:
+- `DomainRuleException` (422) after charging, with the attempt saved and the booking still `PENDING`:
   - the payment was declined (the message includes the provider's reason);
   - the provider answered with an error;
   - the provider is still processing it (the attempt stays `PENDING`).
