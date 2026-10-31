@@ -5,7 +5,6 @@ import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.entity.Flight;
 import com.uniquindio.skyline.domain.entity.Leg;
-import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
@@ -162,27 +161,6 @@ class AddExtraServiceUseCaseTest {
 
         verify(bookingRepository, never()).save(any(Booking.class));
         assertTrue(booking.getDetailExtraServices().isEmpty());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenExtraServiceIsDeleted() {
-        // Arrange
-        Flight outboundFlight = createNationalFlight();
-        Booking booking = createBooking(outboundFlight.getId());
-        ExtraService deletedService = ExtraService.createExtraService("Pet", null, 50, 80);
-        deletedService.delete();
-        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
-        when(flightRepository.findById(outboundFlight.getId())).thenReturn(Optional.of(outboundFlight));
-        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
-        when(airline.getExtraService(SERVICE_ID)).thenReturn(Optional.of(deletedService));
-
-        // Act & Assert
-        assertThrows(DomainRuleException.class,
-                () -> useCase.execute(booking.getId(), SERVICE_ID, 2));
-
-        verify(bookingRepository, never()).save(any(Booking.class));
-        assertTrue(booking.getDetailExtraServices().isEmpty());
-        assertEquals(500.0, booking.getPrice(), 0.001);
     }
 
     private Booking createBooking(String idOutboundFlight) {

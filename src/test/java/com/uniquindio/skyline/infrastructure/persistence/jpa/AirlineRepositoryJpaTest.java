@@ -61,24 +61,6 @@ public class AirlineRepositoryJpaTest {
     }
 
     @Test
-    void shouldSaveAndRecoverDeletedExtraService(){
-        //Arrange
-        Airline airline = Airline.createAirline("Mega airline", 10, 10000);
-        ExtraService meal = airline.createExtraService("Meal", null, 1000, 2000);
-        ExtraService pet = airline.createExtraService("Pet", null, 5000, 8000);
-        airline.deleteExtraService(pet.getId());
-
-        //Act
-        airlineRepository.save(airline);
-        Airline recovered = airlineRepository.findById(airline.getId()).orElseThrow();
-
-        //Assert
-        assertTrue(recovered.getExtraService(pet.getId()).orElseThrow().isDeleted());
-        assertFalse(recovered.getExtraService(meal.getId()).orElseThrow().isDeleted());
-        assertEquals(List.of(meal), recovered.getActiveExtraServices());
-    }
-
-    @Test
     void shouldFindEveryAirlineOrderedByName(){
         //Arrange
         Airline zeta = Airline.createAirline("Zeta airline", 1, 100);

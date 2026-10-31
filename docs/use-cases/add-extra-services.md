@@ -23,7 +23,7 @@ The updated `Booking`.
 ## Steps
 1. Find the booking.
 2. Find the outbound flight and its airline (`flight.getAirlineId()`). The outbound and return flights belong to the same airline, so the client does not send the airline.
-3. Find the service in the airline. The `ExtraService` entities belong to the Airline aggregate. `extraService.validateIsNotDeleted()` rejects a service the airline deleted ([DeleteExtraService](delete-extra-service.md)).
+3. Find the service in the airline. The `ExtraService` entities belong to the Airline aggregate.
 4. Unit price = `extraService.getPrice(outboundFlight.getFlightScope())`: `internationalPrice` if the flight is international, else `nationalPrice` (see below).
 5. `booking.addExtraService(serviceId, quantity, unitPrice)`:
    1. checks that the booking can be modified (`PENDING` and before `paymentDeadline`);
@@ -42,6 +42,5 @@ One call adds one service. To add several, the client calls the endpoint once pe
 ## Rules and errors
 - `DomainRuleException`:
   - the booking is `PENDING` and its payment deadline has not passed;
-  - `quantity > 0`;
-  - the service is not deleted.
+  - `quantity > 0`.
 - The booking, the outbound flight, the airline or the service does not exist: `NoSuchElementException` (404 in REST). A service of another airline is not found.

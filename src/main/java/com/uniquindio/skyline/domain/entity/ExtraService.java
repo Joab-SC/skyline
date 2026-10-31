@@ -15,26 +15,24 @@ public class ExtraService {
     private Optional<String> description;
     private double nationalPrice;
     private double internationalPrice;
-    private boolean deleted;
 
-    private ExtraService(String id, String nameService, Optional<String> description, double nationalPrice, double internationalPrice, boolean deleted) {
+    private ExtraService(String id, String nameService, Optional<String> description, double nationalPrice, double internationalPrice) {
         this.id = id;
         this.nameService = nameService;
         this.description = description;
         this.nationalPrice = nationalPrice;
         this.internationalPrice = internationalPrice;
-        this.deleted = deleted;
     }
 
     // Rebuilds an extra service that already exists, keeping its id. Used when loading from persistence.
-    public static ExtraService reconstruct(String id, String nameService, String description, double nationalPrice, double internationalPrice, boolean deleted) {
-        return new ExtraService(id, nameService, normalizeDescription(description), nationalPrice, internationalPrice, deleted);
+    public static ExtraService reconstruct(String id, String nameService, String description, double nationalPrice, double internationalPrice) {
+        return new ExtraService(id, nameService, normalizeDescription(description), nationalPrice, internationalPrice);
     }
 
     // Creates an extra service with a random id. The description is optional.
     public static ExtraService createExtraService(String nameService, String description, double nationalPrice, double internationalPrice) {
         validateExtraService(nameService, nationalPrice, internationalPrice);
-        return new ExtraService(UUID.randomUUID().toString(), nameService, normalizeDescription(description), nationalPrice, internationalPrice, false);
+        return new ExtraService(UUID.randomUUID().toString(), nameService, normalizeDescription(description), nationalPrice, internationalPrice);
     }
 
     // A null or blank description means the service has no description.
@@ -51,20 +49,6 @@ public class ExtraService {
         }
         if (internationalPrice < 0) {
             throw new DomainRuleException("The international price cannot be negative");
-        }
-    }
-
-    // Soft delete: the service is no longer offered, but it is kept because old bookings point to its id.
-    public void delete() {
-        if (deleted) {
-            throw new DomainRuleException("The extra service is already deleted");
-        }
-        this.deleted = true;
-    }
-
-    public void validateIsNotDeleted() {
-        if (deleted) {
-            throw new DomainRuleException("The extra service was deleted and cannot be added");
         }
     }
 

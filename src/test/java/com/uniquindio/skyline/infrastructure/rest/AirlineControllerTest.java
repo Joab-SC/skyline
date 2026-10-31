@@ -3,7 +3,10 @@ package com.uniquindio.skyline.infrastructure.rest;
 import com.uniquindio.skyline.application.dto.response.AirlineResponse;
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
-import com.uniquindio.skyline.application.usecase.*;
+import com.uniquindio.skyline.application.usecase.CreateAirlineUseCase;
+import com.uniquindio.skyline.application.usecase.GetTopAirlinesUseCase;
+import com.uniquindio.skyline.application.usecase.ListAirlineExtraServicesUseCase;
+import com.uniquindio.skyline.application.usecase.ListAirlinesUseCase;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -23,8 +26,11 @@ import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,9 +58,6 @@ public class AirlineControllerTest {
 
     @MockitoBean
     private ExtraServiceMapper extraServiceMapper;
-
-    @MockitoBean
-    private DeleteExtraServiceUseCase deleteExtraServiceUseCase;
 
     @Test
     void shouldAnswerExtraServicesOfTheAirline() throws Exception {
@@ -218,39 +221,5 @@ public class AirlineControllerTest {
         mockMvc.perform(get("/api/airlines"))
                 .andExpect(status().isOk())                // 200
                 .andExpect(jsonPath("$.length()").value(0));
-    }
-
-    // ---------- DELETE /api/airlines/{id}/extra-services/{extraServiceId} ----------
-
-    @Test
-    void shouldAnswer204WhenExtraServiceIsDeleted() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/service-1"))
-                .andExpect(status().isNoContent());        // 204
-
-        verify(deleteExtraServiceUseCase).execute("airline-1", "service-1");
-    }
-
-    @Test
-    void shouldAnswer404WhenDeletingExtraServiceThatDoesNotExist() throws Exception {
-        // Arrange
-        doThrow(new NoSuchElementException())
-                .when(deleteExtraServiceUseCase).execute("airline-1", "missing");
-
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/missing"))
-                .andExpect(status().isNotFound());         // 404
-    }
-
-    @Test
-    void shouldAnswer422WhenExtraServiceIsAlreadyDeleted() throws Exception {
-        // Arrange
-        doThrow(new DomainRuleException("The extra service is already deleted"))
-                .when(deleteExtraServiceUseCase).execute("airline-1", "service-1");
-
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/service-1"))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.message").value("The extra service is already deleted"));  // 422
     }
 }

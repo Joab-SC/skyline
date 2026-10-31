@@ -60,9 +60,7 @@ INSERT INTO leg_seats (id, seat_code, seat_status, passenger_id, leg_id) VALUES
     ('seat-bog-cli-1A', '1A', 'OCCUPIED', 'passenger-03', 'leg-bog-cli-01');
 
 -- Extra services (description is optional)
--- Extra services (description is optional). A deleted service is no longer offered, but old bookings keep it.
-INSERT INTO extra_services (id, name_service, description, national_price, international_price, airline_id, deleted) VALUES
-     ('extra-avianca-meal', 'Meal', 'Hot meal on board', 30000, 60000, 'airline-avianca', FALSE),
-     ('extra-avianca-wifi', 'Wifi', NULL, 20000, 40000, 'airline-avianca', FALSE),
-     ('extra-latam-priority', 'Priority boarding', 'Board before other passengers', 25000, 50000, 'airline-latam', FALSE),
-     ('extra-latam-pet', 'Pet in cabin', 'Small pet in the cabin', 80000, 150000, 'airline-latam', TRUE);
+INSERT INTO extra_services (id, name_service, description, national_price, international_price, airline_id) VALUES
+    ('extra-avianca-meal', 'Meal', 'Hot meal on board', 30000, 60000, 'airline-avianca'),
+    ('extra-avianca-wifi', 'Wifi', NULL, 20000, 40000, 'airline-avianca'),
+    ('extra-latam-priority', 'Priority boarding', 'Board before other passengers', 25000, 50000, 'airline-latam');

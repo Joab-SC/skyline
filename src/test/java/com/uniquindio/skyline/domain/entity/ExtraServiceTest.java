@@ -84,48 +84,4 @@ class ExtraServiceTest {
         assertThrows(DomainRuleException.class,
                 () -> ExtraService.createExtraService("Priority boarding", "Board first", 20.0, -1.0));
     }
-
-    // delete (soft delete)
-
-    @Test
-    void shouldCreateExtraServiceNotDeleted() {
-        // Act
-        ExtraService extraService = ExtraService.createExtraService("Snack", null, 10.0, 20.0);
-
-        // Assert
-        assertFalse(extraService.isDeleted());
-        assertDoesNotThrow(extraService::validateIsNotDeleted);
-    }
-
-    @Test
-    void shouldMarkExtraServiceAsDeleted() {
-        // Arrange
-        ExtraService extraService = ExtraService.createExtraService("Snack", null, 10.0, 20.0);
-
-        // Act
-        extraService.delete();
-
-        // Assert
-        assertTrue(extraService.isDeleted());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDeletingAnAlreadyDeletedExtraService() {
-        // Arrange
-        ExtraService extraService = ExtraService.createExtraService("Snack", null, 10.0, 20.0);
-        extraService.delete();
-
-        // Act & Assert
-        assertThrows(DomainRuleException.class, extraService::delete);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenValidatingADeletedExtraService() {
-        // Arrange
-        ExtraService extraService = ExtraService.createExtraService("Snack", null, 10.0, 20.0);
-        extraService.delete();
-
-        // Act & Assert
-        assertThrows(DomainRuleException.class, extraService::validateIsNotDeleted);
-    }
 }

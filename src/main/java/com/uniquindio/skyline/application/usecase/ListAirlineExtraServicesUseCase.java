@@ -19,6 +19,6 @@ public class ListAirlineExtraServicesUseCase {
     @Transactional(readOnly = true)
     public List<ExtraService> execute(String airlineId) {
         Airline airline = airlineRepository.findById(airlineId).orElseThrow();
-        return airline.getActiveExtraServices();
+        return airline.getExtraServices();
     }
 }

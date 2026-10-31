@@ -14,12 +14,11 @@ public class ExtraServicePersistenceMapper {
         extraServiceEntity.setDescription(extraService.getDescription().orElse(null));
         extraServiceEntity.setNationalPrice(extraService.getNationalPrice());
         extraServiceEntity.setInternationalPrice(extraService.getInternationalPrice());
-        extraServiceEntity.setDeleted(extraService.isDeleted());
         return extraServiceEntity;
     }
 
     public ExtraService toDomain(ExtraServiceEntity extraServiceEntity) {
         return ExtraService.reconstruct(extraServiceEntity.getId(), extraServiceEntity.getNameService(),
-                extraServiceEntity.getDescription(),extraServiceEntity.getNationalPrice(),extraServiceEntity.getInternationalPrice(),extraServiceEntity.isDeleted());
+                extraServiceEntity.getDescription(),extraServiceEntity.getNationalPrice(),extraServiceEntity.getInternationalPrice());
     }
 }

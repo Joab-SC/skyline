@@ -42,19 +42,6 @@ class AirlineRepositoryDataJpaTest {
     }
 
     @Test
-    void shouldLoadDeletedExtraServiceFromDataSqlButLeaveItOutOfActiveOnes() {
-        // Arrange: "extra-latam-pet" is deleted in data.sql
-
-        // Act
-        Airline latam = airlineRepository.findById("airline-latam").orElseThrow();
-
-        // Assert
-        assertTrue(latam.getExtraService("extra-latam-pet").orElseThrow().isDeleted());
-        assertEquals(List.of("extra-latam-priority"),
-                latam.getActiveExtraServices().stream().map(ExtraService::getId).toList());
-    }
-
-    @Test
     void shouldReturnEmptyWhenAirlineDoesNotExist() {
         // Act
         Optional<Airline> result = airlineRepository.findById("airline-does-not-exist");
