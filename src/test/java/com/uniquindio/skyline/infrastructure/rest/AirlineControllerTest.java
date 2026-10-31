@@ -118,7 +118,7 @@ public class AirlineControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenBusinessRuleIsBroken() throws Exception {
+    void shouldAnswer422WhenBusinessRuleIsBroken() throws Exception {
         // Arrange
         when(createAirlineUseCase.execute(any(), anyInt(), anyDouble()))
                 .thenThrow(new DomainRuleException("The seat price cannot be negative"));
@@ -133,7 +133,8 @@ public class AirlineControllerTest {
         mockMvc.perform(post("/api/airlines")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.message").value("The seat price cannot be negative"));      // 422
     }
 
     @Test
@@ -149,7 +150,8 @@ public class AirlineControllerTest {
         mockMvc.perform(post("/api/airlines")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());       // 400 by @Valid
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.name").exists());  // 400 by @Valid
 
         verify(createAirlineUseCase, never()).execute(any(), anyInt(), anyDouble());
     }
@@ -187,7 +189,7 @@ public class AirlineControllerTest {
     void shouldAnswer400WhenLimitIsOutOfRange() throws Exception {
         // Arrange
         when(getTopAirlinesUseCase.execute(0))
-                .thenThrow(new DomainRuleException("The limit must be between 1 and 20"));
+                .thenThrow(new IllegalArgumentException("The limit must be between 1 and 20"));
 
         // Act & Assert
         mockMvc.perform(get("/api/airlines/top").param("limit", "0"))

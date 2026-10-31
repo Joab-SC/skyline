@@ -84,7 +84,7 @@ public class LegControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenAircraftHasOverlappingLeg() throws Exception {
+    void shouldAnswer422WhenAircraftHasOverlappingLeg() throws Exception {
         // Arrange
         when(createLegUseCase.execute(any(), any(), any(), any(), any(), any(), anyDouble(), anyDouble()))
                 .thenThrow(new DomainRuleException("The aircraft already has a leg in that time range"));
@@ -93,7 +93,7 @@ public class LegControllerTest {
         mockMvc.perform(post("/api/legs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_JSON))
-                .andExpect(status().isBadRequest());       // 400
+                .andExpect(status().isUnprocessableContent());       // 422
     }
 
     @Test
