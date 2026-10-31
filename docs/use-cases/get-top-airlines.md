@@ -27,5 +27,5 @@ A list of `AirlineAircraftCount` (`airlineId`, `name`, `aircraftCount`), with th
 - The order is by number of aircraft, most first. A tie is ordered by airline name.
 - Airlines without aircraft are not included. If no airline has aircraft, the list is empty. This is not an error.
 - The count uses the aircraft linked to the airline (`airline_aircrafts`), which [CreateAircraft](create-aircraft.md) saves.
-- `limit` outside 1–20 throws `DomainRuleException` (400 in REST), and the repository is not called. The check is in the use case, as in the professor's `ConsultarCatalogoUseCase.masVendidos`.
+- `limit` outside 1–20 throws `IllegalArgumentException` (400 in REST), and the repository is not called. It is an input check, not a business rule, so it is in the use case (as in the professor's `ConsultarCatalogoUseCase.masVendidos`) and is not a `DomainRuleException`.
 - The use case is `@Transactional(readOnly = true)`, since it only reads.

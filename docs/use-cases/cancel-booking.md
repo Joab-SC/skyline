@@ -33,7 +33,7 @@ Soft delete of the booking and its flights is still to be decided (see [pending.
 
 ## Rules and errors
 - The booking must exist, or `NoSuchElementException` is thrown (404 in REST).
-- Only a `PENDING` booking can be cancelled (`DomainRuleException`, 400). A `CONFIRMED`, `CANCELLED` or `EXPIRED` booking cannot.
+- Only a `PENDING` booking can be cancelled (`DomainRuleException`, 422). A `CONFIRMED`, `CANCELLED` or `EXPIRED` booking cannot.
 - A flight or leg of the booking that cannot be found throws `DomainRuleException`.
 - Available seats can never exceed the leg's total seats (`DomainRuleException`).
 - Known issue: `LegSeat` stores only the passenger's document, so if the same person is in two bookings that share a leg, the seat released may belong to the other booking (see [pending.md](../pending.md), Seats).
