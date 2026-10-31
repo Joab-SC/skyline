@@ -8,6 +8,7 @@ import com.uniquindio.skyline.domain.entity.Flight;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class SearchFlightsUseCase {
     private final FlightSearcher flightSearcher;
     private final FlightSearchCache flightSearchCache;
 
+    @Transactional(readOnly = true)
     public List<Flight> execute(String originCode, String destinationCode, LocalDate departureDay, int numberOfPassengers){
         Airport origin = Airport.getByAcronym(originCode).orElseThrow();
         Airport destination = Airport.getByAcronym(destinationCode).orElseThrow();

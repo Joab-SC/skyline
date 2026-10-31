@@ -11,6 +11,7 @@ import com.uniquindio.skyline.domain.service.OutboundAndReturnFlightsValidator;
 import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class SelectReturnFlightUseCase {
     private final SeatsAvailableReducer seatsAvailableReducer;
     private final FlightSearchCache flightSearchCache;
 
-
+    @Transactional
     public Booking execute(String idBooking, String idReturnFlight){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
 

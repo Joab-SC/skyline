@@ -16,7 +16,8 @@ public class PayBookingUseCase {
     private final BookingRepository bookingRepository;
     private final PaymentGateway paymentGateway;
 
-
+    // No @Transactional: each save must be committed on its own, so the PENDING attempt
+    // is stored before charging and a declined attempt is kept when validateApproved() throws.
     public Booking execute(String paymentToken, String bookingId) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
 

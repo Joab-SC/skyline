@@ -10,6 +10,7 @@ import com.uniquindio.skyline.domain.service.SeatsAvailableReducer;
 import com.uniquindio.skyline.domain.valueObject.TripType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class SelectOutboundFlightUseCase {
     private final SeatsAvailableReducer seatsAvailableReducer;
     private final FlightRepository flightRepository;
 
+    @Transactional
     public Booking execute(int numPassengers, String idOutboundFlight,
                            TripType tripType){
         Flight flight = flightSearchCache.findById(idOutboundFlight).orElseThrow();

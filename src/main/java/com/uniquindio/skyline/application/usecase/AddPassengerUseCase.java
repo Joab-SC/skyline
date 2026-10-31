@@ -8,6 +8,7 @@ import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class AddPassengerUseCase {
 
     private final BookingRepository bookingRepository;
 
+    @Transactional
     public Booking execute(String idBooking, List<PassengerData> passengers,String idHolder, String email,
                         String phoneNumber, PhonePrefix phonePrefix ){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
