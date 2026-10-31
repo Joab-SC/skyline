@@ -23,6 +23,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 15 | [GetBooking](get-booking.md) | Returns a booking with its current state. | `BookingRepository` | `GET /api/bookings/{id}` | Implemented |
 | 16 | [CreateAirline](create-airline.md) | Creates an airline with its maximum luggage amount and seat price. | `AirlineRepository` | `POST /api/airlines` | Implemented |
 | 17 | [ExpireBooking](expire-booking.md) | Expires a `PENDING` booking whose payment deadline passed and returns its seats, like CancelBooking. | `BookingRepository`, `FlightRepository`, `LegRepository` | — (scheduled every 10 s) | Implemented |
+| 18 | [GetTopAirlines](get-top-airlines.md) | Returns the airlines with the most aircraft, most first (report). | `AirlineRepository` | `GET /api/airlines/top` | Implemented |
 
 ## Booking flow
 
