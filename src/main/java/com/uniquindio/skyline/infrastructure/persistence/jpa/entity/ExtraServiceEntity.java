@@ -29,4 +29,7 @@ public class ExtraServiceEntity {
 
     @Column(nullable = false)
     private double internationalPrice;
+
+    @Column(nullable = false)
+    private boolean deleted;
 }

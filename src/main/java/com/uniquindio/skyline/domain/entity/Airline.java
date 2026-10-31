@@ -44,6 +44,17 @@ public class Airline {
         return extraServices.stream().filter(extraService -> extraService.getId().equals(id)).findFirst();
     }
 
+    // The extra services the airline still offers (not deleted).
+    public List<ExtraService> getActiveExtraServices() {
+        return extraServices.stream().filter(extraService -> !extraService.isDeleted()).toList();
+    }
+
+    // Soft delete of an extra service of the airline. Throws NoSuchElementException if the airline does not have it.
+    public void deleteExtraService(String extraServiceId) {
+        ExtraService extraService = getExtraService(extraServiceId).orElseThrow();
+        extraService.delete();
+    }
+
     // Creates an airline without aircrafts or legs.
     public static Airline createAirline(String name, int maximumLuggageAmount, double seatPrice) {
         validateAirline(name, maximumLuggageAmount, seatPrice);
