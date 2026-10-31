@@ -59,4 +59,22 @@ public class AirlineRepositoryJpaTest {
         assertEquals(1000, extraServiceRecovered.getNationalPrice(), 0.001);
         assertEquals(2000, extraServiceRecovered.getInternationalPrice(), 0.001);
     }
+
+    @Test
+    void shouldFindEveryAirlineOrderedByName(){
+        //Arrange
+        Airline zeta = Airline.createAirline("Zeta airline", 1, 100);
+        Airline alpha = Airline.createAirline("Alpha airline", 1, 100);
+        airlineRepository.save(zeta);
+        airlineRepository.save(alpha);
+
+        //Act
+        List<Airline> airlines = airlineRepository.findAll();
+
+        //Assert
+        List<String> names = airlines.stream().map(Airline::getName).toList();
+        assertTrue(airlines.contains(zeta));
+        assertTrue(airlines.contains(alpha));
+        assertEquals(names.stream().sorted().toList(), names);
+    }
 }
