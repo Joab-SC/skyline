@@ -3,7 +3,9 @@ package com.uniquindio.skyline.infrastructure.rest;
 import com.uniquindio.skyline.application.dto.request.CreateAirlineRequest;
 import com.uniquindio.skyline.application.dto.response.AirlineResponse;
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
+import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
 import com.uniquindio.skyline.application.usecase.CreateAirlineUseCase;
+import com.uniquindio.skyline.application.usecase.GetTopAirlinesUseCase;
 import com.uniquindio.skyline.application.usecase.ListAirlineExtraServicesUseCase;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
@@ -22,14 +24,16 @@ public class AirlineController {
 
     private final CreateAirlineUseCase createAirlineUseCase;
     private final ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
+    private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
 
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
-                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase,
+                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
+        this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
     }
@@ -52,6 +56,16 @@ public class AirlineController {
     public ResponseEntity<List<ExtraServiceResponse>> listExtraServices(@PathVariable String id) {
         List<ExtraServiceResponse> response = listAirlineExtraServicesUseCase.execute(id).stream()
                 .map(extraServiceMapper::toExtraServiceResponse)
+                .toList();
+        return ResponseEntity.ok(response); // 200
+    }
+
+    // Ranking of the airlines with the most aircraft. limit is 5 by default.
+    @GetMapping("/top")
+    public ResponseEntity<List<TopAirlineResponse>> getTop(
+            @RequestParam(name = "limit", defaultValue = "5") int limit) {
+        List<TopAirlineResponse> response = getTopAirlinesUseCase.execute(limit).stream()
+                .map(mapper::toTopAirlineResponse)
                 .toList();
         return ResponseEntity.ok(response); // 200
     }
