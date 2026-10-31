@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface AirlineRepository {
     Optional<Airline> findById(String id);
+    List<Airline> findAll();
     void save(Airline airline);
     List<AirlineAircraftCount> findTopByAircraftCount(int limit);
 

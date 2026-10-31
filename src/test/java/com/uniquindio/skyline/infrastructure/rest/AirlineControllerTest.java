@@ -1,10 +1,12 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
+import com.uniquindio.skyline.application.dto.response.AirlineResponse;
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
 import com.uniquindio.skyline.application.usecase.CreateAirlineUseCase;
 import com.uniquindio.skyline.application.usecase.GetTopAirlinesUseCase;
 import com.uniquindio.skyline.application.usecase.ListAirlineExtraServicesUseCase;
+import com.uniquindio.skyline.application.usecase.ListAirlinesUseCase;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -47,6 +49,9 @@ public class AirlineControllerTest {
 
     @MockitoBean
     private GetTopAirlinesUseCase getTopAirlinesUseCase;
+
+    @MockitoBean
+    private ListAirlinesUseCase listAirlinesUseCase;
 
     @MockitoBean
     private AirlineMapper mapper;
@@ -187,5 +192,32 @@ public class AirlineControllerTest {
         // Act & Assert
         mockMvc.perform(get("/api/airlines/top").param("limit", "0"))
                 .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
+    void shouldAnswerEveryAirline() throws Exception {
+        // Arrange
+        Airline avianca = Airline.createAirline("Avianca", 2, 50000);
+        when(listAirlinesUseCase.execute()).thenReturn(List.of(avianca));
+        when(mapper.toAirlineResponse(avianca))
+                .thenReturn(new AirlineResponse(avianca.getId(), "Avianca", 2, 50000));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines"))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(avianca.getId()))
+                .andExpect(jsonPath("$[0].name").value("Avianca"));
+    }
+
+    @Test
+    void shouldAnswerEmptyListWhenThereAreNoAirlines() throws Exception {
+        // Arrange
+        when(listAirlinesUseCase.execute()).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines"))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }
