@@ -1,11 +1,14 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
+import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
 import com.uniquindio.skyline.application.usecase.CreateAirlineUseCase;
+import com.uniquindio.skyline.application.usecase.GetTopAirlinesUseCase;
 import com.uniquindio.skyline.application.usecase.ListAirlineExtraServicesUseCase;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
 import org.junit.jupiter.api.Test;
@@ -41,6 +44,9 @@ public class AirlineControllerTest {
 
     @MockitoBean
     private ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
+
+    @MockitoBean
+    private GetTopAirlinesUseCase getTopAirlinesUseCase;
 
     @MockitoBean
     private AirlineMapper mapper;
@@ -141,5 +147,45 @@ public class AirlineControllerTest {
                 .andExpect(status().isBadRequest());       // 400 by @Valid
 
         verify(createAirlineUseCase, never()).execute(any(), anyInt(), anyDouble());
+    }
+
+    @Test
+    void shouldAnswerTopAirlinesWithDefaultLimit() throws Exception {
+        // Arrange
+        AirlineAircraftCount avianca = new AirlineAircraftCount("airline-1", "Avianca", 3L);
+        when(getTopAirlinesUseCase.execute(5)).thenReturn(List.of(avianca));
+        when(mapper.toTopAirlineResponse(avianca))
+                .thenReturn(new TopAirlineResponse("airline-1", "Avianca", 3L));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/top"))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].airlineId").value("airline-1"))
+                .andExpect(jsonPath("$[0].aircraftCount").value(3));
+    }
+
+    @Test
+    void shouldAnswerTopAirlinesWithGivenLimit() throws Exception {
+        // Arrange
+        when(getTopAirlinesUseCase.execute(3)).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/top").param("limit", "3"))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(0));
+
+        verify(getTopAirlinesUseCase).execute(3);
+    }
+
+    @Test
+    void shouldAnswer400WhenLimitIsOutOfRange() throws Exception {
+        // Arrange
+        when(getTopAirlinesUseCase.execute(0))
+                .thenThrow(new DomainRuleException("The limit must be between 1 and 20"));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/top").param("limit", "0"))
+                .andExpect(status().isBadRequest());       // 400
     }
 }
