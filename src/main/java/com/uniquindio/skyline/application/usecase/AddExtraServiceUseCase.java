@@ -8,6 +8,7 @@ import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.FlightScope;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,7 @@ public class AddExtraServiceUseCase {
     private final AirlineRepository airlineRepository;
     private final FlightRepository flightRepository;
 
-
+    @Transactional
     public Booking execute(String bookingId, String serviceId, int quantity) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
 

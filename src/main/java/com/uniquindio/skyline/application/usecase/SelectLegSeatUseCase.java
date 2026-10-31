@@ -8,6 +8,7 @@ import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.service.SeatAssigner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +18,7 @@ public class SelectLegSeatUseCase {
     private final BookingRepository bookingRepository;
     private final SeatAssigner seatAssigner;
 
-
+    @Transactional
     public Booking execute(String idBooking, String idLegSeat, String  idPassenger, String idLeg){
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
         Passenger passenger = booking.getPassenger(idPassenger).orElseThrow();

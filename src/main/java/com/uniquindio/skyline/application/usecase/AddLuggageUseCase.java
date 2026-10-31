@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.service.LuggageDetailCreator;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,9 @@ public class AddLuggageUseCase {
     private final BookingRepository bookingRepository;
     private final LuggageDetailCreator luggageDetailCreator;
 
+
     // Registers the luggage of a passenger for every leg of the booking.
+    @Transactional
     public Booking execute(String passengerId, String bookingId, int amount){
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         LuggageDetail luggageDetail = luggageDetailCreator.createDetail(booking, amount);
