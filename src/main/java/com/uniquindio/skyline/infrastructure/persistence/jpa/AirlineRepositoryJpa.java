@@ -2,6 +2,7 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
 import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
@@ -33,5 +34,12 @@ public class AirlineRepositoryJpa implements AirlineRepository {
     @Override
     public List<AirlineAircraftCount> findTopByAircraftCount(int limit) {
         return dataRepository.findTopByAircraftCount(PageRequest.of(0, limit));
+    }
+    
+    // Returns every airline, ordered by name.
+    @Override
+    @Transactional(readOnly = true)
+    public List<Airline> findAll() {
+        return dataRepository.findAll(Sort.by("name")).stream().map(mapper::toDomain).toList();
     }
 }

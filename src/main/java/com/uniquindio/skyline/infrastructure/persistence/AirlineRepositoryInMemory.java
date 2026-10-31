@@ -32,4 +32,12 @@ public class AirlineRepositoryInMemory implements AirlineRepository {
                 .limit(limit)
                 .toList();
     }
+
+    // Returns every airline, ordered by name.
+    @Override
+    public List<Airline> findAll() {
+        return airlines.values().stream()
+                .sorted(Comparator.comparing(Airline::getName))
+                .toList();
+    }
 }
