@@ -12,13 +12,13 @@ Contexto para retomar el trabajo en otro chat.
 - Plazo: 1 mes, haciendo también el front con ayuda de IA.
 - Los detalles de cada caso están en [use-cases/README.md](use-cases/README.md) y lo que falta en [pending.md](pending.md).
 
-## Casos de uso implementados (15)
+## Casos de uso implementados (19)
 
 | # | Caso de uso | Clase | Endpoint REST |
 |---|---|---|---|
 | 1 | Crear aerolínea | `CreateAirlineUseCase` | `POST /api/airlines` |
-| 2 | Crear avión | `CreateAircraftUseCase` (sin test) | `POST /api/aircrafts` |
-| 3 | Crear trayecto (leg) | `CreateLegUseCase` (sin test) | `POST /api/legs` |
+| 2 | Crear avión | `CreateAircraftUseCase` | `POST /api/aircrafts` |
+| 3 | Crear trayecto (leg) | `CreateLegUseCase` | `POST /api/legs` |
 | 4 | Crear servicio extra | `CreateExtraServiceUseCase` | `POST /api/extra_services` |
 | 5 | Buscar vuelos | `SearchFlightsUseCase` | `GET /api/flights` |
 | 6 | Seleccionar vuelo de ida (crea la reserva `PENDING`) | `SelectOutboundFlightUseCase` | `POST /api/bookings` |
@@ -30,48 +30,51 @@ Contexto para retomar el trabajo en otro chat.
 | 12 | Agregar servicios extra a la reserva | `AddExtraServiceUseCase` | `PUT /api/bookings/{id}/extra-services` |
 | 13 | Listar servicios extra de una aerolínea | `ListAirlineExtraServicesUseCase` | `GET /api/airlines/{id}/extra-services` |
 | 14 | Consultar reserva por id | `GetBookingUseCase` | `GET /api/bookings/{id}` |
-| 15 | Pagar reserva (pago simulado con `FakePaymentGateway`) | `PayBooking` | `POST /api/bookings/{id}/payment` |
+| 15 | Pagar reserva (pago simulado con `FakePaymentGateway`) | `PayBookingUseCase` | `POST /api/bookings/{id}/payment` |
+| 16 | Cancelar reserva pendiente | `CancelBookingUseCase` | `PUT /api/bookings/{id}/cancel` |
+| 17 | Expirar reservas vencidas | `ExpireBookingUseCase` (+ `FindExpiredBookingsUseCase`) | — (scheduler cada 10 s) |
+| 18 | Ranking de aerolíneas por cantidad de aviones | `GetTopAirlinesUseCase` | `GET /api/airlines/top` |
+| 19 | Listar aerolíneas | `ListAirlinesUseCase` | `GET /api/airlines` |
 
-## Casos de uso por hacer en el mes (18)
+## Casos de uso por hacer en el mes (15)
 
 ### Prioridad 1 – Cerrar el flujo de compra (1)
 1. **Resumen de la reserva (`CalculateBooking`)**: precio desglosado (vuelos, asientos, equipaje, extras, impuestos) antes de pagar. Opcional: la reserva ya acumula el precio total.
 
-### Prioridad 2 – Ciclo de vida de la reserva (4)
-2. **Cancelar reserva pendiente (`CancelBooking`)**: valida `PENDING` y devuelve los asientos a los legs. Hoy `Booking.cancelBooking()` no valida el estado.
-3. **Expirar reservas vencidas**: `BookingExpirationValidator` ya existe pero el `for` está vacío y falta `@EnableScheduling`. Debe reutilizar la lógica de cancelar con estado `EXPIRED`.
-4. **Quitar o cambiar asiento de un pasajero.**
-5. **Quitar equipaje o un servicio extra de la reserva.**
+### Prioridad 2 – Ciclo de vida de la reserva (2)
+Cancelar y expirar ya están implementados (casos 16 y 17).
+
+2. **Quitar o cambiar asiento de un pasajero.** Antes conviene arreglar `LegSeat`, que guarda solo el documento del pasajero (ver [pending.md](pending.md), Seats).
+3. **Quitar equipaje o un servicio extra de la reserva.**
 
 ### Prioridad 3 – Usuarios y seguridad (5)
-6. **Registrar usuario**: `UserEntity` hereda de `PersonEntity`.
-7. **Iniciar sesión (login con JWT).**
-8. **Roles: administrador y cliente** (proteger endpoints de catálogo para admin).
-9. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
-10. **Ver y editar mi perfil.**
+4. **Registrar usuario**: `UserEntity` hereda de `PersonEntity`.
+5. **Iniciar sesión (login con JWT).**
+6. **Roles: administrador y cliente** (proteger endpoints de catálogo para admin).
+7. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
+8. **Ver y editar mi perfil.**
 
-### Catálogo – Lo que necesita el front (8)
-`AirlineRepository` y `AircraftRepository` no tienen `findAll` todavía; `LegRepository` sí.
+### Catálogo – Lo que necesita el front (7)
+`AircraftRepository` todavía no tiene `findAll`; `AirlineRepository` y `LegRepository` sí. Listar aerolíneas ya está implementado (caso 19).
 
-11. Listar aerolíneas
-12. Ver detalle de aerolínea
-13. Listar aviones
-14. Ver detalle de avión
-15. Listar legs
-16. Ver detalle de leg
-17. Listar servicios extra (todos; los de una aerolínea ya están en el caso 13 implementado)
-18. Ver detalle de servicio extra
+9. Ver detalle de aerolínea
+10. Listar aviones
+11. Ver detalle de avión
+12. Listar legs
+13. Ver detalle de leg
+14. Listar servicios extra (todos; los de una aerolínea ya están en el caso 13 implementado)
+15. Ver detalle de servicio extra
 
 ### Opcional si sobra tiempo
 - Check-in simple del pasajero.
 
-**Total al final del mes: 33 casos de uso** (15 actuales + 18 nuevos).
+**Total al final del mes: 34 casos de uso** (19 actuales + 15 nuevos).
 
 ## Fuera del mes (versión 2)
 
 - Pase de abordar, cancelación de reserva confirmada con reembolso, cambio de vuelo, correo de confirmación.
 - Editar y dar de baja en el catálogo (cambiar horario de un leg, cancelar un leg, retirar avión, editar precios de extras).
-- Reportes: ranking de aerolíneas (ya existe la consulta `AirlineAircraftCount`), ocupación por leg, ventas, reservas por estado.
+- Reportes: ocupación por leg, ventas, reservas por estado. El ranking de aerolíneas ya está (caso 18).
 
 ## Plan por semanas
 
@@ -85,6 +88,7 @@ Contexto para retomar el trabajo en otro chat.
 ## Convenciones para cada caso nuevo
 
 - Una clase `XxxUseCase` en `application/usecase` con un único `execute(...)`, con repositorios y servicios inyectados por constructor.
+- `execute` lleva `@Transactional` de Spring (`org.springframework.transaction.annotation`), o `@Transactional(readOnly = true)` si solo lee, como en el repo de la profe. La excepción es `PayBookingUseCase`, que guarda cada intento de pago por separado.
 - Las reglas van en las entidades o servicios de dominio y lanzan `DomainRuleException`.
 - Test unitario del caso con Mockito (`@ExtendWith(MockitoExtension.class)`, Arrange/Act/Assert).
 - Endpoint REST en el controller correspondiente, con DTOs de request/response y su mapper REST.
