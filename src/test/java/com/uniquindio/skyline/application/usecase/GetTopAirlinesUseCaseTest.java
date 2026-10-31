@@ -1,6 +1,5 @@
 package com.uniquindio.skyline.application.usecase;
 
-import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import org.junit.jupiter.api.Test;
@@ -59,14 +58,14 @@ class GetTopAirlinesUseCaseTest {
     @Test
     void shouldThrowExceptionWhenLimitIsLessThanOne() {
         // Act & Assert
-        assertThrows(DomainRuleException.class, () -> useCase.execute(0));
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(0));
         verify(airlineRepository, never()).findTopByAircraftCount(anyInt());
     }
 
     @Test
     void shouldThrowExceptionWhenLimitIsGreaterThanTwenty() {
         // Act & Assert
-        assertThrows(DomainRuleException.class, () -> useCase.execute(21));
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(21));
         verify(airlineRepository, never()).findTopByAircraftCount(anyInt());
     }
 }
