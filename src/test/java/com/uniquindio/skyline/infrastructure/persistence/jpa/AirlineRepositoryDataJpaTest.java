@@ -3,6 +3,7 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
+import com.uniquindio.skyline.domain.repository.PageResult;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.AirlinePersistenceMapper;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.ExtraServicePersistenceMapper;
 import org.junit.jupiter.api.Test;
@@ -61,5 +62,66 @@ class AirlineRepositoryDataJpaTest {
 
         // Assert
         assertTrue(result.isEmpty());
+    }
+
+    // searchExtraServices. data.sql has Meal, Wifi (Avianca), Priority boarding and a deleted Pet in cabin (Latam).
+
+    @Test
+    void shouldSearchEveryActiveExtraServiceOrderedByName() {
+        // Act
+        PageResult<ExtraService> page = airlineRepository.searchExtraServices(null, null, 0, 10);
+
+        // Assert
+        assertEquals(List.of("extra-avianca-meal", "extra-latam-priority", "extra-avianca-wifi"), idsOf(page));
+        assertEquals(3, page.totalElements());
+        assertEquals(1, page.totalPages());
+    }
+
+    @Test
+    void shouldSearchByNameIgnoringCase() {
+        // Act
+        PageResult<ExtraService> page = airlineRepository.searchExtraServices("WIFI", null, 0, 10);
+
+        // Assert
+        assertEquals(List.of("extra-avianca-wifi"), idsOf(page));
+    }
+
+    @Test
+    void shouldSearchByDescription() {
+        // Act: "board" is in the description of Meal ("Hot meal on board") and in the name of Priority boarding
+        PageResult<ExtraService> page = airlineRepository.searchExtraServices("board", null, 0, 10);
+
+        // Assert
+        assertEquals(List.of("extra-avianca-meal", "extra-latam-priority"), idsOf(page));
+    }
+
+    @Test
+    void shouldFilterByAirlineAndLeaveOutDeletedServices() {
+        // Act
+        PageResult<ExtraService> latam = airlineRepository.searchExtraServices(null, "airline-latam", 0, 10);
+        PageResult<ExtraService> pet = airlineRepository.searchExtraServices("pet", null, 0, 10);
+
+        // Assert
+        assertEquals(List.of("extra-latam-priority"), idsOf(latam));
+        assertTrue(pet.content().isEmpty());
+        assertEquals(0, pet.totalElements());
+    }
+
+    @Test
+    void shouldSplitResultsInPages() {
+        // Act
+        PageResult<ExtraService> first = airlineRepository.searchExtraServices(null, null, 0, 2);
+        PageResult<ExtraService> second = airlineRepository.searchExtraServices(null, null, 1, 2);
+
+        // Assert
+        assertEquals(List.of("extra-avianca-meal", "extra-latam-priority"), idsOf(first));
+        assertEquals(List.of("extra-avianca-wifi"), idsOf(second));
+        assertEquals(3, first.totalElements());
+        assertEquals(2, first.totalPages());
+        assertEquals(1, second.number());
+    }
+
+    private List<String> idsOf(PageResult<ExtraService> page) {
+        return page.content().stream().map(ExtraService::getId).toList();
     }
 }

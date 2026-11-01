@@ -1,8 +1,10 @@
 package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Airline;
+import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.domain.repository.AirlineAircraftCount;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
+import com.uniquindio.skyline.domain.repository.PageResult;
 
 import java.util.*;
 
@@ -31,6 +33,21 @@ public class AirlineRepositoryInMemory implements AirlineRepository {
                         .thenComparing(AirlineAircraftCount::name))
                 .limit(limit)
                 .toList();
+    }
+
+    @Override
+    public PageResult<ExtraService> searchExtraServices(String text, String airlineId, int page, int size) {
+        String pattern = (text == null) ? "" : text.trim().toLowerCase();
+        List<ExtraService> matches = airlines.values().stream()
+                .filter(a -> airlineId == null || a.getId().equals(airlineId))
+                .flatMap(a -> a.getActiveExtraServices().stream())
+                .filter(e -> e.getNameService().toLowerCase().contains(pattern)
+                        || e.getDescription().map(d -> d.toLowerCase().contains(pattern)).orElse(false))
+                .sorted(Comparator.comparing(ExtraService::getNameService).thenComparing(ExtraService::getId))
+                .toList();
+        List<ExtraService> content = matches.stream().skip((long) page * size).limit(size).toList();
+        int totalPages = (int) Math.ceil((double) matches.size() / size);
+        return new PageResult<>(content, matches.size(), totalPages, page, size);
     }
 
     // Returns every airline, ordered by name.
