@@ -26,6 +26,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 18 | [GetTopAirlines](get-top-airlines.md) | Returns the airlines with the most aircraft, most first (report). | `AirlineRepository` | `GET /api/airlines/top` | Implemented |
 | 19 | [ListAirlines](list-airlines.md) | Returns every airline, ordered by name, so the client can choose one. | `AirlineRepository` | `GET /api/airlines` | Implemented |
 | 20 | [DeleteExtraService](delete-extra-service.md) | Soft delete of an airline's extra service: it is no longer offered, but old bookings keep it. | `AirlineRepository` | `DELETE /api/airlines/{id}/extra-services/{extraServiceId}` | Implemented |
+| 21 | [SearchExtraServices](search-extra-services.md) | Paginated search of the active extra services by text in the name or description, optionally filtered by airline. | `AirlineRepository` | `GET /api/extra_services` | Implemented |
 
 ## Booking flow
 

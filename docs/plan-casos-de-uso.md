@@ -12,7 +12,7 @@ Contexto para retomar el trabajo en otro chat.
 - Plazo: 1 mes, haciendo también el front con ayuda de IA.
 - Los detalles de cada caso están en [use-cases/README.md](use-cases/README.md) y lo que falta en [pending.md](pending.md).
 
-## Casos de uso implementados (20)
+## Casos de uso implementados (21)
 
 | # | Caso de uso | Clase | Endpoint REST |
 |---|---|---|---|
@@ -36,8 +36,9 @@ Contexto para retomar el trabajo en otro chat.
 | 18 | Ranking de aerolíneas por cantidad de aviones | `GetTopAirlinesUseCase` | `GET /api/airlines/top` |
 | 19 | Listar aerolíneas | `ListAirlinesUseCase` | `GET /api/airlines` |
 | 20 | Eliminar servicio extra (soft delete) | `DeleteExtraServiceUseCase` | `DELETE /api/airlines/{id}/extra-services/{extraServiceId}` |
+| 21 | Buscar servicios extra (paginado, texto y filtro por aerolínea) | `SearchExtraServicesUseCase` | `GET /api/extra_services` |
 
-## Casos de uso por hacer en el mes (15)
+## Casos de uso por hacer en el mes (14)
 
 ### Prioridad 1 – Cerrar el flujo de compra (1)
 1. **Resumen de la reserva (`CalculateBooking`)**: precio desglosado (vuelos, asientos, equipaje, extras, impuestos) antes de pagar. Opcional: la reserva ya acumula el precio total.
@@ -55,7 +56,7 @@ Cancelar y expirar ya están implementados (casos 16 y 17).
 7. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
 8. **Ver y editar mi perfil.**
 
-### Catálogo – Lo que necesita el front (7)
+### Catálogo – Lo que necesita el front (6)
 `AircraftRepository` todavía no tiene `findAll`; `AirlineRepository` y `LegRepository` sí. Listar aerolíneas ya está implementado (caso 19).
 
 9. Ver detalle de aerolínea
@@ -63,13 +64,13 @@ Cancelar y expirar ya están implementados (casos 16 y 17).
 11. Ver detalle de avión
 12. Listar legs
 13. Ver detalle de leg
-14. Listar servicios extra (todos; los de una aerolínea ya están en el caso 13 implementado)
+14. ~~Listar servicios extra~~ (hecho: búsqueda paginada, caso 21)
 15. Ver detalle de servicio extra
 
 ### Opcional si sobra tiempo
 - Check-in simple del pasajero.
 
-**Total al final del mes: 35 casos de uso** (20 actuales + 15 nuevos).
+**Total al final del mes: 35 casos de uso** (21 actuales + 14 nuevos).
 
 ## Fuera del mes (versión 2)
 

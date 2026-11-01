@@ -30,7 +30,7 @@ The code is organized in hexagonal/DDD layers under `src/main/java/com/uniquindi
   - `entity/`: aggregates and entities (`Booking`, `Flight`, `Leg`, `Aircraft`, `Airline`, `Passenger`, …). Constructors are private, and objects are built through static factories such as `Booking.createPendingBooking(...)`. These factories validate their input. State changes happen through behavior methods (`addReturnFlight`, …), not through setters.
   - `valueObject/`: immutable value objects and enums (`Seat`, `Layover`, `LuggageDetail`, `BookingStatus`, `TripType`, …). They validate in their constructors.
   - `service/`: domain services for rules that span aggregates (`LegOverlapValidator`, `SeatsAvailableReducer`, `FlightSearcher`, `BookingExpirationValidator`, …). They receive repository interfaces through their constructors.
-  - `repository/`: repository **interfaces** (ports).
+  - `repository/`: repository **interfaces** (ports), plus the plain records they return: `PageResult<T>` (a page of results, so the domain does not use Spring's `Page`) and `AirlineAircraftCount` (a row of the airline ranking).
   - `exception/DomainRuleException`: the single unchecked exception thrown for any violated invariant or business rule.
 - `application/`
   - `usecase/`: one class per use case, annotated `@Service` with `@RequiredArgsConstructor`. Each has a single `execute(...)` method and gets its repositories and domain services through constructor injection. A use case typically loads data from repositories, delegates rules to entities and domain services, saves the result, and returns it. A missing entity is usually `findById(...).orElseThrow()`, which throws `NoSuchElementException`.
