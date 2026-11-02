@@ -1,3 +1,97 @@
+# Skyline
+
+**Nicho:** reserva de vuelos. Las aerolíneas (vendedores) publican sus aviones, tramos y servicios extra, y los clientes (compradores) buscan vuelos, reservan, eligen asiento, maletas y servicios, y pagan.
+
+**Integrantes:**
+- Laura Duarte
+- Joab Suárez
+
+## Cómo ejecutar el proyecto
+
+Requisitos: Java 21. No hace falta instalar Gradle ni una base de datos: el proyecto trae el wrapper de Gradle y usa H2 en memoria, que se llena al arrancar con `src/main/resources/data.sql`.
+
+```bash
+./gradlew bootRun      # en Windows: gradlew.bat bootRun
+```
+
+Si en Mac o Linux sale "permission denied", ejecuten antes `chmod +x gradlew` (o usen `bash gradlew bootRun`).
+
+- Swagger: http://localhost:8080/swagger-ui.html (usen el botón **Authorize** con el token del login)
+- Consola H2: http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:skylinedb`, usuario `sa`, sin contraseña)
+- Pruebas: `./gradlew test`
+
+## Usuarios de prueba
+
+Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /api/auth/login` con `username` (el correo) y `password`.
+
+| Correo | Contraseña | Rol | Aerolínea |
+|---|---|---|---|
+| admin@skyline.com | admin123 | ADMIN | — |
+| airline1@skyline.com | airline123 | AIRLINE | Avianca (`airline-avianca`) |
+| airline2@skyline.com | airline123 | AIRLINE | Wingo (`airline-wingo`) |
+| customer1@skyline.com | customer123 | CUSTOMER | — |
+
+## Endpoints principales
+
+### Mapeo Dominio -> API - Autenticación
+
+| Operación | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| registrar un cliente | POST | /api/auth/register | público |
+| iniciar sesión (devuelve el JWT) | POST | /api/auth/login | público |
+
+### Mapeo Dominio -> API - Aerolínea (Airline)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| Airline.createAirline(...) | POST | /api/airlines | ADMIN |
+| consultar todas las aerolíneas | GET | /api/airlines | público |
+| ranking de aerolíneas con más aviones | GET | /api/airlines/top | ADMIN |
+| airline.createExtraService(...) | POST | /api/extra_services | AIRLINE |
+| airline.getActiveExtraServices() | GET | /api/airlines/{id}/extra-services | público |
+| buscar servicios extra (texto, aerolínea, paginado) | GET | /api/extra_services | público |
+| airline.deleteExtraService(id) | DELETE | /api/airlines/{id}/extra-services/{extraServiceId} | AIRLINE (solo su aerolínea) |
+
+### Mapeo Dominio -> API - Avión (Aircraft)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| Aircraft.createAircraft(...) + airline.addAircraft(...) | POST | /api/aircrafts | AIRLINE |
+
+### Mapeo Dominio -> API - Tramo (Leg)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| Leg.createLeg(...) + airline.addLeg(...) | POST | /api/legs | AIRLINE |
+| consultar el mapa de asientos de un tramo | GET | /api/legs/{id}/seats | público |
+
+### Mapeo Dominio -> API - Vuelo (Flight)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| flightSearcher.searchFlights(...) | GET | /api/flights | público |
+
+### Mapeo Dominio -> API - Reserva (Booking)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| Booking.createPendingBooking(...) | POST | /api/bookings | público (con token CUSTOMER queda ligada al cliente) |
+| booking.addReturnFlight(...) | PUT | /api/bookings/{id}/return-flight | público |
+| booking.addPassengers(...) + booking.choseHolder(...) | PUT | /api/bookings/{id}/passengers | público |
+| seatAssigner.assignSeat(...) | PUT | /api/bookings/{id}/seats | público |
+| booking.registerPassengerLuggage(...) | PUT | /api/bookings/{id}/luggage | público |
+| booking.addExtraService(...) | PUT | /api/bookings/{id}/extra-services | público |
+| booking.startPayment(...) + booking.registerPaymentResult(...) | POST | /api/bookings/{id}/payment | público |
+| booking.cancelBooking() | PUT | /api/bookings/{id}/cancel | público |
+| consultar una reserva | GET | /api/bookings/{id} | público |
+| consultar las reservas del cliente | GET | /api/bookings/mine | CUSTOMER |
+
+## Correcciones de la Entrega 1
+
+| Observación que nos dieron | Qué cambiamos | Dónde se ve (archivo o rama) |
+|---|---|---|
+| Las validaciones del DTO no tenían mensaje, así que cuando un dato era inválido la respuesta no decía qué campo falló ni por qué | Le pusimos `message` a cada validación (`@NotNull(message = "The origin airport is required")`, `@Positive(message = "The price must be greater than 0")`, …). El `GlobalExceptionHandler` responde 400 con un mapa `errors` campo → mensaje. En el mismo cambio los aeropuertos pasaron de `String` al Value Object `Airport`. Los DTOs que creamos después ya nacieron con mensaje | `CreateLegRequest.java`. Antes: commit `3c4f0e8`, rama `feature/leg-dtos-and-uuid` (PR #5). Después: commit `dba59cb`, rama `feat/leg-controller` (PR #32) |
+
 ## Pruebas avanzadas
 
 ### 1. Probar un endpoint con seguridad
