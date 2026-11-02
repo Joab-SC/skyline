@@ -4,7 +4,7 @@ import com.uniquindio.skyline.application.dto.request.CreateExtraServicerRequest
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.PageResponse;
 import com.uniquindio.skyline.application.usecase.CreateExtraServiceUseCase;
-
+import com.uniquindio.skyline.application.usecase.DeleteExtraServiceUseCase;
 import com.uniquindio.skyline.application.usecase.SearchExtraServicesUseCase;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
@@ -23,11 +23,14 @@ public class ExtraServiceController {
 
     private final CreateExtraServiceUseCase createExtraServiceUseCase;
     private final SearchExtraServicesUseCase searchExtraServicesUseCase;
+    private final DeleteExtraServiceUseCase deleteExtraServiceUseCase;
     private final ExtraServiceMapper mapper;
 
-    public ExtraServiceController(CreateExtraServiceUseCase createExtraServiceUseCase, SearchExtraServicesUseCase searchExtraServicesUseCase, ExtraServiceMapper mapper) {
+    public ExtraServiceController(CreateExtraServiceUseCase createExtraServiceUseCase, SearchExtraServicesUseCase searchExtraServicesUseCase,
+                                  DeleteExtraServiceUseCase deleteExtraServiceUseCase, ExtraServiceMapper mapper) {
         this.createExtraServiceUseCase = createExtraServiceUseCase;
         this.searchExtraServicesUseCase = searchExtraServicesUseCase;
+        this.deleteExtraServiceUseCase = deleteExtraServiceUseCase;
         this.mapper = mapper;
     }
 
@@ -59,5 +62,14 @@ public class ExtraServiceController {
                 searchExtraServicesUseCase.execute(search, airlineId, page, size),
                 mapper::toExtraServiceResponse);
         return ResponseEntity.ok(response); // 200
+    }
+
+    // Soft delete of an extra service: it is no longer offered, but old bookings keep it.
+    // The airline comes from the token, as in create: a service of another airline is not found (404).
+    @DeleteMapping("/{extraServiceId}")
+    public ResponseEntity<Void> delete(@PathVariable String extraServiceId, JwtAuthenticationToken authentication) {
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        deleteExtraServiceUseCase.execute(airlineId, extraServiceId);
+        return ResponseEntity.noContent().build(); // 204
     }
 }

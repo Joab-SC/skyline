@@ -8,11 +8,8 @@ import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
-import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,18 +24,16 @@ public class AirlineController {
     private final ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
     private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final ListAirlinesUseCase listAirlinesUseCase;
-    private final DeleteExtraServiceUseCase deleteExtraServiceUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
 
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
-                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase, DeleteExtraServiceUseCase deleteExtraServiceUseCase,
+                             ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
         this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.listAirlinesUseCase = listAirlinesUseCase;
-        this.deleteExtraServiceUseCase = deleteExtraServiceUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
     }
@@ -71,18 +66,6 @@ public class AirlineController {
                 .map(extraServiceMapper::toExtraServiceResponse)
                 .toList();
         return ResponseEntity.ok(response); // 200
-    }
-
-    // Soft delete of an extra service: it is no longer offered, but old bookings keep it.
-    // Only the airline that owns it can delete it: the id in the path must be the airline of the token.
-    @DeleteMapping("/{id}/extra-services/{extraServiceId}")
-    public ResponseEntity<Void> deleteExtraService(@PathVariable String id, @PathVariable String extraServiceId,
-                                                   JwtAuthenticationToken authentication) {
-        if (!id.equals(authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM))) {
-            throw new AccessDeniedException("You can only manage your own airline"); // 403
-        }
-        deleteExtraServiceUseCase.execute(id, extraServiceId);
-        return ResponseEntity.noContent().build(); // 204
     }
 
     // Ranking of the airlines with the most aircraft. limit is 5 by default.

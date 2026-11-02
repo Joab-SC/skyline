@@ -91,7 +91,7 @@ public class SecurityConfig {
                                 "/api/legs",
                                 "/api/extra_services"
                         ).hasAuthority(AIRLINE)
-                        .requestMatchers(HttpMethod.DELETE, "/api/airlines/*/extra-services/*")
+                        .requestMatchers(HttpMethod.DELETE, "/api/extra_services/*")
                                 .hasAuthority(AIRLINE)
 
                         // Default deny: a new endpoint without a rule is blocked until a rule is added for it.
