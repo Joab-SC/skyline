@@ -56,7 +56,7 @@ class SelectOutboundFlightUseCaseTest {
 
         // Act
         Booking booking = selectOutboundFlightUseCase.execute(
-                numPassengers, ID_OUTBOUND_FLIGHT, tripType
+                numPassengers, ID_OUTBOUND_FLIGHT, tripType, null
         );
 
         // Assert
@@ -78,8 +78,8 @@ class SelectOutboundFlightUseCaseTest {
         givenFlightInCache();
 
         // Act
-        Booking firstBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
-        Booking secondBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
+        Booking firstBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null);
+        Booking secondBooking = selectOutboundFlightUseCase.execute(1,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null);
 
         // Assert
         assertNotEquals(firstBooking.getId(), secondBooking.getId());
@@ -94,7 +94,7 @@ class SelectOutboundFlightUseCaseTest {
         // Act & Assert
         assertThrows(
                 DomainRuleException.class,
-                () -> selectOutboundFlightUseCase.execute(0,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY)
+                () -> selectOutboundFlightUseCase.execute(0,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null)
         );
 
         verifyNoInteractions(seatsAvailableReducer, flightRepository, bookingRepository);
@@ -108,7 +108,7 @@ class SelectOutboundFlightUseCaseTest {
         // Act & Assert
         assertThrows(
                 NoSuchElementException.class,
-                () -> selectOutboundFlightUseCase.execute(1,  "missing", TripType.ONE_WAY)
+                () -> selectOutboundFlightUseCase.execute(1,  "missing", TripType.ONE_WAY, null)
         );
 
         verifyNoInteractions(seatsAvailableReducer, flightRepository, bookingRepository);
@@ -123,7 +123,7 @@ class SelectOutboundFlightUseCaseTest {
 
         // Act & Assert
         assertThrows(DomainRuleException.class,
-                () -> selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY));
+                () -> selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null));
 
         verifyNoInteractions(flightRepository, bookingRepository);
     }
@@ -134,7 +134,7 @@ class SelectOutboundFlightUseCaseTest {
         givenFlightInCache();
 
         // Act
-        Booking booking = selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY);
+        Booking booking = selectOutboundFlightUseCase.execute(2,  ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null);
 
         // Assert
         InOrder inOrder = inOrder(seatsAvailableReducer, flightRepository, bookingRepository);

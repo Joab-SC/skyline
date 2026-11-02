@@ -5,8 +5,10 @@ import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.infrastructure.rest.mapper.BookingMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -42,10 +44,14 @@ public class BookingController {
         this.mapper = mapper;
     }
 
+    // The token is optional here: without a session the booking is a guest booking (authentication is null).
     @PostMapping
-    public ResponseEntity<BookingResponse> create(@Valid @RequestBody SelectOutboundFlightRequest request) {
+    public ResponseEntity<BookingResponse> create(@Valid @RequestBody SelectOutboundFlightRequest request,
+                                                  JwtAuthenticationToken authentication) {
+        String idCustomer = authentication == null ? null
+                : authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM);
         Booking booking = selectOutboundFlightUseCase.execute(
-                request.numPassengers(), request.outboundFlightId(), request.tripType());
+                request.numPassengers(), request.outboundFlightId(), request.tripType(), idCustomer);
         BookingResponse response = mapper.toBookingResponse(booking);
 
         URI location = ServletUriComponentsBuilder

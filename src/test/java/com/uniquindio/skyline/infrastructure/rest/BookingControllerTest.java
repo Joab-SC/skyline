@@ -111,7 +111,7 @@ public class BookingControllerTest {
     void shouldAnswer201WhenOutboundFlightIsSelected() throws Exception {
         // Arrange
         Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP);
-        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any())).thenReturn(booking);
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
 
         // Act & Assert
         mockMvc.perform(post("/api/bookings")
@@ -124,7 +124,7 @@ public class BookingControllerTest {
     @Test
     void shouldAnswer404WhenOutboundFlightIsNotInSearchResults() throws Exception {
         // Arrange
-        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any()))
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any()))
                 .thenThrow(new NoSuchElementException());
 
         // Act & Assert
@@ -149,7 +149,7 @@ public class BookingControllerTest {
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400 by @Valid
 
-        verify(selectOutboundFlightUseCase, never()).execute(anyInt(), any(), any());
+        verify(selectOutboundFlightUseCase, never()).execute(anyInt(), any(), any(), any());
     }
 
     // ---------- PUT /api/bookings/{id}/return-flight ----------

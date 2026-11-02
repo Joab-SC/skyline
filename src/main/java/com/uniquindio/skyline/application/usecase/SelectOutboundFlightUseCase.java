@@ -21,11 +21,13 @@ public class SelectOutboundFlightUseCase {
     private final SeatsAvailableReducer seatsAvailableReducer;
     private final FlightRepository flightRepository;
 
+    // idCustomer is the logged-in customer, or null for a guest booking.
     @Transactional
     public Booking execute(int numPassengers, String idOutboundFlight,
-                           TripType tripType){
+                           TripType tripType, String idCustomer){
         Flight flight = flightSearchCache.findById(idOutboundFlight).orElseThrow();
-        Booking booking = Booking.createPendingBooking(numPassengers, flight.getPrice(), flight.getId(), tripType);
+        Booking booking = Booking.createPendingBooking(numPassengers, flight.getPrice(), flight.getId(), tripType,
+                idCustomer);
         seatsAvailableReducer.reduceAvailableSeats(flight,numPassengers);
         flightRepository.save(flight);
         bookingRepository.save(booking);
