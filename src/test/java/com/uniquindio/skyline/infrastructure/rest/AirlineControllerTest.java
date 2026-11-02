@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AirlineController.class)
 public class AirlineControllerTest {
 
-    private static final JwtAuthenticationToken AIRLINE_USER = JwtTestTokens.airlineUser("airline-1");
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,8 +54,6 @@ public class AirlineControllerTest {
     @MockitoBean
     private ExtraServiceMapper extraServiceMapper;
 
-    @MockitoBean
-    private DeleteExtraServiceUseCase deleteExtraServiceUseCase;
 
     @Test
     void shouldAnswerExtraServicesOfTheAirline() throws Exception {
@@ -221,49 +217,5 @@ public class AirlineControllerTest {
         mockMvc.perform(get("/api/airlines"))
                 .andExpect(status().isOk())                // 200
                 .andExpect(jsonPath("$.length()").value(0));
-    }
-
-    // ---------- DELETE /api/airlines/{id}/extra-services/{extraServiceId} ----------
-
-    @Test
-    void shouldAnswer204WhenExtraServiceIsDeleted() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/service-1").principal(AIRLINE_USER))
-                .andExpect(status().isNoContent());        // 204
-
-        verify(deleteExtraServiceUseCase).execute("airline-1", "service-1");
-    }
-
-    @Test
-    void shouldAnswer404WhenDeletingExtraServiceThatDoesNotExist() throws Exception {
-        // Arrange
-        doThrow(new NoSuchElementException())
-                .when(deleteExtraServiceUseCase).execute("airline-1", "missing");
-
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/missing").principal(AIRLINE_USER))
-                .andExpect(status().isNotFound());         // 404
-    }
-
-    @Test
-    void shouldAnswer422WhenExtraServiceIsAlreadyDeleted() throws Exception {
-        // Arrange
-        doThrow(new DomainRuleException("The extra service is already deleted"))
-                .when(deleteExtraServiceUseCase).execute("airline-1", "service-1");
-
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-1/extra-services/service-1").principal(AIRLINE_USER))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.message").value("The extra service is already deleted"));  // 422
-    }
-
-    @Test
-    void shouldAnswer403WhenDeletingExtraServiceOfAnotherAirline() throws Exception {
-        // Act & Assert
-        mockMvc.perform(delete("/api/airlines/airline-2/extra-services/service-1").principal(AIRLINE_USER))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value("You can only manage your own airline"));  // 403
-
-        verify(deleteExtraServiceUseCase, never()).execute(any(), any());
     }
 }

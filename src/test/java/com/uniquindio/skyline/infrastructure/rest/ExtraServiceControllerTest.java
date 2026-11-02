@@ -2,6 +2,7 @@ package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.usecase.CreateExtraServiceUseCase;
+import com.uniquindio.skyline.application.usecase.DeleteExtraServiceUseCase;
 import com.uniquindio.skyline.application.usecase.SearchExtraServicesUseCase;
 import com.uniquindio.skyline.domain.entity.Airline;
 import com.uniquindio.skyline.domain.entity.ExtraService;
@@ -22,8 +23,10 @@ import java.util.NoSuchElementException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,6 +44,9 @@ public class ExtraServiceControllerTest {
 
     @MockitoBean
     private SearchExtraServicesUseCase searchExtraServicesUseCase;
+
+    @MockitoBean
+    private DeleteExtraServiceUseCase deleteExtraServiceUseCase;
 
     @MockitoBean
     private ExtraServiceMapper mapper;
@@ -167,4 +173,37 @@ public class ExtraServiceControllerTest {
                 .andExpect(jsonPath("$.message").value("The parameter 'page' has the wrong format"));
     }
 
+    // ---------- DELETE /api/extra_services/{extraServiceId} ----------
+
+    @Test
+    void shouldAnswer204AndDeleteTheServiceOfTheAirlineOfTheToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete("/api/extra_services/service-1").principal(AIRLINE_USER))
+                .andExpect(status().isNoContent());        // 204
+
+        verify(deleteExtraServiceUseCase).execute("air-1", "service-1");  // airline of the token
+    }
+
+    @Test
+    void shouldAnswer404WhenTheServiceIsNotOfTheAirlineOfTheToken() throws Exception {
+        // Arrange: the airline of the token does not have this service (missing, or of another airline)
+        doThrow(new NoSuchElementException())
+                .when(deleteExtraServiceUseCase).execute("air-1", "service-of-another-airline");
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/extra_services/service-of-another-airline").principal(AIRLINE_USER))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer422WhenTheServiceIsAlreadyDeleted() throws Exception {
+        // Arrange
+        doThrow(new DomainRuleException("The extra service is already deleted"))
+                .when(deleteExtraServiceUseCase).execute("air-1", "service-1");
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/extra_services/service-1").principal(AIRLINE_USER))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.message").value("The extra service is already deleted"));  // 422
+    }
 }
