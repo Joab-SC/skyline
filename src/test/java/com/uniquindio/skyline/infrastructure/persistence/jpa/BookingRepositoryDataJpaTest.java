@@ -394,4 +394,16 @@ class BookingRepositoryDataJpaTest {
         return Booking.reconstruct(UUID.randomUUID().toString(), 1, 300000, new ArrayList<>(),
                 OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>(), null);
     }
+
+    @Test
+    void shouldSaveAndRecoverTheCustomerOfTheBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-1");
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertEquals(Optional.of("customer-1"), recovered.getIdCustomer());
+    }
 }
