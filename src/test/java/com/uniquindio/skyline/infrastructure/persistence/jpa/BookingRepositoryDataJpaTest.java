@@ -406,4 +406,24 @@ class BookingRepositoryDataJpaTest {
         // Assert
         assertEquals(Optional.of("customer-1"), recovered.getIdCustomer());
     }
+
+    @Test
+    void shouldFindOnlyTheBookingsOfTheCustomer() {
+        // Arrange
+        Booking mine = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-1");
+        Booking other = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-2");
+        Booking guest = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY);
+        bookingRepository.save(mine);
+        bookingRepository.save(other);
+        bookingRepository.save(guest);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        List<Booking> found = bookingRepository.findByIdCustomer("customer-1");
+
+        // Assert
+        assertEquals(1, found.size());
+        assertEquals(mine.getId(), found.getFirst().getId());
+    }
 }

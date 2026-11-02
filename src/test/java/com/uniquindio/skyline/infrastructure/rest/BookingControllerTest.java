@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookingController.class)
@@ -155,6 +157,25 @@ public class BookingControllerTest {
 
         // Assert
         verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, null);
+    }
+
+    // ---------- GET /api/bookings/mine ----------
+
+    @Test
+    void shouldAnswer200WithTheBookingsOfTheCustomerOfTheToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY, "customer-1");
+        when(listCustomerBookingsUseCase.execute("customer-1")).thenReturn(List.of(booking));
+
+        // Act
+        mockMvc.perform(get("/api/bookings/mine")
+                        .principal(JwtTestTokens.customerUser("customer-1")))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(1));
+
+        // Assert
+        verify(listCustomerBookingsUseCase).execute("customer-1");
+        verify(getBookingUseCase, never()).execute(any());
     }
 
     @Test
