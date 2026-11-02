@@ -70,13 +70,14 @@ public class SecurityConfig {
 
                         // Seller operations.
                         .requestMatchers(HttpMethod.POST, "/api/airlines").hasAuthority(ADMIN)
+                        // Only airline users: the airline is taken from their token.
                         .requestMatchers(HttpMethod.POST,
                                 "/api/aircrafts",
                                 "/api/legs",
                                 "/api/extra_services"
-                        ).hasAnyAuthority(AIRLINE, ADMIN)
+                        ).hasAuthority(AIRLINE)
                         .requestMatchers(HttpMethod.DELETE, "/api/airlines/*/extra-services/*")
-                                .hasAnyAuthority(AIRLINE, ADMIN)
+                                .hasAuthority(AIRLINE)
 
                         // Default deny: a new endpoint without a rule is blocked until a rule is added for it.
                         .anyRequest().denyAll()

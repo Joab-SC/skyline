@@ -5,8 +5,10 @@ import com.uniquindio.skyline.application.dto.response.AircraftResponse;
 import com.uniquindio.skyline.application.usecase.CreateAircraftUseCase;
 import com.uniquindio.skyline.domain.entity.Aircraft;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AircraftMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +30,11 @@ public class AircraftController {
     }
 
     @PostMapping
-    public ResponseEntity<AircraftResponse> create(@Valid @RequestBody CreateAircraftRequest request) {
-        Aircraft aircraft = createAircraftUseCase.execute(request.aircraftModel(), request.airlineId());
+    public ResponseEntity<AircraftResponse> create(@Valid @RequestBody CreateAircraftRequest request,
+                                                   JwtAuthenticationToken authentication) {
+        // The airline comes from the token, so a user can only add aircraft to its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        Aircraft aircraft = createAircraftUseCase.execute(request.aircraftModel(), airlineId);
         AircraftResponse response = mapper.toAircraftResponse(aircraft);
 
         URI location = ServletUriComponentsBuilder

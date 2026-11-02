@@ -8,6 +8,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
 
+// The airline is not sent: it is the airline of the logged-in user (JWT).
 public record CreateLegRequest(
         @NotNull(message = "The origin airport is required")
         Airport originAirport,
@@ -20,9 +21,6 @@ public record CreateLegRequest(
 
         @NotNull(message = "The arrival time is required")
         LocalDateTime arrivalTime,
-
-        @NotBlank(message = "The airline is required")
-        String airlineId,
 
         @NotBlank(message = "The aircraft is required")
         String aircraftId,
