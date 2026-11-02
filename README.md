@@ -47,10 +47,15 @@ Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /ap
 | Airline.createAirline(...) | POST | /api/airlines | ADMIN |
 | consultar todas las aerolíneas | GET | /api/airlines | público |
 | ranking de aerolíneas con más aviones | GET | /api/airlines/top | ADMIN |
-| airline.createExtraService(...) | POST | /api/extra_services | AIRLINE |
 | airline.getActiveExtraServices() | GET | /api/airlines/{id}/extra-services | público |
+
+### Mapeo Dominio -> API - Servicio extra (ExtraService)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| airline.createExtraService(...) | POST | /api/extra_services | AIRLINE |
 | buscar servicios extra (texto, aerolínea, paginado) | GET | /api/extra_services | público |
-| airline.deleteExtraService(id) | DELETE | /api/airlines/{id}/extra-services/{extraServiceId} | AIRLINE (solo su aerolínea) |
+| airline.deleteExtraService(id) | DELETE | /api/extra_services/{extraServiceId} | AIRLINE (la aerolínea sale del token) |
 
 ### Mapeo Dominio -> API - Avión (Aircraft)
 
