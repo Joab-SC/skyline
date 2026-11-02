@@ -5,12 +5,15 @@ import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.infrastructure.rest.mapper.BookingMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -25,11 +28,13 @@ public class BookingController {
     private final GetBookingUseCase getBookingUseCase;
     private final CancelBookingUseCase cancelBookingUseCase;
     private final PayBookingUseCase payBookingUseCase;
+    private final ListCustomerBookingsUseCase listCustomerBookingsUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
                              SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase, AddExtraServiceUseCase addExtraServiceUseCase, GetBookingUseCase getBookingUseCase,
-                             CancelBookingUseCase cancelBookingUseCase, PayBookingUseCase payBookingUseCase, BookingMapper mapper) {
+                             CancelBookingUseCase cancelBookingUseCase, PayBookingUseCase payBookingUseCase,
+                             ListCustomerBookingsUseCase listCustomerBookingsUseCase, BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
@@ -39,13 +44,18 @@ public class BookingController {
         this.getBookingUseCase = getBookingUseCase;
         this.cancelBookingUseCase = cancelBookingUseCase;
         this.payBookingUseCase = payBookingUseCase;
+        this.listCustomerBookingsUseCase = listCustomerBookingsUseCase;
         this.mapper = mapper;
     }
 
+    // The token is optional here: without a session the booking is a guest booking (authentication is null).
     @PostMapping
-    public ResponseEntity<BookingResponse> create(@Valid @RequestBody SelectOutboundFlightRequest request) {
+    public ResponseEntity<BookingResponse> create(@Valid @RequestBody SelectOutboundFlightRequest request,
+                                                  JwtAuthenticationToken authentication) {
+        String idCustomer = authentication == null ? null
+                : authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM);
         Booking booking = selectOutboundFlightUseCase.execute(
-                request.numPassengers(), request.outboundFlightId(), request.tripType());
+                request.numPassengers(), request.outboundFlightId(), request.tripType(), idCustomer);
         BookingResponse response = mapper.toBookingResponse(booking);
 
         URI location = ServletUriComponentsBuilder
@@ -96,6 +106,13 @@ public class BookingController {
                                                            @Valid @RequestBody AddExtraServiceRequest request) {
         Booking booking = addExtraServiceUseCase.execute(id, request.extraServiceId(), request.quantity());
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<BookingResponse>> myBookings(JwtAuthenticationToken authentication) {
+        List<Booking> bookings = listCustomerBookingsUseCase.execute(
+                authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM));
+        return ResponseEntity.ok(bookings.stream().map(mapper::toBookingResponse).toList()); // 200
     }
 
     @GetMapping("/{id}")

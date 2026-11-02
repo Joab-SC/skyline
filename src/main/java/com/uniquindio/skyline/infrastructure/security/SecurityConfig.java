@@ -27,6 +27,7 @@ public class SecurityConfig {
 
     private static final String ADMIN = "ADMIN";
     private static final String AIRLINE = "AIRLINE";
+    private static final String CUSTOMER = "CUSTOMER";
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
@@ -66,7 +67,11 @@ public class SecurityConfig {
                                 "/api/extra_services"
                         ).permitAll()
 
+                        // Must stay BEFORE "/api/bookings/**", which would also match /mine and make it public.
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/mine").hasAuthority(CUSTOMER)
+
                         // Guest checkout: the whole booking flow is public (any HTTP method).
+                        // With a CUSTOMER token, the new booking is linked to that customer.
                         .requestMatchers("/api/bookings/**").permitAll()
 
                         // Seller operations.

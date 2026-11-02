@@ -20,6 +20,9 @@ public class JwtTokenProvider {
     // Claim with the airline of an AIRLINE user. Controllers read it to know which airline the user manages.
     public static final String AIRLINE_ID_CLAIM = "airlineId";
 
+    // Claim with the user's id. Used to link a booking to the customer that made it.
+    public static final String USER_ID_CLAIM = "uid";
+
     private final JwtEncoder encoder;
 
     // Builds the token: header.payload.signature
@@ -36,7 +39,7 @@ public class JwtTokenProvider {
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
                 .subject(email)
-                .claim("uid", userId)
+                .claim(USER_ID_CLAIM, userId)
                 .claim("roles", roles);
 
         // Only AIRLINE users have an airline (a claim cannot be null).

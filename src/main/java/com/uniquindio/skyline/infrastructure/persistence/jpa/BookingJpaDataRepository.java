@@ -11,4 +11,6 @@ interface BookingJpaDataRepository extends JpaRepository<BookingEntity, String> 
 
     List<BookingEntity> findByBookingStatusAndPaymentDeadlineLessThanEqual(BookingStatus bookingStatus,
                                                                           LocalDateTime paymentDeadline);
+
+    List<BookingEntity> findByIdCustomerOrderByPaymentDeadlineDesc(String idCustomer);
 }

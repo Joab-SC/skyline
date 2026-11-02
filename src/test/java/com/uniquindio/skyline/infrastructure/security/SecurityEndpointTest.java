@@ -12,12 +12,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Loads the whole application, so the requests go through the real SecurityConfig.
-// GET /api/airlines/top (airline ranking) is only for ADMIN.
+// GET /api/airlines/top (airline ranking) is only for ADMIN, and GET /api/bookings/mine only for CUSTOMER.
 @SpringBootTest
 @AutoConfigureMockMvc
 class SecurityEndpointTest {
 
     private static final String TOP_AIRLINES_URL = "/api/airlines/top";
+    private static final String MY_BOOKINGS_URL = "/api/bookings/mine";
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,6 +47,37 @@ class SecurityEndpointTest {
 
         // Act & Assert
         mockMvc.perform(get(TOP_AIRLINES_URL).with(jwt().authorities(admin)))
+                .andExpect(status().isOk());               // 200
+    }
+
+    // ---------- GET /api/bookings/mine: only CUSTOMER ----------
+
+    @Test
+    void myBookingsShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(MY_BOOKINGS_URL))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void myBookingsShouldAnswer403WhenRoleIsNotCustomer() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority airline = new SimpleGrantedAuthority("AIRLINE");
+
+        // Act & Assert
+        mockMvc.perform(get(MY_BOOKINGS_URL).with(jwt().authorities(airline)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void myBookingsShouldAnswer200WhenRoleIsCustomer() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority customer = new SimpleGrantedAuthority("CUSTOMER");
+
+        // Act & Assert
+        mockMvc.perform(get(MY_BOOKINGS_URL)
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.USER_ID_CLAIM, "customer1"))
+                                .authorities(customer)))
                 .andExpect(status().isOk());               // 200
     }
 }

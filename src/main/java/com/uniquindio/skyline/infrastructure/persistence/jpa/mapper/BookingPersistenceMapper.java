@@ -39,6 +39,7 @@ public class BookingPersistenceMapper {
                         detailExtraService.idExtraService(), detailExtraService.quantity(), detailExtraService.subtotal())).collect(Collectors.toCollection(ArrayList::new)));
         bookingEntity.setBookingStatus(booking.getBookingStatus());
         bookingEntity.setPaymentDeadline(booking.getPaymentDeadline());
+        bookingEntity.setIdCustomer(booking.getIdCustomer().orElse(null));
         bookingEntity.setPayments(booking.getPayments().stream()
                 .map(this::toPaymentEntity)
                 .collect(Collectors.toCollection(ArrayList::new)));
@@ -64,7 +65,8 @@ public class BookingPersistenceMapper {
                 bookingEntity.getPaymentDeadline(),
                 bookingEntity.getPayments().stream()
                         .map(this::toPaymentDomain)
-                        .collect(Collectors.toCollection(ArrayList::new)));
+                        .collect(Collectors.toCollection(ArrayList::new)),
+                bookingEntity.getIdCustomer());
     }
 
     private PaymentEntity toPaymentEntity(Payment payment) {

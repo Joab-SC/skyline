@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookingController.class)
@@ -105,13 +107,16 @@ public class BookingControllerTest {
     @MockitoBean
     private PayBookingUseCase payBookingUseCase;
 
+    @MockitoBean
+    private ListCustomerBookingsUseCase listCustomerBookingsUseCase;
+
     // ---------- POST /api/bookings ----------
 
     @Test
     void shouldAnswer201WhenOutboundFlightIsSelected() throws Exception {
         // Arrange
         Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP);
-        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any())).thenReturn(booking);
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
 
         // Act & Assert
         mockMvc.perform(post("/api/bookings")
@@ -122,9 +127,61 @@ public class BookingControllerTest {
     }
 
     @Test
+    void shouldLinkTheNewBookingToTheCustomerOfTheToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP, "customer-1");
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
+
+        // Act
+        mockMvc.perform(post("/api/bookings")
+                        .principal(JwtTestTokens.customerUser("customer-1"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(OUTBOUND_JSON))
+                .andExpect(status().isCreated());          // 201
+
+        // Assert
+        verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, "customer-1");
+    }
+
+    @Test
+    void shouldCreateAGuestBookingWhenThereIsNoToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP);
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
+
+        // Act
+        mockMvc.perform(post("/api/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(OUTBOUND_JSON))
+                .andExpect(status().isCreated());          // 201
+
+        // Assert
+        verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, null);
+    }
+
+    // ---------- GET /api/bookings/mine ----------
+
+    @Test
+    void shouldAnswer200WithTheBookingsOfTheCustomerOfTheToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY, "customer-1");
+        when(listCustomerBookingsUseCase.execute("customer-1")).thenReturn(List.of(booking));
+
+        // Act
+        mockMvc.perform(get("/api/bookings/mine")
+                        .principal(JwtTestTokens.customerUser("customer-1")))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.length()").value(1));
+
+        // Assert
+        verify(listCustomerBookingsUseCase).execute("customer-1");
+        verify(getBookingUseCase, never()).execute(any());
+    }
+
+    @Test
     void shouldAnswer404WhenOutboundFlightIsNotInSearchResults() throws Exception {
         // Arrange
-        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any()))
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any()))
                 .thenThrow(new NoSuchElementException());
 
         // Act & Assert
@@ -149,7 +206,7 @@ public class BookingControllerTest {
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400 by @Valid
 
-        verify(selectOutboundFlightUseCase, never()).execute(anyInt(), any(), any());
+        verify(selectOutboundFlightUseCase, never()).execute(anyInt(), any(), any(), any());
     }
 
     // ---------- PUT /api/bookings/{id}/return-flight ----------

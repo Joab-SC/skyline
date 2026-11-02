@@ -50,6 +50,10 @@ public class BookingEntity {
     @Column(nullable = false, length = 100)
     private LocalDateTime paymentDeadline;
 
+    // Id of the user that made the booking. Null for a guest booking.
+    @Column(name = "id_customer", nullable = true, length = 36)
+    private String idCustomer;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "booking_id", nullable = false)
     private List<PaymentEntity> payments;

@@ -392,6 +392,38 @@ class BookingRepositoryDataJpaTest {
     // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking createBookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct(UUID.randomUUID().toString(), 1, 300000, new ArrayList<>(),
-                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
+                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>(), null);
+    }
+
+    @Test
+    void shouldSaveAndRecoverTheCustomerOfTheBooking() {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-1");
+
+        // Act
+        Booking recovered = saveAndRecover(booking);
+
+        // Assert
+        assertEquals(Optional.of("customer-1"), recovered.getIdCustomer());
+    }
+
+    @Test
+    void shouldFindOnlyTheBookingsOfTheCustomer() {
+        // Arrange
+        Booking mine = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-1");
+        Booking other = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY, "customer-2");
+        Booking guest = Booking.createPendingBooking(1, 300000, OUTBOUND_FLIGHT_ID, TripType.ONE_WAY);
+        bookingRepository.save(mine);
+        bookingRepository.save(other);
+        bookingRepository.save(guest);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        List<Booking> found = bookingRepository.findByIdCustomer("customer-1");
+
+        // Assert
+        assertEquals(1, found.size());
+        assertEquals(mine.getId(), found.getFirst().getId());
     }
 }

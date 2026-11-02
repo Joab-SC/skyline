@@ -20,4 +20,13 @@ final class JwtTestTokens {
                 .build();
         return new JwtAuthenticationToken(jwt);
     }
+
+    static JwtAuthenticationToken customerUser(String userId) {
+        Jwt jwt = Jwt.withTokenValue("token")
+                .header("alg", "HS256")
+                .claim("roles", List.of("CUSTOMER"))
+                .claim(JwtTokenProvider.USER_ID_CLAIM, userId)
+                .build();
+        return new JwtAuthenticationToken(jwt);
+    }
 }

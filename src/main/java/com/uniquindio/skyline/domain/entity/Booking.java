@@ -24,9 +24,11 @@ public class Booking {
     private BookingStatus bookingStatus;
     private LocalDateTime paymentDeadline;
     private List<Payment> payments;
+    private Optional<String> idCustomer;
 
     private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight,
-                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, LocalDateTime paymentDeadline, List<Payment> payments) {
+                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, LocalDateTime paymentDeadline, List<Payment> payments,
+                    Optional<String> idCustomer) {
         this.id = id;
         this.numPassengers = numPassengers;
         this.price = price;
@@ -38,11 +40,13 @@ public class Booking {
         this.payments = payments;
         this.bookingStatus = BookingStatus.PENDING;
         this.paymentDeadline = paymentDeadline;
+        this.idCustomer = idCustomer;
     }
 
     // Receives every field, including the status. Used only by reconstruct.
     private Booking(String id, int numPassengers, double price, List<Passenger> passengerList, String idOutboundFlight,
-                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus, LocalDateTime paymentDeadline, List<Payment> payments) {
+                    Optional<String> idReturnFlight, TripType tripType, List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus, LocalDateTime paymentDeadline, List<Payment> payments,
+                    Optional<String> idCustomer) {
         this.id = id;
         this.numPassengers = numPassengers;
         this.price = price;
@@ -54,19 +58,29 @@ public class Booking {
         this.bookingStatus = bookingStatus;
         this.paymentDeadline = paymentDeadline;
         this.payments = payments;
+        this.idCustomer = idCustomer;
     }
 
     // Rebuilds a booking already stored, without running the creation rules again.
+    // idReturnFlight and idCustomer can be null (one way trip, guest booking).
     public static Booking reconstruct(String id, int numPassengers, double price, List<Passenger> passengerList,
                                       String idOutboundFlight, String idReturnFlight, TripType tripType,
                                       List<DetailExtraService> detailExtraServices, BookingStatus bookingStatus,
-                                      LocalDateTime paymentDeadline, List<Payment> payments) {
+                                      LocalDateTime paymentDeadline, List<Payment> payments, String idCustomer) {
         return new Booking(id, numPassengers, price, passengerList, idOutboundFlight,
-                Optional.ofNullable(idReturnFlight), tripType, detailExtraServices, bookingStatus, paymentDeadline, payments);
+                Optional.ofNullable(idReturnFlight), tripType, detailExtraServices, bookingStatus, paymentDeadline, payments,
+                Optional.ofNullable(idCustomer));
     }
 
+    // A guest booking: nobody logged in.
     public static Booking createPendingBooking(int numPassengers, double price, String idOutboundFlight,
                                                TripType tripType){
+        return createPendingBooking(numPassengers, price, idOutboundFlight, tripType, null);
+    }
+
+    // idCustomer is the logged-in customer, or null for a guest booking.
+    public static Booking createPendingBooking(int numPassengers, double price, String idOutboundFlight,
+                                               TripType tripType, String idCustomer){
         validateBookingData(
                 numPassengers,
                 idOutboundFlight,
@@ -74,7 +88,8 @@ public class Booking {
         );
 
         return new Booking(UUID.randomUUID().toString(), numPassengers, price * numPassengers, new ArrayList<>(), idOutboundFlight, Optional.empty(),
-                tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20), new ArrayList<>());
+                tripType, new ArrayList<>(), LocalDateTime.now().plusMinutes(20), new ArrayList<>(),
+                Optional.ofNullable(idCustomer));
     }
 
     // Starts a payment attempt. If one is still pending, it is resumed instead of creating another,

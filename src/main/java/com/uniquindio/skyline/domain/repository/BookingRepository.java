@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface BookingRepository {
     List<Booking> findByStatusAndPaymentDeadlineLessThanEqual(BookingStatus bookingStatus, LocalDateTime localDateTime);
     Optional<Booking> findById(String id);
+    // Bookings of a logged-in customer, newest first.
+    List<Booking> findByIdCustomer(String idCustomer);
     void save( Booking booking);
 }
