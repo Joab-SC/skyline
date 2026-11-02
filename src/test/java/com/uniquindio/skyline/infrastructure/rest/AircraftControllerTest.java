@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AircraftController.class)
 public class AircraftControllerTest {
+
+    private static final JwtAuthenticationToken AIRLINE_USER = JwtTestTokens.airlineUser("air-1");
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,16 +44,41 @@ public class AircraftControllerTest {
 
         String requestJson = """
                 {
-                "airlineId": "air-1", "aircraftModel": "EMBRAER_E175"
+                "aircraftModel": "EMBRAER_E175"
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/api/aircrafts")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())           // 201
                 .andExpect(header().exists("Location"));
+
+        verify(createAircraftUseCase).execute(AircraftModel.EMBRAER_E175, "air-1");  // airline of the token
+    }
+
+    @Test
+    void shouldIgnoreAirlineSentInBodyAndUseAirlineOfToken() throws Exception {
+        // Arrange
+        Aircraft aircraft = Aircraft.createAircraft(AircraftModel.EMBRAER_E175);
+        when(createAircraftUseCase.execute(any(), any())).thenReturn(aircraft);
+
+        String requestJson = """
+                {
+                "airlineId": "another-airline", "aircraftModel": "EMBRAER_E175"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/api/aircrafts")
+                        .principal(AIRLINE_USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isCreated());          // 201
+
+        verify(createAircraftUseCase).execute(AircraftModel.EMBRAER_E175, "air-1");
     }
 
     @Test
@@ -60,12 +88,13 @@ public class AircraftControllerTest {
 
         String requestJson = """
                 {
-                "airlineId": "air-1", "aircraftModel": "EMBRAER_E175"
+                "aircraftModel": "EMBRAER_E175"
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/api/aircrafts")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isNotFound());         // 404
@@ -76,12 +105,13 @@ public class AircraftControllerTest {
         // Arrange
         String requestJson = """
                 {
-                "airlineId": "air-1"
+                
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/api/aircrafts")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400 by @Valid
@@ -94,12 +124,13 @@ public class AircraftControllerTest {
         // Arrange
         String requestJson = """
                 {
-                "airlineId": "air-1", "aircraftModel": "BOEING_747"
+                "aircraftModel": "BOEING_747"
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/api/aircrafts")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400, JSON cannot be read
