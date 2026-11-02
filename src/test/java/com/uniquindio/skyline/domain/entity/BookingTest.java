@@ -955,13 +955,13 @@ public class BookingTest {
     // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking bookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct("booking-1", 1, 500.0, new ArrayList<>(), "flight001", null,
-                TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
+                TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>(), null);
     }
 
     // A pending booking whose payment deadline passed one minute ago.
     private Booking expiredBooking(TripType tripType, List<Passenger> passengers) {
         return Booking.reconstruct("booking-1", 1, 500.0, passengers, "flight001", null,
-                tripType, new ArrayList<>(), BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1), new ArrayList<>());
+                tripType, new ArrayList<>(), BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1), new ArrayList<>(), null);
     }
 
     private Passenger passenger(String idDocument) {

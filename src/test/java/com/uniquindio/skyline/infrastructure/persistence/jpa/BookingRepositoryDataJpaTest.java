@@ -392,6 +392,6 @@ class BookingRepositoryDataJpaTest {
     // the deadline 20 minutes ahead, so this is the only way to get one without waiting.
     private Booking createBookingWith(BookingStatus status, LocalDateTime paymentDeadline) {
         return Booking.reconstruct(UUID.randomUUID().toString(), 1, 300000, new ArrayList<>(),
-                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>());
+                OUTBOUND_FLIGHT_ID, null, TripType.ONE_WAY, new ArrayList<>(), status, paymentDeadline, new ArrayList<>(), null);
     }
 }

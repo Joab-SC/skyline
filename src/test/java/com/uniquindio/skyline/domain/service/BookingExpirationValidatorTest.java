@@ -92,7 +92,7 @@ class BookingExpirationValidatorTest {
         Passenger passenger = Passenger.createPassenger("1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
                 "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE);
         return Booking.reconstruct(id, 1, 500.0, new ArrayList<>(List.of(passenger)), idOutboundFlight, null,
-                TripType.ONE_WAY, new ArrayList<>(), status, deadline, new ArrayList<>());
+                TripType.ONE_WAY, new ArrayList<>(), status, deadline, new ArrayList<>(), null);
     }
 
     private Leg saveLegWithSeatTakenBy(String idPassenger) {
