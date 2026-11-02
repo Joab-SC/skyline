@@ -122,6 +122,39 @@ public class BookingControllerTest {
     }
 
     @Test
+    void shouldLinkTheNewBookingToTheCustomerOfTheToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP, "customer-1");
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
+
+        // Act
+        mockMvc.perform(post("/api/bookings")
+                        .principal(JwtTestTokens.customerUser("customer-1"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(OUTBOUND_JSON))
+                .andExpect(status().isCreated());          // 201
+
+        // Assert
+        verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, "customer-1");
+    }
+
+    @Test
+    void shouldCreateAGuestBookingWhenThereIsNoToken() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP);
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
+
+        // Act
+        mockMvc.perform(post("/api/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(OUTBOUND_JSON))
+                .andExpect(status().isCreated());          // 201
+
+        // Assert
+        verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, null);
+    }
+
+    @Test
     void shouldAnswer404WhenOutboundFlightIsNotInSearchResults() throws Exception {
         // Arrange
         when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any()))

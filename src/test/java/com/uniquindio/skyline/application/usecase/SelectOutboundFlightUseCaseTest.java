@@ -147,4 +147,31 @@ class SelectOutboundFlightUseCaseTest {
         when(flightSearchCache.findById(ID_OUTBOUND_FLIGHT)).thenReturn(Optional.of(flight));
         when(flight.getId()).thenReturn(ID_OUTBOUND_FLIGHT);
     }
+
+    @Test
+    void shouldLinkTheBookingToTheLoggedInCustomer() {
+        // Arrange
+        givenFlightInCache();
+        when(flight.getPrice()).thenReturn(500.0);
+
+        // Act
+        Booking booking = selectOutboundFlightUseCase.execute(1, ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, "customer-1");
+
+        // Assert
+        assertEquals(Optional.of("customer-1"), booking.getIdCustomer());
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
+    void shouldCreateAGuestBookingWhenNobodyIsLoggedIn() {
+        // Arrange
+        givenFlightInCache();
+        when(flight.getPrice()).thenReturn(500.0);
+
+        // Act
+        Booking booking = selectOutboundFlightUseCase.execute(1, ID_OUTBOUND_FLIGHT, TripType.ONE_WAY, null);
+
+        // Assert
+        assertTrue(booking.getIdCustomer().isEmpty());
+    }
 }
