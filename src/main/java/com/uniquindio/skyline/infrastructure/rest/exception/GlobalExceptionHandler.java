@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.infrastructure.rest.exception;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.infrastructure.security.EmailAlreadyRegisteredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DomainRuleException.class)
     public ResponseEntity<Map<String, Object>> handleDomainRule(DomainRuleException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage()); // 422
+    }
+
+    // Register with an email that already has an account.
+    @ExceptionHandler(EmailAlreadyRegisteredException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailTaken(EmailAlreadyRegisteredException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage()); // 409
     }
 
     @ExceptionHandler(NoSuchElementException.class)
