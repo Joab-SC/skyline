@@ -1,9 +1,12 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.request.LoginRequest;
+import com.uniquindio.skyline.application.dto.request.RegisterRequest;
+import com.uniquindio.skyline.application.dto.response.RegisterResponse;
 import com.uniquindio.skyline.application.dto.response.TokenResponse;
 import com.uniquindio.skyline.infrastructure.security.AuthenticationService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,5 +26,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.login(request)); // 200
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(request)); // 201
     }
 }
