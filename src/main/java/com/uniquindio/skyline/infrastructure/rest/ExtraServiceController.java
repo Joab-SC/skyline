@@ -8,8 +8,10 @@ import com.uniquindio.skyline.application.usecase.CreateExtraServiceUseCase;
 import com.uniquindio.skyline.application.usecase.SearchExtraServicesUseCase;
 import com.uniquindio.skyline.domain.entity.ExtraService;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -30,8 +32,11 @@ public class ExtraServiceController {
     }
 
     @PostMapping
-    public ResponseEntity<ExtraServiceResponse> create(@Valid @RequestBody CreateExtraServicerRequest request){
-        ExtraService extraService = createExtraServiceUseCase.execute(request.airlineId(), request.nameService(),
+    public ResponseEntity<ExtraServiceResponse> create(@Valid @RequestBody CreateExtraServicerRequest request,
+                                                       JwtAuthenticationToken authentication){
+        // The airline comes from the token, so a user can only add services to its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        ExtraService extraService = createExtraServiceUseCase.execute(airlineId, request.nameService(),
                 request.description(), request.nationalPrice(), request.internationalPrice());
         ExtraServiceResponse response = mapper.toExtraServiceResponse(extraService);
 

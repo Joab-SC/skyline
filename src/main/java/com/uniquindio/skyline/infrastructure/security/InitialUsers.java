@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InitialUsers implements CommandLineRunner {
 
-    private record Seed(String id, String email, String password, SecurityRole role) {}
+    private record Seed(String id, String email, String password, SecurityRole role, String airlineId) {}
 
     private final UserJpaDataRepository repository;
     private final PasswordEncoder encoder;
@@ -25,13 +25,16 @@ public class InitialUsers implements CommandLineRunner {
     @Override
     public void run(String... args) {
         List<Seed> seeds = List.of(
-                new Seed("admin", "admin@skyline.com", "admin123", SecurityRole.ADMIN),
-                new Seed("airline1", "airline1@skyline.com", "airline123", SecurityRole.AIRLINE),
-                new Seed("customer1", "customer1@skyline.com", "customer123", SecurityRole.CUSTOMER)
+                new Seed("admin", "admin@skyline.com", "admin123", SecurityRole.ADMIN, null),
+                // Airline users are linked to airlines of data.sql.
+                new Seed("airline1", "airline1@skyline.com", "airline123", SecurityRole.AIRLINE, "airline-avianca"),
+                new Seed("airline2", "airline2@skyline.com", "airline123", SecurityRole.AIRLINE, "airline-wingo"),
+                new Seed("customer1", "customer1@skyline.com", "customer123", SecurityRole.CUSTOMER, null)
         );
         for (Seed seed : seeds) {
             // The password is always stored hashed.
-            repository.save(new UserEntity(seed.id(), seed.email(), encoder.encode(seed.password()), seed.role()));
+            repository.save(new UserEntity(seed.id(), seed.email(), encoder.encode(seed.password()),
+                    seed.role(), seed.airlineId()));
         }
     }
 }

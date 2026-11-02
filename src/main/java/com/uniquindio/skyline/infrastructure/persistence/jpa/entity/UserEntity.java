@@ -36,4 +36,8 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SecurityRole role;
+
+    // Airline the user works for. Required for AIRLINE, null for ADMIN and CUSTOMER.
+    @Column(length = 36)
+    private String airlineId;
 }

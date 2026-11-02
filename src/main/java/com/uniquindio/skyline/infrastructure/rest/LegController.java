@@ -7,8 +7,10 @@ import com.uniquindio.skyline.application.usecase.CreateLegUseCase;
 import com.uniquindio.skyline.application.usecase.GetLegSeatMapUseCase;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.infrastructure.rest.mapper.LegMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -29,11 +31,14 @@ public class LegController {
     }
 
     @PostMapping
-    public ResponseEntity<LegResponse> create(@Valid @RequestBody CreateLegRequest request) {
+    public ResponseEntity<LegResponse> create(@Valid @RequestBody CreateLegRequest request,
+                                              JwtAuthenticationToken authentication) {
+        // The airline comes from the token, so a user can only create legs for its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
         Leg leg = createLegUseCase.execute(
                 request.originAirport(), request.destinationAirport(),
                 request.departureTime(), request.arrivalTime(),
-                request.airlineId(), request.aircraftId(),
+                airlineId, request.aircraftId(),
                 request.luggagePrice(), request.price());
         LegResponse response = mapper.toLegResponse(leg);
 

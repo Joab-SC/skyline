@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,10 +37,12 @@ public class LegControllerTest {
             {
             "originAirport": "EL_DORADO", "destinationAirport": "EL_EDEN",
             "departureTime": "2026-12-01T08:00:00", "arrivalTime": "2026-12-01T09:00:00",
-            "airlineId": "air-1", "aircraftId": "craft-1",
+            "aircraftId": "craft-1",
             "luggagePrice": 50, "price": 200
             }
             """;
+
+    private static final JwtAuthenticationToken AIRLINE_USER = JwtTestTokens.airlineUser("air-1");
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,10 +68,14 @@ public class LegControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/legs")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_JSON))
                 .andExpect(status().isCreated())           // 201
                 .andExpect(header().exists("Location"));
+
+        verify(createLegUseCase).execute(any(), any(), any(), any(),
+                eq("air-1"), eq("craft-1"), anyDouble(), anyDouble());  // airline of the token
     }
 
     @Test
@@ -78,6 +86,7 @@ public class LegControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/legs")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_JSON))
                 .andExpect(status().isNotFound());         // 404
@@ -91,6 +100,7 @@ public class LegControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/legs")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(VALID_JSON))
                 .andExpect(status().isUnprocessableContent());       // 422
@@ -103,13 +113,14 @@ public class LegControllerTest {
                 {
                 "destinationAirport": "EL_EDEN",
                 "departureTime": "2026-12-01T08:00:00", "arrivalTime": "2026-12-01T09:00:00",
-                "airlineId": "air-1", "aircraftId": "craft-1",
+                "aircraftId": "craft-1",
                 "luggagePrice": 50, "price": 200
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/api/legs")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest());       // 400 by @Valid

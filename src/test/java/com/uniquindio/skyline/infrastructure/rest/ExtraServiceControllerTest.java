@@ -9,6 +9,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.PageResult;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -20,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ExtraServiceController.class)
 public class ExtraServiceControllerTest {
+
+    private static final JwtAuthenticationToken AIRLINE_USER = JwtTestTokens.airlineUser("air-1");
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,16 +54,18 @@ public class ExtraServiceControllerTest {
 
         String requestJson = """
                 {
-                "airlineId" : "air-1", "nameService": "Hamburguer",
+                "nameService": "Hamburguer",
                 "description": "", "nationalPrice": 11, "internationalPrice":22
                 }
                """;
         mockMvc.perform(post("/api/extra_services") // simular POST
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON) //esto que envio aqui es Json ->415
                         .content(requestJson)) //adjunta el cuerpo Json
                 .andExpect(status().isCreated())   // HTTP -> 201 (CREATED)
                 .andExpect(header().exists("Location"));
 
+        verify(createExtraServiceUseCase).execute(eq("air-1"), eq("Hamburguer"), any(), anyDouble(), anyDouble());  // airline of the token
     }
 
     @Test
@@ -69,11 +75,12 @@ public class ExtraServiceControllerTest {
 
         String requestJson = """
                 {
-                "airlineId" : "air-1", "nameService": "Hamburguer",
+                "nameService": "Hamburguer",
                 "description": "", "nationalPrice": 11, "internationalPrice":22
                 }
                """;
         mockMvc.perform(post("/api/extra_services")
+                        .principal(AIRLINE_USER)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andExpect(status().isNotFound());
@@ -87,11 +94,12 @@ public class ExtraServiceControllerTest {
 
         String requestJson = """
                 {
-                "airlineId" : "air-1", "nameService": "Hamburguer",
+                "nameService": "Hamburguer",
                 "description": "", "nationalPrice": 11, "internationalPrice":-1
                 }
                """;
         mockMvc.perform(post("/api/extra_services")
+                        .principal(AIRLINE_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isUnprocessableContent());  //422
