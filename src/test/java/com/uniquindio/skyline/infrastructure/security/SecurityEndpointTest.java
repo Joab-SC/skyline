@@ -9,6 +9,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Loads the whole application, so the requests go through the real SecurityConfig.
@@ -27,7 +29,20 @@ class SecurityEndpointTest {
     void shouldAnswer401WhenThereIsNoToken() throws Exception {
         // Act & Assert
         mockMvc.perform(get(TOP_AIRLINES_URL))
-                .andExpect(status().isUnauthorized());     // 401
+                .andExpect(status().isUnauthorized())      // 401
+                .andExpect(header().string("WWW-Authenticate", "Bearer"))
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("A valid token is required"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void shouldAnswer401WhenTheTokenIsInvalid() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(TOP_AIRLINES_URL).header("Authorization", "Bearer not-a-real-token"))
+                .andExpect(status().isUnauthorized())      // 401
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value("A valid token is required"));
     }
 
     @Test
@@ -37,7 +52,10 @@ class SecurityEndpointTest {
 
         // Act & Assert
         mockMvc.perform(get(TOP_AIRLINES_URL).with(jwt().authorities(customer)))
-                .andExpect(status().isForbidden());        // 403
+                .andExpect(status().isForbidden())         // 403
+                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.message").value("You do not have permission for this action"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

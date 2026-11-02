@@ -1,9 +1,13 @@
 package com.uniquindio.skyline.infrastructure.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,6 +23,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Configuration
@@ -27,6 +33,9 @@ public class SecurityConfig {
 
     private static final String ADMIN = "ADMIN";
     private static final String AIRLINE = "AIRLINE";
+
+    private static final String UNAUTHORIZED_MESSAGE = "A valid token is required";
+    private static final String FORBIDDEN_MESSAGE = "You do not have permission for this action";
     private static final String CUSTOMER = "CUSTOMER";
 
     private final JwtDecoder jwtDecoder;
@@ -90,11 +99,38 @@ public class SecurityConfig {
                 )
                 // Adds the filter that reads "Authorization: Bearer <token>", validates it with the decoder
                 // and takes the roles with the converter.
+                // These errors happen in the security filter, before the controllers,
+                // so GlobalExceptionHandler never sees them. They are answered here with the same JSON.
+                .exceptionHandling(ex -> ex
+                        // No token: 401
+                        .authenticationEntryPoint((request, response, e) ->
+                                writeError(response, HttpStatus.UNAUTHORIZED, UNAUTHORIZED_MESSAGE))
+                        // Valid token, but the role is not allowed: 403
+                        .accessDeniedHandler((request, response, e) ->
+                                writeError(response, HttpStatus.FORBIDDEN, FORBIDDEN_MESSAGE)))
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        // Expired, tampered or badly signed token: also 401
+                        .authenticationEntryPoint((request, response, e) ->
+                                writeError(response, HttpStatus.UNAUTHORIZED, UNAUTHORIZED_MESSAGE))
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();
+    }
+
+    // Same JSON as GlobalExceptionHandler: timestamp, status and message.
+    // The messages are constants without quotes, so they can be written without a JSON library.
+    private static void writeError(HttpServletResponse response, HttpStatus status, String message)
+            throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        if (status == HttpStatus.UNAUTHORIZED) {
+            // Standard header that tells the client which kind of token to send.
+            response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
+        }
+        response.getWriter().write("""
+                {"timestamp":"%s","status":%d,"message":"%s"}"""
+                .formatted(LocalDateTime.now(), status.value(), message));
     }
 
     // bcrypt with the {bcrypt} prefix, so the algorithm can change later without breaking old hashes.
