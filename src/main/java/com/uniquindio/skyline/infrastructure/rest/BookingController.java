@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -27,11 +28,13 @@ public class BookingController {
     private final GetBookingUseCase getBookingUseCase;
     private final CancelBookingUseCase cancelBookingUseCase;
     private final PayBookingUseCase payBookingUseCase;
+    private final ListCustomerBookingsUseCase listCustomerBookingsUseCase;
     private final BookingMapper mapper;
 
     public BookingController(SelectOutboundFlightUseCase selectOutboundFlightUseCase,
                              SelectReturnFlightUseCase selectReturnFlightUseCase, AddPassengerUseCase addPassengerUseCase, SelectLegSeatUseCase selectLegSeatUseCase, AddLuggageUseCase addLuggageUseCase, AddExtraServiceUseCase addExtraServiceUseCase, GetBookingUseCase getBookingUseCase,
-                             CancelBookingUseCase cancelBookingUseCase, PayBookingUseCase payBookingUseCase, BookingMapper mapper) {
+                             CancelBookingUseCase cancelBookingUseCase, PayBookingUseCase payBookingUseCase,
+                             ListCustomerBookingsUseCase listCustomerBookingsUseCase, BookingMapper mapper) {
         this.selectOutboundFlightUseCase = selectOutboundFlightUseCase;
         this.selectReturnFlightUseCase = selectReturnFlightUseCase;
         this.addPassengerUseCase = addPassengerUseCase;
@@ -41,6 +44,7 @@ public class BookingController {
         this.getBookingUseCase = getBookingUseCase;
         this.cancelBookingUseCase = cancelBookingUseCase;
         this.payBookingUseCase = payBookingUseCase;
+        this.listCustomerBookingsUseCase = listCustomerBookingsUseCase;
         this.mapper = mapper;
     }
 
@@ -102,6 +106,13 @@ public class BookingController {
                                                            @Valid @RequestBody AddExtraServiceRequest request) {
         Booking booking = addExtraServiceUseCase.execute(id, request.extraServiceId(), request.quantity());
         return ResponseEntity.ok(mapper.toBookingResponse(booking)); // 200
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<BookingResponse>> myBookings(JwtAuthenticationToken authentication) {
+        List<Booking> bookings = listCustomerBookingsUseCase.execute(
+                authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM));
+        return ResponseEntity.ok(bookings.stream().map(mapper::toBookingResponse).toList()); // 200
     }
 
     @GetMapping("/{id}")

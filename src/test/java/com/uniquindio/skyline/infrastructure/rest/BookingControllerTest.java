@@ -105,6 +105,9 @@ public class BookingControllerTest {
     @MockitoBean
     private PayBookingUseCase payBookingUseCase;
 
+    @MockitoBean
+    private ListCustomerBookingsUseCase listCustomerBookingsUseCase;
+
     // ---------- POST /api/bookings ----------
 
     @Test
