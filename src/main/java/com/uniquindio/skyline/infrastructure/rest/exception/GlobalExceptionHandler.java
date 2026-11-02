@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -55,6 +56,14 @@ public class GlobalExceptionHandler {
             default -> "The request body is not valid JSON or a value has the wrong format";
         };
         return buildResponse(HttpStatus.BAD_REQUEST, message); // 400
+    }
+
+    // Wrong email or password in the login. The message does not say which one failed, on purpose.
+    // Only covers the login: an invalid or missing token in other routes fails inside the security filter,
+    // before reaching the controllers, and Spring answers that 401 on its own.
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid email or password"); // 401
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
