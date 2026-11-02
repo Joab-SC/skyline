@@ -10,7 +10,7 @@ An airline stops offering one of its extra services. It is a **soft delete**: th
 ## Inputs
 | Name | Type | Description |
 |------|------|-------------|
-| `airlineId` | `String` | Airline that owns the service. |
+| `airlineId` | `String` | Airline that owns the service (the `{id}` of the path). It must be the airline of the logged-in `AIRLINE` user (`airlineId` claim of the token). |
 | `extraServiceId` | `String` | Extra service to delete. |
 
 ## Output
@@ -33,5 +33,7 @@ None. The REST response is `204 No Content`.
 - The airline must exist, or `NoSuchElementException` is thrown (404 in REST).
 - The service must belong to the airline, or `NoSuchElementException` is thrown (404 in REST).
 - A service that is already deleted cannot be deleted again (`DomainRuleException`, 422).
+- Only `AIRLINE` users can call the endpoint (no token: 401, other role: 403).
+- The `{id}` of the path must be the airline of the token. If it is another airline, the controller answers 403 before calling the use case.
 
 `data.sql` has a deleted service, `extra-latam-pet`, to try it.

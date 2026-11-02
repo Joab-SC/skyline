@@ -10,7 +10,7 @@ Creates an extra service with its national and international prices and adds it 
 ## Inputs
 | Name | Type | Description |
 |------|------|-------------|
-| `airlineId` | `String` | Airline that offers the service. |
+| `airlineId` | `String` | Airline that offers the service. It is not in the request body: the controller takes it from the `airlineId` claim of the logged-in `AIRLINE` user's token. |
 | `nameService` | `String` | Name of the service. |
 | `description` | `String` | Optional description. A null or blank value is stored as `Optional.empty()`. |
 | `nationalPrice` | `double` | Unit price on national flights. |
@@ -30,6 +30,7 @@ The created `ExtraService`.
 
 ## Rules and errors
 - The airline must exist, or `NoSuchElementException` is thrown (404 in REST).
+- Only `AIRLINE` users can call the endpoint (no token: 401, other role: 403).
 - The client lists the services of an airline with [ListAirlineExtraServices](list-airline-extra-services.md).
 
 The following throw `DomainRuleException`:
