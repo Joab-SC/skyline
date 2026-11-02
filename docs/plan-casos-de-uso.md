@@ -35,7 +35,7 @@ Contexto para retomar el trabajo en otro chat.
 | 17 | Expirar reservas vencidas | `ExpireBookingUseCase` (+ `FindExpiredBookingsUseCase`) | — (scheduler cada 10 s) |
 | 18 | Ranking de aerolíneas por cantidad de aviones | `GetTopAirlinesUseCase` | `GET /api/airlines/top` |
 | 19 | Listar aerolíneas | `ListAirlinesUseCase` | `GET /api/airlines` |
-| 20 | Eliminar servicio extra (soft delete) | `DeleteExtraServiceUseCase` | `DELETE /api/airlines/{id}/extra-services/{extraServiceId}` |
+| 20 | Eliminar servicio extra (soft delete) | `DeleteExtraServiceUseCase` | `DELETE /api/extra_services/{extraServiceId}` |
 | 21 | Buscar servicios extra (paginado, texto y filtro por aerolínea) | `SearchExtraServicesUseCase` | `GET /api/extra_services` |
 
 ## Casos de uso por hacer en el mes (14)
