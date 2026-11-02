@@ -34,6 +34,13 @@ public class BookingRepositoryJpa implements BookingRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Booking> findByIdCustomer(String idCustomer) {
+        return dataRepository.findByIdCustomerOrderByPaymentDeadlineDesc(idCustomer)
+                .stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
     public void save(Booking booking) {
         dataRepository.save(mapper.toEntity(booking));
     }
