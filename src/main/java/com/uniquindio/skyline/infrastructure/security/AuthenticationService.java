@@ -38,7 +38,8 @@ public class AuthenticationService {
         Instant expiresAt = now.plus(minutesToLive, ChronoUnit.MINUTES);
 
         String token = jwtTokenProvider.generate(
-                authentication.getName(), details.user().getId(), roles, now, expiresAt);
+                authentication.getName(), details.user().getId(), roles,
+                details.user().getAirlineId(), now, expiresAt);
 
         return new TokenResponse(token, TOKEN_TYPE, expiresAt, roles);
     }
