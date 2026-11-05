@@ -52,7 +52,7 @@ class CreateExtraServiceIntegrationTest {
     @Test
     void shouldCreateExtraServiceAndSaveItInTheAirline() throws Exception {
         // Arrange
-        String token = tokenFor("airline2@skyline.com", "AIRLINE", AIRLINE_ID);
+        String token = tokenFor("airline2@skyline.com", "AIRLINE_ADMIN", AIRLINE_ID);
 
         // Act
         mockMvc.perform(post("/api/extra_services")

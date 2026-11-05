@@ -15,7 +15,7 @@ final class JwtTestTokens {
     static JwtAuthenticationToken airlineUser(String airlineId) {
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
-                .claim("roles", List.of("AIRLINE"))
+                .claim("roles", List.of("AIRLINE_ADMIN"))
                 .claim(JwtTokenProvider.AIRLINE_ID_CLAIM, airlineId)
                 .build();
         return new JwtAuthenticationToken(jwt);

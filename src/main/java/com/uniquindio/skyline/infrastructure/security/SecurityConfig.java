@@ -32,8 +32,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final String ADMIN = "ADMIN";
-    private static final String AIRLINE = "AIRLINE";
-
+    private static final String AIRLINE_ADMIN = "AIRLINE_ADMIN";
+    private static final String AIRLINE_SELLER = "AIRLINE_SELLER";
     private static final String UNAUTHORIZED_MESSAGE = "A valid token is required";
     private static final String FORBIDDEN_MESSAGE = "You do not have permission for this action";
     private static final String CUSTOMER = "CUSTOMER";
@@ -90,9 +90,9 @@ public class SecurityConfig {
                                 "/api/aircrafts",
                                 "/api/legs",
                                 "/api/extra_services"
-                        ).hasAuthority(AIRLINE)
+                        ).hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, "/api/extra_services/*")
-                                .hasAuthority(AIRLINE)
+                                .hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
 
                         // Default deny: a new endpoint without a rule is blocked until a rule is added for it.
                         .anyRequest().denyAll()
