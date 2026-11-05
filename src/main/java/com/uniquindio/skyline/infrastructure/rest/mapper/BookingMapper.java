@@ -9,7 +9,7 @@ import com.uniquindio.skyline.application.dto.response.PaymentResponse;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
 import com.uniquindio.skyline.domain.entity.Payment;
-import com.uniquindio.skyline.domain.entity.Person;
+import com.uniquindio.skyline.domain.valueObject.Person;
 import com.uniquindio.skyline.domain.valueObject.DetailExtraService;
 import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
