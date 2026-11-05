@@ -1,7 +1,7 @@
 package com.uniquindio.skyline.infrastructure.rest.exception;
 
+import com.uniquindio.skyline.application.exception.EmailAlreadyRegisteredException;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.infrastructure.security.EmailAlreadyRegisteredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

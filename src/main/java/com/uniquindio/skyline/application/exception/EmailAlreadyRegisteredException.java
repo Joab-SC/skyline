@@ -1,6 +1,6 @@
-package com.uniquindio.skyline.infrastructure.security;
+package com.uniquindio.skyline.application.exception;
 
-// Not a DomainRuleException: users are not part of the domain. GlobalExceptionHandler answers it with 409.
+// Not a DomainRuleException: a repeated email is a conflict (409), not a broken rule (422).
 public class EmailAlreadyRegisteredException extends RuntimeException {
 
     public EmailAlreadyRegisteredException() {
