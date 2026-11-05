@@ -1,4 +1,6 @@
 package com.uniquindio.skyline.domain.entity;
+
+import com.uniquindio.skyline.domain.valueObject.Person;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;

@@ -1,8 +1,6 @@
-package com.uniquindio.skyline.domain.entity;
+package com.uniquindio.skyline.domain.valueObject;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.valueObject.DocumentType;
-import com.uniquindio.skyline.domain.valueObject.Gender;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -10,17 +8,20 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import java.util.Optional;
-@Getter
-public class Person {
 
-    private String idDocument;
-    private DocumentType documentType;
-    private String firstName;
-    private Optional<String> secondName;
-    private String lastName1;
-    private Optional <String> lastName2;
-    private LocalDate birthDate;
-    private Gender gender;
+// Value object: the personal data of a passenger or a user. It has no identity of its own;
+// the owner decides its id (a passenger by booking + idDocument, a user by its UUID).
+@Getter
+public final class Person {
+
+    private final String idDocument;
+    private final DocumentType documentType;
+    private final String firstName;
+    private final Optional<String> secondName;
+    private final String lastName1;
+    private final Optional<String> lastName2;
+    private final LocalDate birthDate;
+    private final Gender gender;
 
     private Person(String idDocument, DocumentType documentType, String firstName, Optional<String> secondName, String lastName1, Optional<String> lastName2, LocalDate birthDate, Gender gender) {
         this.idDocument = idDocument;
@@ -94,14 +95,21 @@ public class Person {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Person)) return false;
-        Person other = (Person) o;
-        return idDocument.equals(other.idDocument);
+        if (!(o instanceof Person other)) return false;
+        return idDocument.equals(other.idDocument)
+                && documentType == other.documentType
+                && firstName.equals(other.firstName)
+                && secondName.equals(other.secondName)
+                && lastName1.equals(other.lastName1)
+                && lastName2.equals(other.lastName2)
+                && birthDate.equals(other.birthDate)
+                && gender == other.gender;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(idDocument);
+        return Objects.hash(idDocument, documentType, firstName, secondName,
+                lastName1, lastName2, birthDate, gender);
     }
 }
 

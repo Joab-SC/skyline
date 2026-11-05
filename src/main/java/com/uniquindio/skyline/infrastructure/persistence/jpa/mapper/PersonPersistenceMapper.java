@@ -1,34 +1,39 @@
 package com.uniquindio.skyline.infrastructure.persistence.jpa.mapper;
 
-import com.uniquindio.skyline.domain.entity.Person;
-import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.PersonEntity;
+import com.uniquindio.skyline.domain.valueObject.Person;
+import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.PersonEmbeddable;
 import org.springframework.stereotype.Component;
 
-// Maps the person fields shared by every entity that extends PersonEntity (passenger, user, ...).
+// Maps the Person value object to its embeddable and back (user, passenger, ...).
 @Component
 public class PersonPersistenceMapper {
 
-
-    public void fillEntity(Person person, PersonEntity personEntity) {
-        personEntity.setIdDocument(person.getIdDocument());
-        personEntity.setDocumentType(person.getDocumentType());
-        personEntity.setFirstName(person.getFirstName());
-        personEntity.setSecondName(person.getSecondName().orElse(null));
-        personEntity.setLastName1(person.getLastName1());
-        personEntity.setLastName2(person.getLastName2().orElse(null));
-        personEntity.setBirthDate(person.getBirthDate());
-        personEntity.setGender(person.getGender());
+    public PersonEmbeddable toEmbeddable(Person person) {
+        PersonEmbeddable embeddable = new PersonEmbeddable();
+        fillEntity(person, embeddable);
+        return embeddable;
     }
 
-    public Person toDomain(PersonEntity personEntity) {
+    public void fillEntity(Person person, PersonEmbeddable personEmbeddable) {
+        personEmbeddable.setIdDocument(person.getIdDocument());
+        personEmbeddable.setDocumentType(person.getDocumentType());
+        personEmbeddable.setFirstName(person.getFirstName());
+        personEmbeddable.setSecondName(person.getSecondName().orElse(null));
+        personEmbeddable.setLastName1(person.getLastName1());
+        personEmbeddable.setLastName2(person.getLastName2().orElse(null));
+        personEmbeddable.setBirthDate(person.getBirthDate());
+        personEmbeddable.setGender(person.getGender());
+    }
+
+    public Person toDomain(PersonEmbeddable personEmbeddable) {
         return Person.createPerson(
-                personEntity.getIdDocument(),
-                personEntity.getDocumentType(),
-                personEntity.getFirstName(),
-                personEntity.getSecondName(),
-                personEntity.getLastName1(),
-                personEntity.getLastName2(),
-                personEntity.getBirthDate(),
-                personEntity.getGender());
+                personEmbeddable.getIdDocument(),
+                personEmbeddable.getDocumentType(),
+                personEmbeddable.getFirstName(),
+                personEmbeddable.getSecondName(),
+                personEmbeddable.getLastName1(),
+                personEmbeddable.getLastName2(),
+                personEmbeddable.getBirthDate(),
+                personEmbeddable.getGender());
     }
 }

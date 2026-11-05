@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "passengers")
-public class PassengerEntity extends PersonEntity {
+public class PassengerEntity extends PersonEmbeddable {
 
     @Id
     @Column(name = "booking_id", length = 50)

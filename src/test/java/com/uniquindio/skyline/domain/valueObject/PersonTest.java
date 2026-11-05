@@ -1,8 +1,6 @@
-package com.uniquindio.skyline.domain.entity;
+package com.uniquindio.skyline.domain.valueObject;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
-import com.uniquindio.skyline.domain.valueObject.DocumentType;
-import com.uniquindio.skyline.domain.valueObject.Gender;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

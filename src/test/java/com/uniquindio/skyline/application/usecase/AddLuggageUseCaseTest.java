@@ -2,7 +2,7 @@ package com.uniquindio.skyline.application.usecase;
 
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
-import com.uniquindio.skyline.domain.entity.Person;
+import com.uniquindio.skyline.domain.valueObject.Person;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.BookingRepository;
 import com.uniquindio.skyline.domain.service.LuggageDetailCreator;

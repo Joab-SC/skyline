@@ -1,9 +1,12 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.request.LoginRequest;
+import com.uniquindio.skyline.application.dto.request.RegisterCustomerRequest;
 import com.uniquindio.skyline.application.dto.request.RegisterRequest;
 import com.uniquindio.skyline.application.dto.response.RegisterResponse;
 import com.uniquindio.skyline.application.dto.response.TokenResponse;
+import com.uniquindio.skyline.application.usecase.RegisterCustomerUseCase;
+import com.uniquindio.skyline.domain.entity.User;
 import com.uniquindio.skyline.infrastructure.security.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,10 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
+    private final RegisterCustomerUseCase registerCustomerUseCase;
 
-    public AuthController(AuthenticationService authenticationService) {
+    public AuthController(AuthenticationService authenticationService, RegisterCustomerUseCase registerCustomerUseCase) {
         this.authenticationService = authenticationService;
+        this.registerCustomerUseCase = registerCustomerUseCase;
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -29,7 +35,21 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(request)); // 201
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterCustomerRequest request) {
+        User user = registerCustomerUseCase.execute(
+                request.email(),
+                request.password(),
+                request.idDocument(),
+                request.documentType(),
+                request.firstName(),
+                request.secondName(),
+                request.lastName1(),
+                request.lastName2(),
+                request.birthDate(),
+                request.gender());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new RegisterResponse(user.getId(), user.getEmail(), user.getRole().name()));  // 201
     }
+
 }

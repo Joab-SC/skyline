@@ -80,7 +80,7 @@ class SecurityEndpointTest {
     @Test
     void myBookingsShouldAnswer403WhenRoleIsNotCustomer() throws Exception {
         // Arrange
-        SimpleGrantedAuthority airline = new SimpleGrantedAuthority("AIRLINE");
+        SimpleGrantedAuthority airline = new SimpleGrantedAuthority("AIRLINE_ADMIN");
 
         // Act & Assert
         mockMvc.perform(get(MY_BOOKINGS_URL).with(jwt().authorities(airline)))
