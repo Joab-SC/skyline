@@ -1,12 +1,8 @@
 package com.uniquindio.skyline.infrastructure.security;
 
 import com.uniquindio.skyline.application.dto.request.LoginRequest;
-import com.uniquindio.skyline.application.dto.request.RegisterRequest;
-import com.uniquindio.skyline.application.dto.response.RegisterResponse;
 import com.uniquindio.skyline.application.dto.response.TokenResponse;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.UserJpaDataRepository;
-import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.SecurityRole;
-import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,12 +10,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +23,6 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserJpaDataRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Value("${jwt.expiry}")
     private long minutesToLive;
@@ -54,16 +46,4 @@ public class AuthenticationService {
         return new TokenResponse(token, TOKEN_TYPE, expiresAt, roles);
     }
 
-    // Anyone can register, always as CUSTOMER: the role is never taken from the request,
-    // so nobody can register as ADMIN or AIRLINE.
-    @Transactional
-    public RegisterResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyRegisteredException();
-        }
-        UserEntity user = new UserEntity(UUID.randomUUID().toString(), request.email(),
-                passwordEncoder.encode(request.password()), SecurityRole.CUSTOMER, null);
-        userRepository.save(user);
-        return new RegisterResponse(user.getId(), user.getEmail(), user.getRole().name());
-    }
 }

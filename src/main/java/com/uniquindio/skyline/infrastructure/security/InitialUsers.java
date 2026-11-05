@@ -1,13 +1,17 @@
 package com.uniquindio.skyline.infrastructure.security;
 
-import com.uniquindio.skyline.infrastructure.persistence.jpa.UserJpaDataRepository;
-import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.SecurityRole;
-import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.UserEntity;
+import com.uniquindio.skyline.application.port.PasswordHasher;
+import com.uniquindio.skyline.domain.valueObject.Person;
+import com.uniquindio.skyline.domain.entity.User;
+import com.uniquindio.skyline.domain.repository.UserRepository;
+import com.uniquindio.skyline.domain.valueObject.DocumentType;
+import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 // Development users, created once on startup (after data.sql).
@@ -17,24 +21,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InitialUsers implements CommandLineRunner {
 
-    private record Seed(String id, String email, String password, SecurityRole role, String airlineId) {}
-
-    private final UserJpaDataRepository repository;
-    private final PasswordEncoder encoder;
+    private final UserRepository userRepository;
+    private final PasswordHasher passwordHasher;
 
     @Override
     public void run(String... args) {
-        List<Seed> seeds = List.of(
-                new Seed("admin", "admin@skyline.com", "admin123", SecurityRole.ADMIN, null),
-                // Airline users are linked to airlines of data.sql.
-                new Seed("airline1", "airline1@skyline.com", "airline123", SecurityRole.AIRLINE, "airline-avianca"),
-                new Seed("airline2", "airline2@skyline.com", "airline123", SecurityRole.AIRLINE, "airline-wingo"),
-                new Seed("customer1", "customer1@skyline.com", "customer123", SecurityRole.CUSTOMER, null)
-        );
-        for (Seed seed : seeds) {
-            // The password is always stored hashed.
-            repository.save(new UserEntity(seed.id(), seed.email(), encoder.encode(seed.password()),
-                    seed.role(), seed.airlineId()));
-        }
+        save("admin", "admin@skyline.com", "admin123", UserRole.ADMIN, null,
+                person("1000000001", "Admin", "Skyline"));
+        save("airline1", "airline1@skyline.com", "airline123", UserRole.AIRLINE_ADMIN, "airline-avianca",
+                person("1000000002", "Avianca", "Admin"));
+        save("airline2", "airline2@skyline.com", "airline123", UserRole.AIRLINE_ADMIN, "airline-wingo",
+                person("1000000003", "Wingo", "Admin"));
+        save("seller1", "seller1@skyline.com", "seller123", UserRole.AIRLINE_SELLER, "airline-avianca",
+                person("1000000004", "Avianca", "Seller"));
+        save("customer1", "customer1@skyline.com", "customer123", UserRole.CUSTOMER, null,
+                person("1000000005", "Customer", "One"));
+    }
+
+    // reconstruct: fixed ids, and dev passwords skip the strength rule on purpose.
+    private void save(String id, String email, String password, UserRole role, String airlineId, Person person) {
+        userRepository.save(User.reconstruct(id, person, email, passwordHasher.hash(password), role, airlineId));
+    }
+
+    private Person person(String idDocument, String firstName, String lastName) {
+        return Person.createPerson(idDocument, DocumentType.CITIZENSHIP_ID, firstName, null, lastName, null,
+                LocalDate.of(1990, 1, 1), Gender.MALE);
     }
 }

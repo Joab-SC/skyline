@@ -21,7 +21,8 @@ class RegisterEndpointTest {
 
     private static final String REGISTER_URL = "/api/auth/register";
     private static final String LOGIN_URL = "/api/auth/login";
-    private static final String PASSWORD = "secret123";
+    // Meets the strength rule of User: 8+ characters, an uppercase letter and a number.
+    private static final String PASSWORD = "Secret123";
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,7 +33,18 @@ class RegisterEndpointTest {
 
     private String registerJson(String email, String password) {
         return """
-                {"email": "%s", "password": "%s"}
+                {
+                  "email": "%s",
+                  "password": "%s",
+                  "idDocument": "1094000000",
+                  "documentType": "CITIZENSHIP_ID",
+                  "firstName": "Ana",
+                  "secondName": "Maria",
+                  "lastName1": "Lopez",
+                  "lastName2": "Diaz",
+                  "birthDate": "1995-05-20",
+                  "gender": "FEMALE"
+                }
                 """.formatted(email, password);
     }
 
@@ -83,13 +95,14 @@ class RegisterEndpointTest {
                 .andExpect(jsonPath("$.message").value("The email is already registered"));
     }
 
+    // The strength rule lives in the domain (User.validatePasswordStrength), so it is a broken rule: 422.
     @Test
-    void shouldAnswer400WhenThePasswordIsTooShort() throws Exception {
+    void shouldAnswer422WhenThePasswordIsTooShort() throws Exception {
         // Act & Assert
         mockMvc.perform(post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerJson(newEmail(), "123")))
-                .andExpect(status().isBadRequest())                // 400
-                .andExpect(jsonPath("$.errors.password").exists());
+                        .content(registerJson(newEmail(), "Ab1")))
+                .andExpect(status().isUnprocessableContent())      // 422
+                .andExpect(jsonPath("$.message").value("The password must have at least 8 characters"));
     }
 }
