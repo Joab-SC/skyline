@@ -1,14 +1,19 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.request.CreateAirlineRequest;
+import com.uniquindio.skyline.application.dto.request.RegisterUserRequest;
 import com.uniquindio.skyline.application.dto.response.AirlineResponse;
 import com.uniquindio.skyline.application.dto.response.ExtraServiceResponse;
 import com.uniquindio.skyline.application.dto.response.TopAirlineResponse;
+import com.uniquindio.skyline.application.dto.response.UserResponse;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Airline;
+import com.uniquindio.skyline.domain.entity.User;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
+import com.uniquindio.skyline.infrastructure.rest.mapper.UserMapper;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -24,18 +29,23 @@ public class AirlineController {
     private final ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
     private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final ListAirlinesUseCase listAirlinesUseCase;
+    private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
+    private final UserMapper userMapper;
 
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
                              ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
-                             AirlineMapper mapper, ExtraServiceMapper extraServiceMapper) {
+                             RegisterAirlineAdminUseCase registerAirlineAdminUseCase,
+                             AirlineMapper mapper, ExtraServiceMapper extraServiceMapper, UserMapper userMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
         this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.listAirlinesUseCase = listAirlinesUseCase;
+        this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
+        this.userMapper = userMapper;
     }
 
     @PostMapping
@@ -50,6 +60,27 @@ public class AirlineController {
                 .buildAndExpand(airline.getId())
                 .toUri();
         return ResponseEntity.created(location).body(response); // 201
+    }
+
+    // Only an ADMIN creates the admin of an airline (see SecurityConfig).
+    @PostMapping("/{id}/admins")
+    public ResponseEntity<UserResponse> registerAdmin(@PathVariable String id,
+                                                      @Valid @RequestBody RegisterUserRequest request) {
+        User user = registerAirlineAdminUseCase.execute(
+                id,
+                request.email(),
+                request.password(),
+                request.idDocument(),
+                request.documentType(),
+                request.firstName(),
+                request.secondName(),
+                request.lastName1(),
+                request.lastName2(),
+                request.birthDate(),
+                request.gender());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userMapper.toRegisterResponse(user)); // 201
     }
 
     @GetMapping

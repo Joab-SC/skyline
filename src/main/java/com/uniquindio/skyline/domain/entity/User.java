@@ -47,6 +47,16 @@ public class User {
     }
 
 
+    public static User registerAirlineAdmin(String airlineId, String idDocument, DocumentType documentType, String firstName,
+                                            String secondName, String lastName1, String lastName2, LocalDate birthDate,
+                                            Gender gender, String email, String passwordHash) {
+        return create(
+                Person.createPerson(idDocument, documentType, firstName,
+                        secondName, lastName1, lastName2, birthDate, gender),
+                email, passwordHash, UserRole.AIRLINE_ADMIN, airlineId);
+    }
+
+
 
     // Only for the persistence mapper: the data was already validated when the user was created.
     public static User reconstruct(String id, Person person, String email, String passwordHash,
