@@ -47,6 +47,16 @@ class UserTest {
         assertEquals(Optional.of("airline-1"), user.getAirlineId());
     }
 
+    // The airline rules are shared with the admin (create), so they are only tested there.
+    @Test
+    void airlineSellerIsRegisteredWithItsAirline() {
+        User user = User.registerAirlineSeller("airline-1", "1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Suarez", null, LocalDate.of(2000, 5, 10), Gender.FEMALE, EMAIL, PASSWORD_HASH);
+
+        assertEquals(UserRole.AIRLINE_SELLER, user.getRole());
+        assertEquals(Optional.of("airline-1"), user.getAirlineId());
+    }
+
     @Test
     void airlineAdminThrowsExceptionWhenAirlineIsNull() {
         assertThrows(DomainRuleException.class, () -> airlineAdminOf(null));

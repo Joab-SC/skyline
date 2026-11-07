@@ -12,9 +12,11 @@ import com.uniquindio.skyline.domain.entity.User;
 import com.uniquindio.skyline.infrastructure.rest.mapper.AirlineMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.ExtraServiceMapper;
 import com.uniquindio.skyline.infrastructure.rest.mapper.UserMapper;
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -30,6 +32,7 @@ public class AirlineController {
     private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final ListAirlinesUseCase listAirlinesUseCase;
     private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
+    private final RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
     private final UserMapper userMapper;
@@ -37,12 +40,14 @@ public class AirlineController {
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
                              ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
                              RegisterAirlineAdminUseCase registerAirlineAdminUseCase,
+                             RegisterAirlineSellerUseCase registerAirlineSellerUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper, UserMapper userMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
         this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.listAirlinesUseCase = listAirlinesUseCase;
         this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
+        this.registerAirlineSellerUseCase = registerAirlineSellerUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
         this.userMapper = userMapper;
@@ -68,6 +73,29 @@ public class AirlineController {
                                                       @Valid @RequestBody RegisterUserRequest request) {
         User user = registerAirlineAdminUseCase.execute(
                 id,
+                request.email(),
+                request.password(),
+                request.idDocument(),
+                request.documentType(),
+                request.firstName(),
+                request.secondName(),
+                request.lastName1(),
+                request.lastName2(),
+                request.birthDate(),
+                request.gender());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userMapper.toRegisterResponse(user)); // 201
+    }
+
+    // Only an AIRLINE_ADMIN creates a seller (see SecurityConfig).
+    @PostMapping("/sellers")
+    public ResponseEntity<UserResponse> registerSeller(@Valid @RequestBody RegisterUserRequest request,
+                                                       JwtAuthenticationToken authentication) {
+        // The airline comes from the token, so an admin can only add sellers to its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        User user = registerAirlineSellerUseCase.execute(
+                airlineId,
                 request.email(),
                 request.password(),
                 request.idDocument(),

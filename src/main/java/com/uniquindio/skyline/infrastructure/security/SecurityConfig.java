@@ -86,6 +86,8 @@ public class SecurityConfig {
                         // Seller operations.
                         .requestMatchers(HttpMethod.POST, "/api/airlines").hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.POST, "/api/airlines/*/admins").hasAuthority(ADMIN)
+                        // The seller's airline is taken from the AIRLINE_ADMIN's token.
+                        .requestMatchers(HttpMethod.POST, "/api/airlines/sellers").hasAuthority(AIRLINE_ADMIN)
                         // Only airline users: the airline is taken from their token.
                         .requestMatchers(HttpMethod.POST,
                                 "/api/aircrafts",
