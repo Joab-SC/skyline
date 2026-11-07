@@ -2,7 +2,7 @@
 
 One file per use case. To add a new one, create `<use-case-name>.md` in this folder with the same sections (Status, Purpose, Inputs, Output, Dependencies, Steps, Rules and errors) and add a row below. Open items are tracked in [../pending.md](../pending.md).
 
-Out of scope for now: booking pre-confirmation and tax calculation (CalculateBooking), check-in and boarding pass (CheckInPassenger).
+Out of scope for now: booking pre-confirmation and tax calculation (CalculateBooking). Check-in and boarding pass (CheckInPassenger) are postponed: the front comes first, and check-in is done later only if there is time.
 
 | # | Use case | What it does | Repositories | Endpoint | Status |
 |---|----------|--------------|--------------|----------|--------|
@@ -27,11 +27,27 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 19 | [ListAirlines](list-airlines.md) | Returns every airline, ordered by name, so the client can choose one. | `AirlineRepository` | `GET /api/airlines` | Implemented |
 | 20 | [DeleteExtraService](delete-extra-service.md) | Soft delete of an airline's extra service: it is no longer offered, but old bookings keep it. | `AirlineRepository` | `DELETE /api/extra_services/{extraServiceId}` | Implemented |
 | 21 | [SearchExtraServices](search-extra-services.md) | Paginated search of the active extra services by text in the name or description, optionally filtered by airline. | `AirlineRepository` | `GET /api/extra_services` | Implemented |
+| 22 | [RegisterCustomer](register-customer.md) | Creates a `CUSTOMER` account (public sign-up). | `UserRepository` (plus the `PasswordHasher` port) | `POST /api/auth/register` | Implemented |
+| 23 | [Login](login.md) | Checks email and password and returns a JWT with the user's role. | `UserRepository` (through Spring Security) | `POST /api/auth/login` | Implemented |
+| 24 | [RegisterAirlineAdmin](register-airline-admin.md) | The `ADMIN` creates the `AIRLINE_ADMIN` account of an airline. | `UserRepository`, `AirlineRepository` | `POST /api/airlines/{id}/admins` | Implemented |
+| 25 | [RegisterAirlineSeller](register-airline-seller.md) | An `AIRLINE_ADMIN` creates a seller for their own airline (taken from the token). | `UserRepository`, `AirlineRepository` | `POST /api/airlines/sellers` | Implemented |
+| 26 | [ListCustomerBookings](list-customer-bookings.md) | Returns the logged-in customer's bookings, newest first. | `BookingRepository` | `GET /api/bookings/mine` | Implemented |
+
+## Users and roles
+
+| Role | Who | What they can do |
+|------|-----|------------------|
+| `ADMIN` | Platform admin | Create airlines, register airline admins, see the airline ranking. |
+| `AIRLINE_ADMIN` | Airline admin | Manage the airline's aircraft, legs and extra services, and register its sellers. |
+| `AIRLINE_SELLER` | Airline seller | Manage the airline's aircraft, legs and extra services. |
+| `CUSTOMER` | Buyer with an account | Everything a guest can do; their bookings are linked to them and listed in `GET /api/bookings/mine`. |
+
+The booking flow is public: a guest can book without an account. The rules are in `SecurityConfig`.
 
 ## Booking flow
 
 `SearchFlights` → `SelectOutboundFlight` → `SelectReturnFlight` (round trip only) → `AddPassengersToBooking` → `GetLegSeatMap` → `AssignSeatToPassenger` / `AddLuggage` / `ListAirlineExtraServices` → `AddExtraServices` → `PayBooking`
 
-`GetBooking` can be called at any step to read the booking again.
+`GetBooking` can be called at any step to read the booking again. A customer who wants the booking linked to their account calls `RegisterCustomer` and `Login` first and sends the token on `SelectOutboundFlight`.
 
 A `PENDING` booking can be cancelled at any point (`CancelBooking`), and it expires when `paymentDeadline` (20 min) passes (`ExpireBooking`). Only a `PENDING` booking can be modified.
