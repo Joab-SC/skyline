@@ -95,8 +95,9 @@ public class BookingPersistenceMapper {
 
     private PassengerEntity toPassengerEntity(Passenger passenger, String bookingId) {
         PassengerEntity passengerEntity = new PassengerEntity();
-        personMapper.fillEntity(passenger.getPerson(), passengerEntity);
         passengerEntity.setBookingId(bookingId);
+        passengerEntity.setIdDocument(passenger.getPerson().getIdDocument());
+        passengerEntity.setPerson(personMapper.toEmbeddable(passenger.getPerson()));
         passengerEntity.setHolder(passenger.isHolder());
         passengerEntity.setEmail(passenger.getEmail().orElse(null));
         passengerEntity.setPhoneNumber(passenger.getPhoneNumber().orElse(null));
@@ -113,7 +114,7 @@ public class BookingPersistenceMapper {
                 passengerEntity.getEmail(),
                 passengerEntity.getPhoneNumber(),
                 passengerEntity.getPhonePrefix(),
-                personMapper.toDomain(passengerEntity),
+                personMapper.toDomain(passengerEntity.getPerson()),
                 luggage == null || luggage.getQuantity() == null ? null : toLuggageDetail(luggage));
     }
 

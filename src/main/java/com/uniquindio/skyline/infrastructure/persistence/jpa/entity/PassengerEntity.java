@@ -13,11 +13,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(name = "passengers")
-public class PassengerEntity extends PersonEmbeddable {
+public class PassengerEntity {
 
     @Id
     @Column(name = "booking_id", length = 50)
     private String bookingId;
+
+    // Part of the key. The same column is also read by person.idDocument, which is read-only.
+    @Id
+    @Column(name = "id_document", length = 30)
+    private String idDocument;
+
+    @Embedded
+    @AttributeOverride(name = "idDocument",
+            column = @Column(name = "id_document", insertable = false, updatable = false))
+    private PersonEmbeddable person;
 
     @Column(nullable = false)
     private boolean holder;
