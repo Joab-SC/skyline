@@ -22,14 +22,26 @@ Si en Mac o Linux sale "permission denied", ejecuten antes `chmod +x gradlew` (o
 
 ## Usuarios de prueba
 
-Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /api/auth/login` con `username` (el correo) y `password`.
+Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /api/auth/login` con `username` (el correo) y `password`. Estas contraseñas son solo de desarrollo y no cumplen la regla de los usuarios nuevos (mínimo 8 caracteres, una mayúscula y un número).
 
 | Correo | Contraseña | Rol | Aerolínea |
 |---|---|---|---|
 | admin@skyline.com | admin123 | ADMIN | — |
-| airline1@skyline.com | airline123 | AIRLINE | Avianca (`airline-avianca`) |
-| airline2@skyline.com | airline123 | AIRLINE | Wingo (`airline-wingo`) |
+| airline1@skyline.com | airline123 | AIRLINE_ADMIN | Avianca (`airline-avianca`) |
+| airline2@skyline.com | airline123 | AIRLINE_ADMIN | Wingo (`airline-wingo`) |
+| seller1@skyline.com | seller123 | AIRLINE_SELLER | Avianca (`airline-avianca`) |
 | customer1@skyline.com | customer123 | CUSTOMER | — |
+
+### Roles
+
+| Rol | Quién es | Qué puede hacer |
+|---|---|---|
+| ADMIN | Administrador de la plataforma | Crear aerolíneas, registrar al admin de cada aerolínea y ver el ranking de aerolíneas |
+| AIRLINE_ADMIN | Administrador de una aerolínea | Manejar aviones, tramos y servicios extra de su aerolínea, y registrar sus vendedores |
+| AIRLINE_SELLER | Vendedor de una aerolínea | Manejar aviones, tramos y servicios extra de su aerolínea |
+| CUSTOMER | Comprador con cuenta | Lo mismo que un invitado, pero sus reservas quedan ligadas a él y las ve en `GET /api/bookings/mine` |
+
+El flujo de reserva es público: se puede reservar sin cuenta (invitado). Para los usuarios de aerolínea, la aerolínea sale del token, nunca del body.
 
 ## Endpoints principales
 
@@ -37,8 +49,15 @@ Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /ap
 
 | Operación | Método HTTP | Endpoint | Acceso |
 |---|---|---|---|
-| registrar un cliente | POST | /api/auth/register | público |
+| User.registerCustomer(...) | POST | /api/auth/register | público |
 | iniciar sesión (devuelve el JWT) | POST | /api/auth/login | público |
+
+### Mapeo Dominio -> API - Usuarios de aerolínea (User)
+
+| Operación del dominio | Método HTTP | Endpoint | Acceso |
+|---|---|---|---|
+| User.registerAirlineAdmin(...) | POST | /api/airlines/{id}/admins | ADMIN |
+| User.registerAirlineSeller(...) | POST | /api/airlines/sellers | AIRLINE_ADMIN (la aerolínea sale del token) |
 
 ### Mapeo Dominio -> API - Aerolínea (Airline)
 
@@ -53,21 +72,21 @@ Se crean al arrancar la aplicación (`InitialUsers.java`). El login es `POST /ap
 
 | Operación del dominio | Método HTTP | Endpoint | Acceso |
 |---|---|---|---|
-| airline.createExtraService(...) | POST | /api/extra_services | AIRLINE |
+| airline.createExtraService(...) | POST | /api/extra_services | AIRLINE_ADMIN o AIRLINE_SELLER |
 | buscar servicios extra (texto, aerolínea, paginado) | GET | /api/extra_services | público |
-| airline.deleteExtraService(id) | DELETE | /api/extra_services/{extraServiceId} | AIRLINE (la aerolínea sale del token) |
+| airline.deleteExtraService(id) | DELETE | /api/extra_services/{extraServiceId} | AIRLINE_ADMIN o AIRLINE_SELLER (la aerolínea sale del token) |
 
 ### Mapeo Dominio -> API - Avión (Aircraft)
 
 | Operación del dominio | Método HTTP | Endpoint | Acceso |
 |---|---|---|---|
-| Aircraft.createAircraft(...) + airline.addAircraft(...) | POST | /api/aircrafts | AIRLINE |
+| Aircraft.createAircraft(...) + airline.addAircraft(...) | POST | /api/aircrafts | AIRLINE_ADMIN o AIRLINE_SELLER |
 
 ### Mapeo Dominio -> API - Tramo (Leg)
 
 | Operación del dominio | Método HTTP | Endpoint | Acceso |
 |---|---|---|---|
-| Leg.createLeg(...) + airline.addLeg(...) | POST | /api/legs | AIRLINE |
+| Leg.createLeg(...) + airline.addLeg(...) | POST | /api/legs | AIRLINE_ADMIN o AIRLINE_SELLER |
 | consultar el mapa de asientos de un tramo | GET | /api/legs/{id}/seats | público |
 
 ### Mapeo Dominio -> API - Vuelo (Flight)
@@ -122,4 +141,4 @@ En Spring Boot 4 `@DataJpaTest` ya no está en el paquete de antes: el import co
 
 ### 3. Prueba de integración
 
-Una prueba de integración recorre el sistema real sin simular nada. En `CreateExtraServiceIntegrationTest` hacemos un `POST /api/extra_services` con MockMvc; la petición pasa por el controller, el caso de uso, el repositorio JPA y llega a H2, sin ningún `@MockitoBean`. Como el endpoint está protegido, la prueba genera un token real de un usuario de Wingo con `JwtTokenProvider` y lo manda en el header `Authorization`, así que también pasa por la seguridad. Además tiene un segundo caso: con un token de `ADMIN` responde 403, porque crear servicios extra es solo del rol `AIRLINE`. Después de la respuesta 201 buscamos la aerolínea en el repositorio y comprobamos que el servicio extra sí quedó guardado. En cambio, una prueba unitaria prueba una sola clase y simula con Mockito todo lo que esa clase usa, así que es rápida pero no garantiza que las piezas funcionen juntas. La de integración sí detecta errores de conexión entre capas, como un mapeo JPA mal hecho, un bean que no se inyecta o un JSON con nombres distintos. Como es más lenta y depende de `data.sql`, conviene tener pocas y solo para los flujos importantes. Lo que más nos dificultó fue probar la igualdad entre los objetos sin tener el id a mano pues es generado con UUID y entender la anotación de @Autowired qu eliego vimos que era para inyectar Beans automaticamente.
+Una prueba de integración recorre el sistema real sin simular nada. En `CreateExtraServiceIntegrationTest` hacemos un `POST /api/extra_services` con MockMvc; la petición pasa por el controller, el caso de uso, el repositorio JPA y llega a H2, sin ningún `@MockitoBean`. Como el endpoint está protegido, la prueba genera un token real de un usuario de Wingo con `JwtTokenProvider` y lo manda en el header `Authorization`, así que también pasa por la seguridad. Además tiene un segundo caso: con un token de `ADMIN` responde 403, porque crear servicios extra es solo de los usuarios de aerolínea (`AIRLINE_ADMIN` o `AIRLINE_SELLER`). Después de la respuesta 201 buscamos la aerolínea en el repositorio y comprobamos que el servicio extra sí quedó guardado. En cambio, una prueba unitaria prueba una sola clase y simula con Mockito todo lo que esa clase usa, así que es rápida pero no garantiza que las piezas funcionen juntas. La de integración sí detecta errores de conexión entre capas, como un mapeo JPA mal hecho, un bean que no se inyecta o un JSON con nombres distintos. Como es más lenta y depende de `data.sql`, conviene tener pocas y solo para los flujos importantes. Lo que más nos dificultó fue probar la igualdad entre los objetos sin tener el id a mano pues es generado con UUID y entender la anotación de @Autowired qu eliego vimos que era para inyectar Beans automaticamente.
