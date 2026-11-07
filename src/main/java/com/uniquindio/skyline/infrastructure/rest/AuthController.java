@@ -1,30 +1,33 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.request.LoginRequest;
-import com.uniquindio.skyline.application.dto.request.RegisterCustomerRequest;
-import com.uniquindio.skyline.application.dto.response.RegisterResponse;
+import com.uniquindio.skyline.application.dto.request.RegisterUserRequest;
+import com.uniquindio.skyline.application.dto.response.UserResponse;
 import com.uniquindio.skyline.application.dto.response.TokenResponse;
+import com.uniquindio.skyline.application.usecase.RegisterAirlineAdminUseCase;
 import com.uniquindio.skyline.application.usecase.RegisterCustomerUseCase;
 import com.uniquindio.skyline.domain.entity.User;
+import com.uniquindio.skyline.infrastructure.rest.mapper.UserMapper;
 import com.uniquindio.skyline.infrastructure.security.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
     private final AuthenticationService authenticationService;
     private final RegisterCustomerUseCase registerCustomerUseCase;
+    private final UserMapper userMapper;
 
-    public AuthController(AuthenticationService authenticationService, RegisterCustomerUseCase registerCustomerUseCase) {
+    public AuthController(RegisterAirlineAdminUseCase registerAirlineAdminUseCase, AuthenticationService authenticationService, RegisterCustomerUseCase registerCustomerUseCase, UserMapper userMapper) {
+        this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
         this.authenticationService = authenticationService;
         this.registerCustomerUseCase = registerCustomerUseCase;
+        this.userMapper = userMapper;
     }
 
 
@@ -34,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterCustomerRequest request) {
+    public ResponseEntity<UserResponse> registerCustomer(@Valid @RequestBody RegisterUserRequest request) {
         User user = registerCustomerUseCase.execute(
                 request.email(),
                 request.password(),
@@ -48,12 +51,13 @@ public class AuthController {
                 request.gender());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new RegisterResponse(user.getId(), user.getEmail(), user.getRole().name()));  // 201
+                .body(userMapper.toRegisterResponse(user));  // 201
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterCustomerRequest request) {
-        User user = registerCustomerUseCase.execute(
+    @PostMapping("/register/{airlineId}")
+    public ResponseEntity<UserResponse> registerAirlineAdmin(@Valid @RequestBody RegisterUserRequest request, @PathVariable String airlineId) {
+        User user = registerAirlineAdminUseCase.execute(
+                airlineId,
                 request.email(),
                 request.password(),
                 request.idDocument(),
@@ -66,7 +70,7 @@ public class AuthController {
                 request.gender());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new RegisterResponse(user.getId(), user.getEmail(), user.getRole().name()));  // 201
+                .body(userMapper.toRegisterResponse(user));  // 201
     }
 
 }
