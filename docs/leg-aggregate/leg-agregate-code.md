@@ -24,10 +24,10 @@ direction TB
             + reduceAvailableSeats(int numPassengers) void
             + canRestoreAvailableSeats(int numPassengers) boolean
             + restoreAvailableSeats(int numPassengers) void
-            + releaseSeatOfPassenger(String idPassenger) void
+            + releaseSeatOfPassenger(PassengerBookingId occupant) void
             + getLegSeatById(String idLegSeat) Optional~LegSeat~
-            + assignSeat(String idLegSeat, String idPassenger) void
-            + hasSeatAssigned(String idPassenger) boolean
+            + assignSeat(String idLegSeat, PassengerBookingId occupant) void
+            + hasSeatAssigned(PassengerBookingId occupant) boolean
             + toSummary() LegSummary
         }
 
@@ -35,10 +35,18 @@ direction TB
             - String id
             - String seatCode
             - SeatStatus seatStatus
-            - Optional~String~ passengerId
+            - Optional~PassengerBookingId~ passengerBookingId
             + createLegSeat(String id, String seatCode) LegSeat$
-            + assignPassengerToLegSeat(String idPassenger) void
+            + reconstruct(id, seatCode, seatStatus, passengerId, bookingId) LegSeat$
+            + assignPassengerToLegSeat(PassengerBookingId occupant) void
             + releaseSeat() void
+            + isOccupiedBy(PassengerBookingId occupant) boolean
+        }
+
+        class PassengerBookingId {
+            - String bookingId
+            - String passengerDocument
+            + belongsToBooking(String bookingId) boolean
         }
 
         class SeatStatus {
@@ -78,6 +86,7 @@ direction TB
     Leg :<<AggregateRoot>> Leg
     LegSeat :<<Entity>> LegSeat
     SeatStatus :<<enumeration>> SeatStatus
+    PassengerBookingId :<<ValueObject>> PassengerBookingId
     Luggage :<<Entity>> Luggage
     Airport :<<enumeration>> Airport
     City :<<enumeration>> City
@@ -85,6 +94,7 @@ direction TB
     Leg "1" *-- "1" Luggage : luggage
     Leg "1" *-- "1..*" LegSeat : seats
     LegSeat "1" --> "1" SeatStatus : seatStatus
+    LegSeat "1" --> "0..1" PassengerBookingId : passengerBookingId
     Leg "1" --> "1" Airport : originAirport
     Leg "1" --> "1" Airport : destinationAirport
     Airport "1" --> "1" City : city
@@ -92,4 +102,4 @@ direction TB
     Leg ..> Airline : airlineId
 ```
 
-`LegSeat.passengerId` holds the passenger's document. `availableSeats` is reduced when a flight is selected, before any `LegSeat` is assigned.
+`LegSeat.passengerBookingId` holds who took the seat: the booking id and the passenger's document. The document alone is not enough, because the same person can be in two bookings on the same leg. An `OCCUPIED` seat with no `passengerBookingId` is blocked (the seed seats in `data.sql`). `availableSeats` is reduced when a flight is selected, before any `LegSeat` is assigned.
