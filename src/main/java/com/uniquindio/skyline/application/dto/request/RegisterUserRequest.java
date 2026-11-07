@@ -8,7 +8,7 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 // A new customer account. The role is not sent: every registered user is a CUSTOMER.
-public record RegisterCustomerRequest(
+public record RegisterUserRequest(
         @NotBlank(message = "The email is required")
         @Email(message = "The email is not valid")
         String email,
