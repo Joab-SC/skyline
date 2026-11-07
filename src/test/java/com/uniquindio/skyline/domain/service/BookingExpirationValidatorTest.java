@@ -12,6 +12,7 @@ import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.BookingStatus;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.TripType;
@@ -54,7 +55,8 @@ class BookingExpirationValidatorTest {
     @Test
     void shouldExpireBookingAndGiveSeatsBack() {
         // Arrange
-        Leg leg = saveLegWithSeatTakenBy("1001");
+        PassengerBookingId occupant = new PassengerBookingId("booking-1", "1001");
+        Leg leg = saveLegWithSeatTakenBy(occupant);
         Flight flight = saveFlight(leg);
         Booking booking = booking("booking-1", BookingStatus.PENDING, LocalDateTime.now().minusMinutes(1), flight.getId());
 
@@ -64,7 +66,7 @@ class BookingExpirationValidatorTest {
         // Assert
         assertEquals(BookingStatus.EXPIRED, booking.getBookingStatus());
         assertEquals(3, leg.getAvailableSeats());
-        assertFalse(leg.hasSeatAssigned("1001"));
+        assertFalse(leg.hasSeatAssigned(occupant));
         assertEquals(BookingStatus.EXPIRED,
                 bookingRepository.findById("booking-1").orElseThrow().getBookingStatus());
     }
@@ -72,17 +74,19 @@ class BookingExpirationValidatorTest {
     @Test
     void shouldNotExpireBookingBeforeDeadline() {
         // Arrange
-        Leg leg = saveLegWithSeatTakenBy("1001");
+        Leg leg = saveLegWithSeatTakenBy(null);
         Flight flight = saveFlight(leg);
         Booking booking = Booking.createPendingBooking(1, 500.0, flight.getId(), TripType.ONE_WAY);
         booking.addPassengers(List.of(new PassengerData("1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
                 "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE)));
+        PassengerBookingId occupant = new PassengerBookingId(booking.getId(), "1001");
+        leg.assignSeat(leg.getSeats().get(0).getId(), occupant);
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> validator.expire(booking));
         assertEquals(BookingStatus.PENDING, booking.getBookingStatus());
         assertEquals(2, leg.getAvailableSeats());
-        assertTrue(leg.hasSeatAssigned("1001"));
+        assertTrue(leg.hasSeatAssigned(occupant));
         assertTrue(bookingRepository.findById(booking.getId()).isEmpty());
     }
 
@@ -95,12 +99,15 @@ class BookingExpirationValidatorTest {
                 TripType.ONE_WAY, new ArrayList<>(), status, deadline, new ArrayList<>(), null);
     }
 
-    private Leg saveLegWithSeatTakenBy(String idPassenger) {
+    // occupant can be null when the booking that takes the seat is created after the leg.
+    private Leg saveLegWithSeatTakenBy(PassengerBookingId occupant) {
         Leg leg = Leg.createLeg(Airport.EL_EDEN, Airport.EL_DORADO,
                 LocalDateTime.of(2026, 11, 5, 10, 0), LocalDateTime.of(2026, 11, 5, 12, 0),
                 "aircraft-1", "AV", List.of(new Seat("001"), new Seat("002"), new Seat("003")), 2000, 3000);
         leg.reduceAvailableSeats(1);
-        leg.assignSeat(leg.getSeats().get(0).getId(), idPassenger);
+        if (occupant != null) {
+            leg.assignSeat(leg.getSeats().get(0).getId(), occupant);
+        }
         legRepository.save(leg);
         return leg;
     }

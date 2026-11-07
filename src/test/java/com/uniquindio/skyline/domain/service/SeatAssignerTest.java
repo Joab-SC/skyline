@@ -12,6 +12,7 @@ import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.TripType;
@@ -46,7 +47,7 @@ class SeatAssignerTest {
         seatAssigner.assignSeat(booking, seat.getId(), passenger, leg);
 
         // Assert
-        assertEquals(Optional.of("1001"), seat.getPassengerId());
+        assertEquals(Optional.of(new PassengerBookingId(booking.getId(), "1001")), seat.getPassengerBookingId());
         assertEquals(540.0, booking.getPrice(), 0.001);
     }
 
@@ -72,7 +73,7 @@ class SeatAssignerTest {
         seatAssigner.assignSeat(booking, seat.getId(), passenger, returnLeg);
 
         // Assert
-        assertEquals(Optional.of("1001"), seat.getPassengerId());
+        assertEquals(Optional.of(new PassengerBookingId(booking.getId(), "1001")), seat.getPassengerBookingId());
         assertEquals(870.0, booking.getPrice(), 0.001);
     }
 
@@ -96,8 +97,8 @@ class SeatAssignerTest {
         seatAssigner.assignSeat(booking, newSeat.getId(), passenger, leg);
 
         // Assert
-        assertEquals(Optional.empty(), oldSeat.getPassengerId());
-        assertEquals(Optional.of("1001"), newSeat.getPassengerId());
+        assertEquals(Optional.empty(), oldSeat.getPassengerBookingId());
+        assertEquals(Optional.of(new PassengerBookingId(booking.getId(), "1001")), newSeat.getPassengerBookingId());
         assertEquals(540.0, booking.getPrice(), 0.001);
     }
 
@@ -121,7 +122,7 @@ class SeatAssignerTest {
                 DomainRuleException.class,
                 () -> seatAssigner.assignSeat(booking, seat.getId(), passenger, otherLeg)
         );
-        assertEquals(Optional.empty(), seat.getPassengerId());
+        assertEquals(Optional.empty(), seat.getPassengerBookingId());
         assertEquals(500.0, booking.getPrice(), 0.001);
     }
 
@@ -136,7 +137,7 @@ class SeatAssignerTest {
         Booking booking = createBooking(flight.getId(), TripType.ONE_WAY);
         Passenger passenger = booking.getPassenger("1001").orElseThrow();
         LegSeat seat = leg.getSeats().get(0);
-        seat.assignPassengerToLegSeat("2002");
+        seat.assignPassengerToLegSeat(new PassengerBookingId("other-booking", "2002"));
 
         SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);
 
@@ -145,7 +146,7 @@ class SeatAssignerTest {
                 DomainRuleException.class,
                 () -> seatAssigner.assignSeat(booking, seat.getId(), passenger, leg)
         );
-        assertEquals(Optional.of("2002"), seat.getPassengerId());
+        assertEquals(Optional.of(new PassengerBookingId("other-booking", "2002")), seat.getPassengerBookingId());
         assertEquals(500.0, booking.getPrice(), 0.001);
     }
 
@@ -169,7 +170,7 @@ class SeatAssignerTest {
                 DomainRuleException.class,
                 () -> seatAssigner.assignSeat(booking, seat.getId(), passenger, leg)
         );
-        assertEquals(Optional.empty(), seat.getPassengerId());
+        assertEquals(Optional.empty(), seat.getPassengerBookingId());
     }
 
     @Test
@@ -194,7 +195,36 @@ class SeatAssignerTest {
                 DomainRuleException.class,
                 () -> seatAssigner.assignSeat(booking, seat.getId(), otherPassenger, leg)
         );
-        assertEquals(Optional.empty(), seat.getPassengerId());
+        assertEquals(Optional.empty(), seat.getPassengerBookingId());
+    }
+
+    @Test
+    void shouldChargeAndKeepOtherBookingSeatWhenSamePassengerIsInAnotherBooking() {
+        // Arrange
+        FlightRepository flightRepository = new FlightRepositoryInMemory();
+        AirlineRepository airlineRepository = new AirlineRepositoryInMemory();
+        Airline airline = createAirline(airlineRepository, 40.0);
+        Leg leg = createLeg(airline.getId(), Airport.EL_EDEN, Airport.EL_DORADO);
+        Flight flight = createFlight(flightRepository, leg);
+        Booking firstBooking = createBooking(flight.getId(), TripType.ONE_WAY);
+        Booking secondBooking = createBooking(flight.getId(), TripType.ONE_WAY);
+        LegSeat firstBookingSeat = leg.getSeats().get(0);
+        LegSeat secondBookingSeat = leg.getSeats().get(1);
+
+        SeatAssigner seatAssigner = new SeatAssigner(flightRepository, airlineRepository);
+        seatAssigner.assignSeat(firstBooking, firstBookingSeat.getId(),
+                firstBooking.getPassenger("1001").orElseThrow(), leg);
+
+        // Act
+        seatAssigner.assignSeat(secondBooking, secondBookingSeat.getId(),
+                secondBooking.getPassenger("1001").orElseThrow(), leg);
+
+        // Assert
+        assertEquals(Optional.of(new PassengerBookingId(firstBooking.getId(), "1001")),
+                firstBookingSeat.getPassengerBookingId());
+        assertEquals(Optional.of(new PassengerBookingId(secondBooking.getId(), "1001")),
+                secondBookingSeat.getPassengerBookingId());
+        assertEquals(540.0, secondBooking.getPrice(), 0.001);
     }
 
     private Airline createAirline(AirlineRepository airlineRepository, double priceSeats) {

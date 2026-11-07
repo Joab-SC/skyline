@@ -9,6 +9,7 @@ import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.DocumentType;
 import com.uniquindio.skyline.domain.valueObject.Gender;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.PassengerData;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
@@ -38,15 +39,15 @@ class BookingSeatsReleaserTest {
         Leg leg = saveLeg(Airport.EL_EDEN, Airport.EL_DORADO, DAY.atTime(10, 0));
         Flight flight = saveFlight(leg);
         Booking booking = bookingWithTwoPassengers(flight, TripType.ONE_WAY);
-        takeSeats(leg);
+        takeSeats(leg, booking);
 
         // Act
         releaser.releaseSeats(booking);
 
         // Assert
         assertEquals(4, leg.getAvailableSeats());
-        assertFalse(leg.hasSeatAssigned("1001"));
-        assertFalse(leg.hasSeatAssigned("1002"));
+        assertFalse(leg.hasSeatAssigned(occupant(booking, "1001")));
+        assertFalse(leg.hasSeatAssigned(occupant(booking, "1002")));
         assertTrue(leg.getSeats().stream().allMatch(seat -> seat.getSeatStatus() == SeatStatus.AVAILABLE));
     }
 
@@ -62,7 +63,7 @@ class BookingSeatsReleaserTest {
         Booking booking = bookingWithTwoPassengers(outboundFlight, TripType.ROUND_TRIP);
         booking.addReturnFlight(returnFlight.getId(), returnFlight.getPrice());
         List<Leg> legs = List.of(outboundLeg1, outboundLeg2, returnLeg);
-        legs.forEach(this::takeSeats);
+        legs.forEach(leg -> takeSeats(leg, booking));
 
         // Act
         releaser.releaseSeats(booking);
@@ -70,8 +71,8 @@ class BookingSeatsReleaserTest {
         // Assert
         for (Leg leg : legs) {
             assertEquals(4, leg.getAvailableSeats());
-            assertFalse(leg.hasSeatAssigned("1001"));
-            assertFalse(leg.hasSeatAssigned("1002"));
+            assertFalse(leg.hasSeatAssigned(occupant(booking, "1001")));
+            assertFalse(leg.hasSeatAssigned(occupant(booking, "1002")));
         }
     }
 
@@ -102,12 +103,32 @@ class BookingSeatsReleaserTest {
         Leg leg2 = saveLeg(Airport.EL_DORADO, Airport.JOSE_MARIA_CORDOVA, DAY.atTime(14, 0));
         Flight flight = saveFlight(leg1, leg2);
         Booking booking = bookingWithTwoPassengers(flight, TripType.ONE_WAY);
-        takeSeats(leg1); // leg2 is still full, so it cannot get seats back
+        takeSeats(leg1, booking); // leg2 is still full, so it cannot get seats back
 
         // Act & Assert
         assertThrows(DomainRuleException.class, () -> releaser.releaseSeats(booking));
         assertEquals(2, leg1.getAvailableSeats());
-        assertTrue(leg1.hasSeatAssigned("1001"));
+        assertTrue(leg1.hasSeatAssigned(occupant(booking, "1001")));
+    }
+
+    @Test
+    void shouldNotReleaseSeatOfSamePassengerInAnotherBooking() {
+        // Arrange
+        Leg leg = saveLeg(Airport.EL_EDEN, Airport.EL_DORADO, DAY.atTime(10, 0));
+        Flight flight = saveFlight(leg);
+        Booking booking = bookingWithTwoPassengers(flight, TripType.ONE_WAY);
+        Booking otherBooking = bookingWithTwoPassengers(flight, TripType.ONE_WAY);
+        takeSeats(leg, booking);
+        leg.reduceAvailableSeats(1);
+        leg.assignSeat(leg.getSeats().get(2).getId(), occupant(otherBooking, "1001"));
+
+        // Act
+        releaser.releaseSeats(booking);
+
+        // Assert
+        assertFalse(leg.hasSeatAssigned(occupant(booking, "1001")));
+        assertTrue(leg.hasSeatAssigned(occupant(otherBooking, "1001")));
+        assertEquals(SeatStatus.OCCUPIED, leg.getSeats().get(2).getSeatStatus());
     }
 
     private Leg createLeg(Airport origin, Airport destination, LocalDateTime departure) {
@@ -134,10 +155,14 @@ class BookingSeatsReleaserTest {
     }
 
     // Simulates what the booking took: the seat count and one seat per passenger.
-    private void takeSeats(Leg leg) {
+    private void takeSeats(Leg leg, Booking booking) {
         leg.reduceAvailableSeats(2);
-        leg.assignSeat(leg.getSeats().get(0).getId(), "1001");
-        leg.assignSeat(leg.getSeats().get(1).getId(), "1002");
+        leg.assignSeat(leg.getSeats().get(0).getId(), occupant(booking, "1001"));
+        leg.assignSeat(leg.getSeats().get(1).getId(), occupant(booking, "1002"));
+    }
+
+    private PassengerBookingId occupant(Booking booking, String idDocument) {
+        return new PassengerBookingId(booking.getId(), idDocument);
     }
 
     private PassengerData passengerData(String idDocument) {
