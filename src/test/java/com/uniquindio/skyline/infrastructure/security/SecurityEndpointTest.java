@@ -4,23 +4,36 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Loads the whole application, so the requests go through the real SecurityConfig.
-// GET /api/airlines/top (airline ranking) is only for ADMIN, and GET /api/bookings/mine only for CUSTOMER.
+// GET /api/airlines/top (airline ranking) and POST /api/airlines/{id}/admins are only for ADMIN,
+// and GET /api/bookings/mine only for CUSTOMER.
 @SpringBootTest
 @AutoConfigureMockMvc
 class SecurityEndpointTest {
 
     private static final String TOP_AIRLINES_URL = "/api/airlines/top";
     private static final String MY_BOOKINGS_URL = "/api/bookings/mine";
+    // The airline does not exist: an ADMIN gets past security and the use case answers 404.
+    private static final String REGISTER_ADMIN_URL = "/api/airlines/no-airline/admins";
+    private static final String REGISTER_ADMIN_JSON = """
+            {
+            "email": "admin@airline.com", "password": "Secret123",
+            "idDocument": "1001", "documentType": "CITIZENSHIP_ID",
+            "firstName": "Laura", "lastName1": "Duarte",
+            "birthDate": "2000-05-10", "gender": "FEMALE"
+            }
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -97,5 +110,42 @@ class SecurityEndpointTest {
                         .with(jwt().jwt(token -> token.claim(JwtTokenProvider.USER_ID_CLAIM, "customer1"))
                                 .authorities(customer)))
                 .andExpect(status().isOk());               // 200
+    }
+
+    // ---------- POST /api/airlines/{id}/admins: only ADMIN ----------
+
+    @Test
+    void registerAirlineAdminShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_ADMIN_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void registerAirlineAdminShouldAnswer403WhenRoleIsNotAdmin() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority airline = new SimpleGrantedAuthority("AIRLINE_ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_ADMIN_URL)
+                        .with(jwt().authorities(airline))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void registerAirlineAdminShouldLetAnAdminThrough() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority admin = new SimpleGrantedAuthority("ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_ADMIN_URL)
+                        .with(jwt().authorities(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isNotFound());         // 404: security passed, the airline does not exist
     }
 }
