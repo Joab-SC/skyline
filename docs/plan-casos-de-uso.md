@@ -7,12 +7,12 @@ Contexto para retomar el trabajo en otro chat.
 - Plataforma de reservas de vuelos. Spring Boot 4, Java 21, Gradle, Lombok, JPA con H2 en memoria.
 - Arquitectura hexagonal / DDD: `domain` (entidades, value objects, servicios, puertos), `application/usecase` (un caso de uso por clase con un método `execute`), `infrastructure` (JPA, REST).
 - Persistencia JPA completa para todas las entidades: `*Entity`, `*PersistenceMapper`, `*JpaDataRepository` y `*RepositoryJpa`. Los repositorios en memoria ya no son beans de Spring.
-- Pasajeros: `PersonEntity` es `@MappedSuperclass` y `PassengerEntity` hereda de ella. Cada pasajero es una "foto" de la persona en esa reserva.
-- La clave de `passengers` es compuesta `(booking_id, id_document)`, así que la misma persona puede estar en varias reservas.
+- Pasajeros: `PassengerEntity` tiene la persona embebida (`Person`). Cada pasajero es una "foto" de la persona en esa reserva.
+- La clave de `passengers` es compuesta `(booking_id, id_document)`, así que la misma persona puede estar en varias reservas. Por eso cada `LegSeat` guarda la reserva y el documento (`PassengerBookingId`), no solo el documento.
 - Plazo: 1 mes, haciendo también el front con ayuda de IA.
 - Los detalles de cada caso están en [use-cases/README.md](use-cases/README.md) y lo que falta en [pending.md](pending.md).
 
-## Casos de uso implementados (21)
+## Casos de uso implementados (26)
 
 | # | Caso de uso | Clase | Endpoint REST |
 |---|---|---|---|
@@ -37,8 +37,15 @@ Contexto para retomar el trabajo en otro chat.
 | 19 | Listar aerolíneas | `ListAirlinesUseCase` | `GET /api/airlines` |
 | 20 | Eliminar servicio extra (soft delete) | `DeleteExtraServiceUseCase` | `DELETE /api/extra_services/{extraServiceId}` |
 | 21 | Buscar servicios extra (paginado, texto y filtro por aerolínea) | `SearchExtraServicesUseCase` | `GET /api/extra_services` |
+| 22 | Registrar cliente | `RegisterCustomerUseCase` | `POST /api/auth/register` |
+| 23 | Iniciar sesión (JWT) | `AuthenticationService` | `POST /api/auth/login` |
+| 24 | Registrar admin de aerolínea (solo ADMIN) | `RegisterAirlineAdminUseCase` | `POST /api/airlines/{id}/admins` |
+| 25 | Registrar vendedor de aerolínea (solo AIRLINE_ADMIN) | `RegisterAirlineSellerUseCase` | `POST /api/airlines/sellers` |
+| 26 | Ver mis reservas (solo CUSTOMER) | `ListCustomerBookingsUseCase` | `GET /api/bookings/mine` |
 
-## Casos de uso por hacer en el mes (14)
+## Lo que queda
+
+Por ahora no se agregan casos de uso nuevos: se arregla lo que hay para que el front pueda hacer el flujo completo. Los arreglos están en [pending.md](pending.md).
 
 ### Prioridad 1 – Cerrar el flujo de compra (1)
 1. **Resumen de la reserva (`CalculateBooking`)**: precio desglosado (vuelos, asientos, equipaje, extras, impuestos) antes de pagar. Opcional: la reserva ya acumula el precio total.
@@ -46,15 +53,13 @@ Contexto para retomar el trabajo en otro chat.
 ### Prioridad 2 – Ciclo de vida de la reserva (2)
 Cancelar y expirar ya están implementados (casos 16 y 17).
 
-2. **Quitar o cambiar asiento de un pasajero.** Antes conviene arreglar `LegSeat`, que guarda solo el documento del pasajero (ver [pending.md](pending.md), Seats).
-3. **Quitar equipaje o un servicio extra de la reserva.**
+2. **Quitar o cambiar asiento de un pasajero.** Cambiar ya funciona (se sobrescribe). Quitar se hará enviando el asiento vacío (ver [pending.md](pending.md)).
+3. **Quitar equipaje o un servicio extra de la reserva.** Se hará enviando cantidad 0 (ver [pending.md](pending.md)).
 
-### Prioridad 3 – Usuarios y seguridad (5)
-4. **Registrar usuario**: `UserEntity` hereda de `PersonEntity`.
-5. **Iniciar sesión (login con JWT).**
-6. **Roles: administrador y cliente** (proteger endpoints de catálogo para admin).
-7. **Ver mis reservas** (las del usuario logueado). Obliga a que `Booking` tenga un dueño.
-8. **Ver y editar mi perfil.**
+### Prioridad 3 – Usuarios y seguridad
+Hecho: registro de cliente, login con JWT, roles (`ADMIN`, `AIRLINE_ADMIN`, `AIRLINE_SELLER`, `CUSTOMER`), registro de admin y vendedor de aerolínea, y ver mis reservas (casos 22 a 26).
+
+8. **Ver y editar mi perfil.** No se hará por ahora.
 
 ### Catálogo – Lo que necesita el front (6)
 `AircraftRepository` todavía no tiene `findAll`; `AirlineRepository` y `LegRepository` sí. Listar aerolíneas ya está implementado (caso 19).
@@ -67,10 +72,8 @@ Cancelar y expirar ya están implementados (casos 16 y 17).
 14. ~~Listar servicios extra~~ (hecho: búsqueda paginada, caso 21)
 15. Ver detalle de servicio extra
 
-### Opcional si sobra tiempo
-- Check-in simple del pasajero.
-
-**Total al final del mes: 35 casos de uso** (21 actuales + 14 nuevos).
+### Pospuesto
+- Check-in del pasajero. Primero va el front; si sobra tiempo se hace después.
 
 ## Fuera del mes (versión 2)
 
