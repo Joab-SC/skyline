@@ -14,7 +14,7 @@ Creates a leg (*trayecto*) operated by an aircraft and links it to an airline. T
 | `destinationAirport` | `Airport` | Destination airport. |
 | `departureTime` | `LocalDateTime` | Departure date and time. |
 | `arrivalTime` | `LocalDateTime` | Arrival date and time. |
-| `airlineId` | `String` | Airline that operates the leg. It is not in the request body: the controller takes it from the `airlineId` claim of the logged-in `AIRLINE` user's token. |
+| `airlineId` | `String` | Airline that operates the leg. It is not in the request body: the controller takes it from the `airlineId` claim of the token of the logged-in airline user (`AIRLINE_ADMIN` or `AIRLINE_SELLER`). |
 | `aircraftId` | `String` | Aircraft that flies the leg. |
 | `luggagePrice` | `double` | Price of one piece of luggage on this leg. |
 | `price` | `double` | Price of the leg. |
@@ -55,5 +55,5 @@ The use case is `@Transactional`: the leg and the airline are saved together, or
   - `price` and `luggagePrice` cannot be negative;
   - the leg id cannot already be in the airline.
 - The airline or the aircraft does not exist: `NoSuchElementException` (404 in REST).
-- Only `AIRLINE` users can call the endpoint (no token: 401, other role: 403). Since the airline comes from the token, an airline cannot use an aircraft of another airline (422).
+- Only airline users (`AIRLINE_ADMIN` or `AIRLINE_SELLER`) can call the endpoint (no token: 401, other role: 403). Since the airline comes from the token, an airline cannot use an aircraft of another airline (422).
 - Leg invariants: see [leg-aggregate/Invariants.md](../leg-aggregate/Invariants.md).
