@@ -6,11 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "leg_seats")
+
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
+@Table(name = "leg_seats")
 public class LegSeatEntity {
 
     @Id
@@ -26,4 +27,7 @@ public class LegSeatEntity {
 
     @Column(name = "passenger_id", length = 50)
     private String passengerId;
+
+    @Column(name = "booking_id", length = 36)
+    private String bookingId;
 }
