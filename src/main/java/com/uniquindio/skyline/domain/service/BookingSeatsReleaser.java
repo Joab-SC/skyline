@@ -7,6 +7,7 @@ import com.uniquindio.skyline.domain.entity.Passenger;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
 import com.uniquindio.skyline.domain.repository.LegRepository;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class BookingSeatsReleaser {
         for (Leg leg : legs){
             leg.restoreAvailableSeats(numPassengers);
             for (Passenger passenger : booking.getPassengerList()){
-                leg.releaseSeatOfPassenger(passenger.getPerson().getIdDocument());
+                leg.releaseSeatOfPassenger(new PassengerBookingId(booking.getId(), passenger.getPerson().getIdDocument()));
             }
             legRepository.save(leg);
         }

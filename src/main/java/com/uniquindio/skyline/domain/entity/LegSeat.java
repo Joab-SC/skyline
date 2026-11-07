@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 import lombok.Getter;
 
@@ -11,13 +12,13 @@ public class LegSeat {
     private String id;
     private String seatCode;
     private SeatStatus seatStatus;
-    private Optional<String> passengerId;
+    private Optional<PassengerBookingId> passengerBookingId;
 
     private LegSeat(String id, String seatCode) {
         this.id = id;
         this.seatCode = seatCode;
         this.seatStatus = SeatStatus.AVAILABLE;
-        this.passengerId = Optional.empty();
+        this.passengerBookingId = Optional.empty();
     }
 
     // Creates an available leg seat.
@@ -33,28 +34,36 @@ public class LegSeat {
     }
 
     // Rebuilds a leg seat that was already persisted, with its status and passenger.
-    public static LegSeat reconstruct(String id, String seatCode, SeatStatus seatStatus, String passengerId) {
+    public static LegSeat reconstruct(String id, String seatCode, SeatStatus seatStatus, String passengerId, String bookingId) {
         LegSeat legSeat = new LegSeat(id, seatCode);
         legSeat.seatStatus = seatStatus;
-        legSeat.passengerId = Optional.ofNullable(passengerId);
+        if (bookingId != null && passengerId != null) {
+            legSeat.passengerBookingId = Optional.of(new PassengerBookingId(bookingId, passengerId));
+        }
         return legSeat;
     }
 
-    public void assignPassengerToLegSeat(String idPassenger){
-         if (idPassenger == null || idPassenger.isBlank()){
-             throw new DomainRuleException("id passenger cannot be null");
+    public void assignPassengerToLegSeat(PassengerBookingId passengerBookingId) {
+         if (passengerBookingId == null) {
+             throw new DomainRuleException("The passenger of the booking is required");
          }
          if (this.seatStatus == SeatStatus.OCCUPIED){
              throw new DomainRuleException("The seat is alredy occupied");
          }
-         this.passengerId = Optional.of(idPassenger);
+         this.passengerBookingId = Optional.of(passengerBookingId);
          this.seatStatus = SeatStatus.OCCUPIED;
     }
 
     public void releaseSeat(){
-        this.passengerId = Optional.empty();
+        this.passengerBookingId = Optional.empty();
         this.seatStatus = SeatStatus.AVAILABLE;
     }
+
+    public boolean isOccupiedBy(PassengerBookingId passengerBookingId) {
+        return this.passengerBookingId.map(occupant -> occupant.equals(passengerBookingId)).orElse(false);
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
