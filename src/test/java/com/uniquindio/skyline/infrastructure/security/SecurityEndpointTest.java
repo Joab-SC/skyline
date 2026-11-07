@@ -8,6 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // Loads the whole application, so the requests go through the real SecurityConfig.
 // GET /api/airlines/top (airline ranking) and POST /api/airlines/{id}/admins are only for ADMIN,
+// POST /api/airlines/sellers only for AIRLINE_ADMIN,
 // and GET /api/bookings/mine only for CUSTOMER.
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,6 +29,7 @@ class SecurityEndpointTest {
     private static final String MY_BOOKINGS_URL = "/api/bookings/mine";
     // The airline does not exist: an ADMIN gets past security and the use case answers 404.
     private static final String REGISTER_ADMIN_URL = "/api/airlines/no-airline/admins";
+    private static final String REGISTER_SELLER_URL = "/api/airlines/sellers";
     private static final String REGISTER_ADMIN_JSON = """
             {
             "email": "admin@airline.com", "password": "Secret123",
@@ -147,5 +151,57 @@ class SecurityEndpointTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(REGISTER_ADMIN_JSON))
                 .andExpect(status().isNotFound());         // 404: security passed, the airline does not exist
+    }
+
+    // ---------- POST /api/airlines/sellers: only AIRLINE_ADMIN ----------
+
+    // A new email each time, because the context (and the database) is shared.
+    private String sellerJson() {
+        return """
+                {
+                "email": "seller-%s@airline.com", "password": "Secret123",
+                "idDocument": "1001", "documentType": "CITIZENSHIP_ID",
+                "firstName": "Laura", "lastName1": "Duarte",
+                "birthDate": "2000-05-10", "gender": "FEMALE"
+                }
+                """.formatted(UUID.randomUUID());
+    }
+
+    @Test
+    void registerSellerShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sellerJson()))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void registerSellerShouldAnswer403WhenRoleIsNotAirlineAdmin() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority admin = new SimpleGrantedAuthority("ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .with(jwt().authorities(admin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sellerJson()))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void registerSellerShouldAnswer201WhenRoleIsAirlineAdmin() throws Exception {
+        // Arrange: airline-latam is one of the initial airlines.
+        SimpleGrantedAuthority airlineAdmin = new SimpleGrantedAuthority("AIRLINE_ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-latam"))
+                                .authorities(airlineAdmin))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(sellerJson()))
+                .andExpect(status().isCreated())           // 201
+                .andExpect(jsonPath("$.role").value("AIRLINE_SELLER"))
+                .andExpect(jsonPath("$.airlineId").value("airline-latam"));
     }
 }
