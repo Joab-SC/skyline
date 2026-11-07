@@ -4,7 +4,6 @@ import com.uniquindio.skyline.application.dto.request.LoginRequest;
 import com.uniquindio.skyline.application.dto.request.RegisterUserRequest;
 import com.uniquindio.skyline.application.dto.response.UserResponse;
 import com.uniquindio.skyline.application.dto.response.TokenResponse;
-import com.uniquindio.skyline.application.usecase.RegisterAirlineAdminUseCase;
 import com.uniquindio.skyline.application.usecase.RegisterCustomerUseCase;
 import com.uniquindio.skyline.domain.entity.User;
 import com.uniquindio.skyline.infrastructure.rest.mapper.UserMapper;
@@ -18,13 +17,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
     private final AuthenticationService authenticationService;
     private final RegisterCustomerUseCase registerCustomerUseCase;
     private final UserMapper userMapper;
 
-    public AuthController(RegisterAirlineAdminUseCase registerAirlineAdminUseCase, AuthenticationService authenticationService, RegisterCustomerUseCase registerCustomerUseCase, UserMapper userMapper) {
-        this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
+    public AuthController(AuthenticationService authenticationService, RegisterCustomerUseCase registerCustomerUseCase, UserMapper userMapper) {
         this.authenticationService = authenticationService;
         this.registerCustomerUseCase = registerCustomerUseCase;
         this.userMapper = userMapper;
@@ -39,25 +36,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponse> registerCustomer(@Valid @RequestBody RegisterUserRequest request) {
         User user = registerCustomerUseCase.execute(
-                request.email(),
-                request.password(),
-                request.idDocument(),
-                request.documentType(),
-                request.firstName(),
-                request.secondName(),
-                request.lastName1(),
-                request.lastName2(),
-                request.birthDate(),
-                request.gender());
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.toRegisterResponse(user));  // 201
-    }
-
-    @PostMapping("/register/{airlineId}")
-    public ResponseEntity<UserResponse> registerAirlineAdmin(@Valid @RequestBody RegisterUserRequest request, @PathVariable String airlineId) {
-        User user = registerAirlineAdminUseCase.execute(
-                airlineId,
                 request.email(),
                 request.password(),
                 request.idDocument(),
