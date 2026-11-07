@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import lombok.Getter;
 
@@ -93,8 +94,8 @@ public class Leg {
     }
 
     // Frees the seat the passenger holds on this leg, if any.
-    public void releaseSeatOfPassenger(String idPassenger){
-        getLegSeatByPassenger(idPassenger).ifPresent(LegSeat::releaseSeat);
+    public void releaseSeatOfPassenger(PassengerBookingId passengerBookingId){
+        getLegSeatByPassenger(passengerBookingId).ifPresent(LegSeat::releaseSeat);
     }
 
     public Optional<LegSeat> getLegSeatById(String idLegSeat){
@@ -105,24 +106,22 @@ public class Leg {
 
     // Assigns the seat to the passenger. If the passenger already had a seat on this leg,
     // the old one is released after the new one is taken.
-    public void assignSeat(String idLegSeat, String idPassenger){
+    public void assignSeat(String idLegSeat, PassengerBookingId passengerBookingId){
         LegSeat newLegSeat = getLegSeatById(idLegSeat).orElseThrow();
-        Optional<LegSeat> currentLegSeat = getLegSeatByPassenger(idPassenger);
+        Optional<LegSeat> currentLegSeat = getLegSeatByPassenger(passengerBookingId);
         if (currentLegSeat.isPresent() && currentLegSeat.get().equals(newLegSeat)){
             return;
         }
-        newLegSeat.assignPassengerToLegSeat(idPassenger);
+        newLegSeat.assignPassengerToLegSeat(passengerBookingId);
         currentLegSeat.ifPresent(LegSeat::releaseSeat);
     }
 
-    private Optional<LegSeat> getLegSeatByPassenger(String idPassenger){
-        return seats.stream()
-                .filter(legSeat -> legSeat.getPassengerId().map(id -> id.equals(idPassenger)).orElse(false))
-                .findFirst();
+    private Optional<LegSeat> getLegSeatByPassenger(PassengerBookingId occupant) {
+        return seats.stream().filter(seat -> seat.isOccupiedBy(occupant)).findFirst();
     }
 
-    public boolean hasSeatAssigned(String idPassenger){
-        return getLegSeatByPassenger(idPassenger).isPresent();
+    public boolean hasSeatAssigned(PassengerBookingId passengerBookingId){
+        return getLegSeatByPassenger(passengerBookingId).isPresent();
     }
 
     private static void validateOriginAirport(Airport originAirport) {

@@ -5,6 +5,7 @@ import com.uniquindio.skyline.domain.entity.LegSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Seat;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.LegPersistenceMapper;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.LegSeatPersistenceMapper;
@@ -100,7 +101,7 @@ class LegRepositoryDataJpaTest {
             LegSeat recoveredSeat = recovered.getLegSeatById(seat.getId()).orElseThrow();
             assertEquals(seat.getSeatCode(), recoveredSeat.getSeatCode());
             assertEquals(SeatStatus.AVAILABLE, recoveredSeat.getSeatStatus());
-            assertTrue(recoveredSeat.getPassengerId().isEmpty());
+            assertTrue(recoveredSeat.getPassengerBookingId().isEmpty());
         }
     }
 
@@ -111,13 +112,14 @@ class LegRepositoryDataJpaTest {
         String seatId = leg.getSeats().getFirst().getId();
 
         // Act
-        leg.assignSeat(seatId, "passenger-01");
+        PassengerBookingId occupant = new PassengerBookingId("booking-01", "passenger-01");
+        leg.assignSeat(seatId, occupant);
         Leg recovered = saveAndRecover(leg);
 
         // Assert
         LegSeat recoveredSeat = recovered.getLegSeatById(seatId).orElseThrow();
         assertEquals(SeatStatus.OCCUPIED, recoveredSeat.getSeatStatus());
-        assertEquals(Optional.of("passenger-01"), recoveredSeat.getPassengerId());
+        assertEquals(Optional.of(occupant), recoveredSeat.getPassengerBookingId());
     }
 
     @Test
@@ -166,8 +168,9 @@ class LegRepositoryDataJpaTest {
         LegSeat occupied = leg.getLegSeatById("seat-bog-mde-1C").orElseThrow();
         assertEquals("1C", occupied.getSeatCode());
         assertEquals(SeatStatus.OCCUPIED, occupied.getSeatStatus());
-        assertEquals(Optional.of("passenger-01"), occupied.getPassengerId());
-        assertTrue(leg.getLegSeatById("seat-bog-mde-1A").orElseThrow().getPassengerId().isEmpty());
+        // data.sql has no booking for this seat, so it is loaded as occupied with no occupant.
+        assertTrue(occupied.getPassengerBookingId().isEmpty());
+        assertTrue(leg.getLegSeatById("seat-bog-mde-1A").orElseThrow().getPassengerBookingId().isEmpty());
     }
 
 

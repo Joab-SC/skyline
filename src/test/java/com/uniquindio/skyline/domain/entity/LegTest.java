@@ -2,6 +2,7 @@ package com.uniquindio.skyline.domain.entity;
 
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.valueObject.Airport;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.SeatStatus;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class LegTest {
+
+    private static final PassengerBookingId PASSENGER_1001 = new PassengerBookingId("booking-1", "1001");
+    private static final PassengerBookingId PASSENGER_2002 = new PassengerBookingId("booking-1", "2002");
 
     @Test
     void legIsCreatedWithSameSizeOfAircraftSeats() {
@@ -92,31 +96,31 @@ public class LegTest {
         LegSeat seat = leg.getSeats().get(0);
 
         // Act
-        leg.assignSeat(seat.getId(), "1001");
+        leg.assignSeat(seat.getId(), PASSENGER_1001);
 
         // Assert
-        assertEquals(Optional.of("1001"), seat.getPassengerId());
+        assertEquals(Optional.of(PASSENGER_1001), seat.getPassengerBookingId());
         assertEquals(SeatStatus.OCCUPIED, seat.getSeatStatus());
-        assertTrue(leg.hasSeatAssigned("1001"));
+        assertTrue(leg.hasSeatAssigned(PASSENGER_1001));
     }
 
     @Test
     void shouldThrowExceptionWhenAssigningNonExistentSeat() {
         Leg leg = createLegWithSeats();
 
-        assertThrows(NoSuchElementException.class, () -> leg.assignSeat("non-existent-seat", "1001"));
-        assertFalse(leg.hasSeatAssigned("1001"));
+        assertThrows(NoSuchElementException.class, () -> leg.assignSeat("non-existent-seat", PASSENGER_1001));
+        assertFalse(leg.hasSeatAssigned(PASSENGER_1001));
     }
 
     @Test
     void shouldThrowExceptionWhenSeatIsOccupiedByAnotherPassenger() {
         Leg leg = createLegWithSeats();
         LegSeat seat = leg.getSeats().get(0);
-        leg.assignSeat(seat.getId(), "1001");
+        leg.assignSeat(seat.getId(), PASSENGER_1001);
 
-        assertThrows(DomainRuleException.class, () -> leg.assignSeat(seat.getId(), "2002"));
-        assertEquals(Optional.of("1001"), seat.getPassengerId());
-        assertFalse(leg.hasSeatAssigned("2002"));
+        assertThrows(DomainRuleException.class, () -> leg.assignSeat(seat.getId(), PASSENGER_2002));
+        assertEquals(Optional.of(PASSENGER_1001), seat.getPassengerBookingId());
+        assertFalse(leg.hasSeatAssigned(PASSENGER_2002));
     }
 
     @Test
@@ -125,15 +129,15 @@ public class LegTest {
         Leg leg = createLegWithSeats();
         LegSeat oldSeat = leg.getSeats().get(0);
         LegSeat newSeat = leg.getSeats().get(1);
-        leg.assignSeat(oldSeat.getId(), "1001");
+        leg.assignSeat(oldSeat.getId(), PASSENGER_1001);
 
         // Act
-        leg.assignSeat(newSeat.getId(), "1001");
+        leg.assignSeat(newSeat.getId(), PASSENGER_1001);
 
         // Assert
-        assertEquals(Optional.of("1001"), newSeat.getPassengerId());
+        assertEquals(Optional.of(PASSENGER_1001), newSeat.getPassengerBookingId());
         assertEquals(SeatStatus.OCCUPIED, newSeat.getSeatStatus());
-        assertEquals(Optional.empty(), oldSeat.getPassengerId());
+        assertEquals(Optional.empty(), oldSeat.getPassengerBookingId());
         assertEquals(SeatStatus.AVAILABLE, oldSeat.getSeatStatus());
     }
 
@@ -142,22 +146,22 @@ public class LegTest {
         Leg leg = createLegWithSeats();
         LegSeat ownSeat = leg.getSeats().get(0);
         LegSeat takenSeat = leg.getSeats().get(1);
-        leg.assignSeat(ownSeat.getId(), "1001");
-        leg.assignSeat(takenSeat.getId(), "2002");
+        leg.assignSeat(ownSeat.getId(), PASSENGER_1001);
+        leg.assignSeat(takenSeat.getId(), PASSENGER_2002);
 
-        assertThrows(DomainRuleException.class, () -> leg.assignSeat(takenSeat.getId(), "1001"));
-        assertEquals(Optional.of("1001"), ownSeat.getPassengerId());
-        assertEquals(Optional.of("2002"), takenSeat.getPassengerId());
+        assertThrows(DomainRuleException.class, () -> leg.assignSeat(takenSeat.getId(), PASSENGER_1001));
+        assertEquals(Optional.of(PASSENGER_1001), ownSeat.getPassengerBookingId());
+        assertEquals(Optional.of(PASSENGER_2002), takenSeat.getPassengerBookingId());
     }
 
     @Test
     void shouldDoNothingWhenPassengerChoosesTheSameSeat() {
         Leg leg = createLegWithSeats();
         LegSeat seat = leg.getSeats().get(0);
-        leg.assignSeat(seat.getId(), "1001");
+        leg.assignSeat(seat.getId(), PASSENGER_1001);
 
-        assertDoesNotThrow(() -> leg.assignSeat(seat.getId(), "1001"));
-        assertEquals(Optional.of("1001"), seat.getPassengerId());
+        assertDoesNotThrow(() -> leg.assignSeat(seat.getId(), PASSENGER_1001));
+        assertEquals(Optional.of(PASSENGER_1001), seat.getPassengerBookingId());
         assertEquals(SeatStatus.OCCUPIED, seat.getSeatStatus());
     }
 
@@ -165,7 +169,43 @@ public class LegTest {
     void passengerHasNoSeatAssignedByDefault() {
         Leg leg = createLegWithSeats();
 
-        assertFalse(leg.hasSeatAssigned("1001"));
+        assertFalse(leg.hasSeatAssigned(PASSENGER_1001));
+    }
+
+    @Test
+    void samePassengerInAnotherBookingDoesNotReleaseTheFirstSeat() {
+        // Arrange
+        Leg leg = createLegWithSeats();
+        LegSeat firstBookingSeat = leg.getSeats().get(0);
+        LegSeat secondBookingSeat = leg.getSeats().get(1);
+        PassengerBookingId sameDocumentOtherBooking = new PassengerBookingId("booking-2", "1001");
+        leg.assignSeat(firstBookingSeat.getId(), PASSENGER_1001);
+
+        // Act
+        leg.assignSeat(secondBookingSeat.getId(), sameDocumentOtherBooking);
+
+        // Assert
+        assertEquals(Optional.of(PASSENGER_1001), firstBookingSeat.getPassengerBookingId());
+        assertEquals(SeatStatus.OCCUPIED, firstBookingSeat.getSeatStatus());
+        assertEquals(Optional.of(sameDocumentOtherBooking), secondBookingSeat.getPassengerBookingId());
+    }
+
+    @Test
+    void releasingAPassengerDoesNotReleaseTheSameDocumentInAnotherBooking() {
+        // Arrange
+        Leg leg = createLegWithSeats();
+        LegSeat firstBookingSeat = leg.getSeats().get(0);
+        LegSeat secondBookingSeat = leg.getSeats().get(1);
+        PassengerBookingId sameDocumentOtherBooking = new PassengerBookingId("booking-2", "1001");
+        leg.assignSeat(firstBookingSeat.getId(), PASSENGER_1001);
+        leg.assignSeat(secondBookingSeat.getId(), sameDocumentOtherBooking);
+
+        // Act
+        leg.releaseSeatOfPassenger(sameDocumentOtherBooking);
+
+        // Assert
+        assertEquals(SeatStatus.OCCUPIED, firstBookingSeat.getSeatStatus());
+        assertEquals(SeatStatus.AVAILABLE, secondBookingSeat.getSeatStatus());
     }
 
     private Leg createLegWithSeats() {

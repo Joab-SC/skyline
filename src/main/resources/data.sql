@@ -49,15 +49,16 @@ INSERT INTO luggages (id, price, leg_id) VALUES
     ('luggage-mde-ctg-01', 90000, 'leg-mde-ctg-01'),
     ('luggage-bog-cli-01', 70000, 'leg-bog-cli-01');
 
--- Seats per leg (passenger_id is set only on OCCUPIED seats)
-INSERT INTO leg_seats (id, seat_code, seat_status, passenger_id, leg_id) VALUES
-    ('seat-bog-mde-1A', '1A', 'AVAILABLE', NULL, 'leg-bog-mde-01'),
-    ('seat-bog-mde-1B', '1B', 'AVAILABLE', NULL, 'leg-bog-mde-01'),
-    ('seat-bog-mde-1C', '1C', 'OCCUPIED', 'passenger-01', 'leg-bog-mde-01'),
-    ('seat-bog-mde-2A', '2A', 'AVAILABLE', NULL, 'leg-bog-mde-01'),
-    ('seat-mde-ctg-1A', '1A', 'OCCUPIED', 'passenger-02', 'leg-mde-ctg-01'),
-    ('seat-mde-ctg-1B', '1B', 'AVAILABLE', NULL, 'leg-mde-ctg-01'),
-    ('seat-bog-cli-1A', '1A', 'OCCUPIED', 'passenger-03', 'leg-bog-cli-01');
+-- Seats per leg. A seat taken in a booking has booking_id and passenger_id.
+-- The OCCUPIED seats below have no booking: they are blocked by the airline.
+INSERT INTO leg_seats (id, seat_code, seat_status, booking_id, passenger_id, leg_id) VALUES
+    ('seat-bog-mde-1A', '1A', 'AVAILABLE', NULL, NULL, 'leg-bog-mde-01'),
+    ('seat-bog-mde-1B', '1B', 'AVAILABLE', NULL, NULL, 'leg-bog-mde-01'),
+    ('seat-bog-mde-1C', '1C', 'OCCUPIED', NULL, NULL, 'leg-bog-mde-01'),
+    ('seat-bog-mde-2A', '2A', 'AVAILABLE', NULL, NULL, 'leg-bog-mde-01'),
+    ('seat-mde-ctg-1A', '1A', 'OCCUPIED', NULL, NULL, 'leg-mde-ctg-01'),
+    ('seat-mde-ctg-1B', '1B', 'AVAILABLE', NULL, NULL, 'leg-mde-ctg-01'),
+    ('seat-bog-cli-1A', '1A', 'OCCUPIED', NULL, NULL, 'leg-bog-cli-01');
 
 -- Extra services (description is optional)
 -- Extra services (description is optional). A deleted service is no longer offered, but old bookings keep it.

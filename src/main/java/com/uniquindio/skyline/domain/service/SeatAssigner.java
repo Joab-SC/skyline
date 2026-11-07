@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.entity.*;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
 import com.uniquindio.skyline.domain.repository.AirlineRepository;
 import com.uniquindio.skyline.domain.repository.FlightRepository;
+import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
 
 import java.util.List;
 
@@ -33,9 +34,10 @@ public class SeatAssigner {
             throw new DomainRuleException("Leg have to be on the booking");
         }
         Airline airline = airlineRepository.findById(leg.getAirlineId()).orElseThrow();
-        boolean hadSeat = leg.hasSeatAssigned(passenger.getPerson().getIdDocument());
+        PassengerBookingId passengerBookingId = new PassengerBookingId(booking.getId(),passenger.getPerson().getIdDocument());
+        boolean hadSeat = leg.hasSeatAssigned(passengerBookingId);
         double priceSeats = airline.getPriceSeats();
-        leg.assignSeat(idLegSeat, passenger.getPerson().getIdDocument());
+        leg.assignSeat(idLegSeat, passengerBookingId);
         if (!hadSeat){
             booking.addPriceSeats(airline.getPriceSeats());
         }
