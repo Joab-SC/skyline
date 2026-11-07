@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,6 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AirlineControllerTest {
 
     private static final String REGISTER_ADMIN_URL = "/api/airlines/airline-1/admins";
+    private static final String REGISTER_SELLER_URL = "/api/airlines/sellers";
+    private static final JwtAuthenticationToken AIRLINE_ADMIN = JwtTestTokens.airlineUser("airline-1");
 
     private static final String REGISTER_ADMIN_JSON = """
             {
@@ -69,6 +72,9 @@ public class AirlineControllerTest {
 
     @MockitoBean
     private RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
+
+    @MockitoBean
+    private RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
 
     @MockitoBean
     private UserMapper userMapper;
@@ -323,6 +329,96 @@ public class AirlineControllerTest {
 
         // Act & Assert
         mockMvc.perform(post(REGISTER_ADMIN_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isUnprocessableContent())  // 422
+                .andExpect(jsonPath("$.message").value("The password must have a number"));
+    }
+
+    // ---------- POST /api/airlines/sellers ----------
+
+    @Test
+    void shouldAnswer201WhenSellerIsRegisteredInTheAirlineOfTheToken() throws Exception {
+        // Arrange: the airline is not in the request, it comes from the token.
+        User user = mock(User.class);
+        when(registerAirlineSellerUseCase.execute("airline-1", "laura@mail.com", "Secret123", "1001",
+                DocumentType.CITIZENSHIP_ID, "Laura", "Camila", "Duarte", "Quintero",
+                LocalDate.of(2000, 5, 10), Gender.FEMALE)).thenReturn(user);
+        when(userMapper.toRegisterResponse(user))
+                .thenReturn(new UserResponse("user-1", "laura@mail.com", "AIRLINE_SELLER", "airline-1"));
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .principal(AIRLINE_ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isCreated())           // 201
+                .andExpect(jsonPath("$.role").value("AIRLINE_SELLER"))
+                .andExpect(jsonPath("$.airlineId").value("airline-1"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+        verify(userMapper).toRegisterResponse(user);
+    }
+
+    @Test
+    void shouldAnswer400WhenSellerRequestIsInvalid() throws Exception {
+        // Arrange
+        String requestJson = """
+                {
+                "email": "not-an-email", "password": "Secret123",
+                "idDocument": "1001", "documentType": "CITIZENSHIP_ID",
+                "firstName": "Laura", "lastName1": "Duarte",
+                "birthDate": "2000-05-10", "gender": "FEMALE"
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .principal(AIRLINE_ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
+                .andExpect(status().isBadRequest())        // 400
+                .andExpect(jsonPath("$.errors.email").value("The email is not valid"));
+        verifyNoInteractions(registerAirlineSellerUseCase);
+    }
+
+    @Test
+    void shouldAnswer404WhenAirlineOfTheSellerDoesNotExist() throws Exception {
+        // Arrange
+        when(registerAirlineSellerUseCase.execute(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .principal(AIRLINE_ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswer409WhenSellerEmailIsAlreadyRegistered() throws Exception {
+        // Arrange
+        when(registerAirlineSellerUseCase.execute(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new EmailAlreadyRegisteredException());
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .principal(AIRLINE_ADMIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(REGISTER_ADMIN_JSON))
+                .andExpect(status().isConflict())          // 409
+                .andExpect(jsonPath("$.message").value("The email is already registered"));
+    }
+
+    @Test
+    void shouldAnswer422WhenSellerBreaksABusinessRule() throws Exception {
+        // Arrange
+        when(registerAirlineSellerUseCase.execute(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new DomainRuleException("The password must have a number"));
+
+        // Act & Assert
+        mockMvc.perform(post(REGISTER_SELLER_URL)
+                        .principal(AIRLINE_ADMIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(REGISTER_ADMIN_JSON))
                 .andExpect(status().isUnprocessableContent())  // 422
