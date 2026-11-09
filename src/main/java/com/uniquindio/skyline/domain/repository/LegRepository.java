@@ -11,4 +11,5 @@ public interface LegRepository {
     List<Leg> findLegsByAircraft(String idAircraft);
     List<Leg> findAll();
     List<Leg> findLegsWithAtLeastAvailableSeats(int minimumSeats);
+    List<BookingSeat> findSeatsByBookingId(String bookingId);
 }
