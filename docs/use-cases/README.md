@@ -20,7 +20,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 12 | [CreateExtraService](create-extra-service.md) | Creates an extra service with national and international prices and adds it to an airline. | `AirlineRepository` | `POST /api/extra_services` | Implemented |
 | 13 | [GetLegSeatMap](get-leg-seat-map.md) | Returns a leg's seats with their status so the client can pick one. | `LegRepository` | `GET /api/legs/{id}/seats` | Implemented |
 | 14 | [ListAirlineExtraServices](list-airline-extra-services.md) | Returns an airline's extra services so the client can choose them. | `AirlineRepository` | `GET /api/airlines/{id}/extra-services` | Implemented |
-| 15 | [GetBooking](get-booking.md) | Returns a booking with its current state. | `BookingRepository` | `GET /api/bookings/{id}` | Implemented |
+| 15 | [GetBooking](get-booking.md) | Returns a booking with its current state and each passenger's seats. | `BookingRepository`, `LegRepository` | `GET /api/bookings/{id}` | Implemented |
 | 16 | [CreateAirline](create-airline.md) | Creates an airline with its maximum luggage amount and seat price. | `AirlineRepository` | `POST /api/airlines` | Implemented |
 | 17 | [ExpireBooking](expire-booking.md) | Expires a `PENDING` booking whose payment deadline passed and returns its seats, like CancelBooking. | `BookingRepository`, `FlightRepository`, `LegRepository` | — (scheduled every 10 s) | Implemented |
 | 18 | [GetTopAirlines](get-top-airlines.md) | Returns the airlines with the most aircraft, most first (report). | `AirlineRepository` | `GET /api/airlines/top` | Implemented |

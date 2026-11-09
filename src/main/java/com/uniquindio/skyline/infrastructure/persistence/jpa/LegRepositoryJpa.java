@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
 import com.uniquindio.skyline.domain.entity.Leg;
+import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.LegPersistenceMapper;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +47,10 @@ public class LegRepositoryJpa implements LegRepository {
     public List<Leg> findLegsWithAtLeastAvailableSeats(int minimumSeats) {
         return dataRepository.findByAvailableSeatsGreaterThanEqual(minimumSeats).stream()
                 .map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public List<BookingSeat> findSeatsByBookingId(String bookingId) {
+        return dataRepository.findSeatsByBookingId(bookingId);
     }
 }

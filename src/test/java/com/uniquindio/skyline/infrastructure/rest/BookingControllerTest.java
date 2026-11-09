@@ -1,5 +1,6 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
+import com.uniquindio.skyline.application.dto.result.BookingDetail;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -541,13 +542,16 @@ public class BookingControllerTest {
 
     @Test
     void shouldAnswer200WhenBookingExists() throws Exception{
+        // Arrange
         Booking booking = Booking.createPendingBooking(1, 200, "flight-1", TripType.ONE_WAY);
-        when(getBookingUseCase.execute("booking-1")).thenReturn(booking);
+        BookingDetail detail = new BookingDetail(booking, List.of());
+        when(getBookingUseCase.execute("booking-1")).thenReturn(detail);
 
+        // Act & Assert
         mockMvc.perform(get("/api/bookings/booking-1"))
                 .andExpect(status().isOk());               // 200
 
-        verify(mapper).toBookingResponse(booking);
+        verify(mapper).toBookingDetailResponse(detail);
     }
 
     @Test

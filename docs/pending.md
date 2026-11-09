@@ -5,7 +5,7 @@ Open items in the code and docs. Each use case is described in [use-cases/README
 No new features for now: the goal is to fix what exists so the front can run the whole booking flow.
 
 ## Close the purchase
-- [ ] Show each passenger's seat per leg in the booking response. Seats live in `LegSeat`, so `GET /api/bookings/{id}` does not show them, and the front cannot tell "my seat" from "taken by someone else" in the seat map. `LegSeat` now stores the booking id, so the seats of a booking can be found by it. → `BookingResponse`, `GetBookingUseCase`
+- [ ] Only `GET /api/bookings/{id}` shows each passenger's seats (`BookingDetailResponse`). The other booking endpoints (`POST /api/bookings`, return flight, passengers, seats, luggage, extra services, cancel, payment) still return `BookingResponse` without seats, so the front must call GET again to see them. Plan: each endpoint runs its command use case, then `GetBookingUseCase`, and maps the result with `toBookingDetailResponse`. → `BookingController`
 
 ## Changing a booking (overwrite instead of error)
 Selecting the outbound or return flight again stays an error (the return flight already throws "The booking already has a return flight"). Seats, extra services and luggage are overwritten, and an empty value removes what was chosen, because the user may have chosen by mistake or wants to change it.

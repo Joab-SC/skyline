@@ -1,9 +1,11 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.dto.request.*;
+import com.uniquindio.skyline.application.dto.response.BookingDetailResponse;
 import com.uniquindio.skyline.application.dto.response.BookingResponse;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
+import com.uniquindio.skyline.application.dto.result.BookingDetail;
 import com.uniquindio.skyline.infrastructure.rest.mapper.BookingMapper;
 import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
 import jakarta.validation.Valid;
@@ -116,9 +118,9 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookingResponse> getById(@PathVariable String id){
-        Booking booking = getBookingUseCase.execute(id);
-        return ResponseEntity.ok(mapper.toBookingResponse(booking)); //200
+    public ResponseEntity<BookingDetailResponse> getById(@PathVariable String id){
+        BookingDetail booking = getBookingUseCase.execute(id);
+        return ResponseEntity.ok(mapper.toBookingDetailResponse(booking)); //200
     }
 
     @PutMapping("/{id}/cancel")

@@ -1,6 +1,7 @@
 package com.uniquindio.skyline.infrastructure.persistence;
 
 import com.uniquindio.skyline.domain.entity.Leg;
+import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 
 import java.util.*;
@@ -37,6 +38,22 @@ public class LegRepositoryInMemory implements LegRepository {
     public List<Leg> findLegsWithAtLeastAvailableSeats(int minimumSeats) {
         return legs.values().stream()
                 .filter(leg -> leg.getAvailableSeats() >= minimumSeats)
+                .toList();
+    }
+
+    // Finds the seats held by the passengers of a booking, with the leg of each seat.
+    @Override
+    public List<BookingSeat> findSeatsByBookingId(String bookingId) {
+        return legs.values().stream()
+                .flatMap(leg -> leg.getSeats().stream()
+                        .filter(seat -> seat.getPassengerBookingId()
+                                .map(occupant -> occupant.belongsToBooking(bookingId))
+                                .orElse(false))
+                        .map(seat -> new BookingSeat(
+                                seat.getId(),
+                                seat.getSeatCode(),
+                                seat.getPassengerBookingId().orElseThrow().passengerDocument(),
+                                leg.getId())))
                 .toList();
     }
 }

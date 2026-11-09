@@ -1,22 +1,18 @@
 package com.uniquindio.skyline.infrastructure.rest.mapper;
 
 import com.uniquindio.skyline.application.dto.request.PassengerRequest;
-import com.uniquindio.skyline.application.dto.response.BookingExtraServiceResponse;
-import com.uniquindio.skyline.application.dto.response.BookingResponse;
-import com.uniquindio.skyline.application.dto.response.LuggageDetailResponse;
-import com.uniquindio.skyline.application.dto.response.PassengerResponse;
-import com.uniquindio.skyline.application.dto.response.PaymentResponse;
+import com.uniquindio.skyline.application.dto.response.*;
+import com.uniquindio.skyline.application.dto.result.BookingDetail;
 import com.uniquindio.skyline.domain.entity.Booking;
 import com.uniquindio.skyline.domain.entity.Passenger;
 import com.uniquindio.skyline.domain.entity.Payment;
-import com.uniquindio.skyline.domain.valueObject.Person;
-import com.uniquindio.skyline.domain.valueObject.DetailExtraService;
-import com.uniquindio.skyline.domain.valueObject.LuggageDetail;
-import com.uniquindio.skyline.domain.valueObject.PassengerData;
-import com.uniquindio.skyline.domain.valueObject.PhonePrefix;
+import com.uniquindio.skyline.domain.repository.BookingSeat;
+import com.uniquindio.skyline.domain.valueObject.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class BookingMapper {
@@ -53,6 +49,57 @@ public class BookingMapper {
                 passenger.getPhonePrefix().map(PhonePrefix::getPrefix).orElse(null),
                 passenger.getPhoneNumber().orElse(null),
                 passenger.getLuggageDetail().map(this::toLuggageDetailResponse).orElse(null)
+        );
+    }
+
+    public BookingDetailResponse toBookingDetailResponse(BookingDetail detail) {
+        Booking booking = detail.booking();
+        Map<String, List<BookingSeat>> seatsByPassenger = detail.bookingSeats().stream()
+                .collect(Collectors.groupingBy(BookingSeat::passengerId));
+
+        return new BookingDetailResponse(
+                booking.getId(),
+                booking.getNumPassengers(),
+                booking.getPrice(),
+                booking.getIdOutboundFlight(),
+                booking.getIdReturnFlight().orElse(null),
+                booking.getTripType().name(),
+                booking.getBookingStatus().name(),
+                booking.getPaymentDeadline(),
+                booking.getPassengerList().stream()
+                        .map(passenger -> toPassengerDetailResponse(passenger,
+                                seatsByPassenger.getOrDefault(passenger.getPerson().getIdDocument(), List.of())))
+                        .toList(),
+                booking.getDetailExtraServices().stream().map(this::toExtraServiceResponse).toList(),
+                booking.getPayments().stream().map(this::toPaymentResponse).toList()
+        );
+    }
+
+    private PassengerDetailResponse toPassengerDetailResponse(Passenger passenger, List<BookingSeat> seats) {
+        Person person = passenger.getPerson();
+        return new PassengerDetailResponse(
+                person.getIdDocument(),
+                person.getDocumentType().name(),
+                person.getFirstName(),
+                person.getSecondName().orElse(null),
+                person.getLastName1(),
+                person.getLastName2().orElse(null),
+                person.getBirthDate(),
+                person.getGender().name(),
+                passenger.isHolder(),
+                passenger.getEmail().orElse(null),
+                passenger.getPhonePrefix().map(PhonePrefix::getPrefix).orElse(null),
+                passenger.getPhoneNumber().orElse(null),
+                passenger.getLuggageDetail().map(this::toLuggageDetailResponse).orElse(null),
+                seats.stream().map(this::toPassengerSeatResponse).toList()
+        );
+    }
+
+    private PassengerSeatResponse toPassengerSeatResponse(BookingSeat seat) {
+        return new PassengerSeatResponse(
+                seat.legId(),
+                seat.legSeatId(),
+                seat.seatCode()
         );
     }
 
