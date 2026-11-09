@@ -2,6 +2,7 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.entity.LegSeat;
+import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Seat;
@@ -143,6 +144,44 @@ class LegRepositoryDataJpaTest {
         assertFalse(found.contains(legWithNone.getId()));
     }
 
+
+    @Test
+    void shouldFindOnlyTheSeatsOfTheBookingWithTheirLeg() {
+        // Arrange: booking-01 holds 1A on the first leg and 1B on the second; booking-02 holds 1C on the second
+        Leg firstLeg = createLeg();
+        Leg secondLeg = Leg.createLeg(Airport.EL_EDEN, Airport.EL_DORADO,
+                DEPARTURE_TIME.plusDays(1), ARRIVAL_TIME.plusDays(1),
+                "aircraft-a320-02", "airline-avianca",
+                List.of(new Seat("1A"), new Seat("1B"), new Seat("1C")), 75000, 180000);
+        String firstLegSeat1A = firstLeg.getSeats().get(0).getId();
+        String secondLegSeat1B = secondLeg.getSeats().get(1).getId();
+        String secondLegSeat1C = secondLeg.getSeats().get(2).getId();
+        firstLeg.assignSeat(firstLegSeat1A, new PassengerBookingId("booking-01", "passenger-01"));
+        secondLeg.assignSeat(secondLegSeat1B, new PassengerBookingId("booking-01", "passenger-01"));
+        secondLeg.assignSeat(secondLegSeat1C, new PassengerBookingId("booking-02", "passenger-02"));
+        legRepository.save(firstLeg);
+        legRepository.save(secondLeg);
+
+        // Act
+        List<BookingSeat> seats = legRepository.findSeatsByBookingId("booking-01");
+
+        // Assert: ordered by the leg's departure time
+        assertEquals(List.of(
+                new BookingSeat(firstLegSeat1A, "1A", "passenger-01", firstLeg.getId()),
+                new BookingSeat(secondLegSeat1B, "1B", "passenger-01", secondLeg.getId())), seats);
+    }
+
+    @Test
+    void shouldFindNoSeatsWhenTheBookingHoldsNone() {
+        // Arrange
+        legRepository.save(createLeg());
+
+        // Act
+        List<BookingSeat> seats = legRepository.findSeatsByBookingId("booking-without-seats");
+
+        // Assert
+        assertTrue(seats.isEmpty());
+    }
 
     @Test
     void shouldLoadLegFromDataSqlWithItsLuggageAndSeats() {
