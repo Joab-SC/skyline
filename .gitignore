@@ -42,3 +42,6 @@ out/
 # IntelliJ IDEA
 .idea/
 .freebuff
+
+### Claude Code ###
+.claude/launch.json
