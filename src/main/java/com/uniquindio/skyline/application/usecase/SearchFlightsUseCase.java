@@ -21,10 +21,16 @@ public class SearchFlightsUseCase {
 
     @Transactional(readOnly = true)
     public List<Flight> execute(String originCode, String destinationCode, LocalDate departureDay, int numberOfPassengers){
-        Airport origin = Airport.getByAcronym(originCode).orElseThrow();
-        Airport destination = Airport.getByAcronym(destinationCode).orElseThrow();
+        Airport origin = findAirport(originCode);
+        Airport destination = findAirport(destinationCode);
         List<Flight> flights = flightSearcher.searchFlights(origin, destination, departureDay, numberOfPassengers);
         flightSearchCache.saveAll(flights);
         return flights;
+    }
+
+    // An unknown code is bad input from the client (400), not a missing resource.
+    private static Airport findAirport(String code) {
+        return Airport.getByAcronym(code)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown airport code: " + code));
     }
 }
