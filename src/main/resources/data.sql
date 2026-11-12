@@ -36,11 +36,11 @@ INSERT INTO airline_legs (airline_id, leg_id) VALUES
 -- aircraft-a320-01 flies two legs; available seats: bog-mde 3, mde-ctg 1, bog-cli 0
 INSERT INTO legs (id, origin_airport, destination_airport, departure_time, arrival_time,
                   aircraft_id, airline_id, price, available_seats) VALUES
-    ('leg-bog-mde-01', 'EL_DORADO', 'JOSE_MARIA_CORDOVA', '2026-12-01 08:00:00', '2026-12-01 09:00:00',
+    ('leg-bog-mde-01', 'BOG', 'MDE', '2026-12-01 08:00:00', '2026-12-01 09:00:00',
      'aircraft-a320-01', 'airline-avianca', 250000, 3),
-    ('leg-mde-ctg-01', 'JOSE_MARIA_CORDOVA', 'RAFAEL_NUNEZ', '2026-12-01 11:00:00', '2026-12-01 12:15:00',
+    ('leg-mde-ctg-01', 'MDE', 'CTG', '2026-12-01 11:00:00', '2026-12-01 12:15:00',
      'aircraft-a320-01', 'airline-avianca', 300000, 1),
-    ('leg-bog-cli-01', 'EL_DORADO', 'ALFONSO_BONILLA_ARAGON', '2026-12-02 07:00:00', '2026-12-02 08:00:00',
+    ('leg-bog-cli-01', 'BOG', 'CLO', '2026-12-02 07:00:00', '2026-12-02 08:00:00',
      'aircraft-a321-01', 'airline-latam', 200000, 0);
 
 -- Luggage per leg

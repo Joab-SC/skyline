@@ -10,8 +10,8 @@ Creates a leg (*trayecto*) operated by an aircraft and links it to an airline. T
 ## Inputs
 | Name | Type | Description |
 |------|------|-------------|
-| `originAirport` | `Airport` | Origin airport. |
-| `destinationAirport` | `Airport` | Destination airport. |
+| `originCode` | `String` | IATA code of the origin airport (e.g. `BOG`), case-insensitive. |
+| `destinationCode` | `String` | IATA code of the destination airport. |
 | `departureTime` | `LocalDateTime` | Departure date and time. |
 | `arrivalTime` | `LocalDateTime` | Arrival date and time. |
 | `airlineId` | `String` | Airline that operates the leg. It is not in the request body: the controller takes it from the `airlineId` claim of the token of the logged-in airline user (`AIRLINE_ADMIN` or `AIRLINE_SELLER`). |
@@ -29,18 +29,19 @@ The created `Leg`.
 - Domain services: `LegOverlapValidator`
 
 ## Steps
-1. Find the airline by `airlineId`.
-2. Find the aircraft by `aircraftId`.
-3. Check that the aircraft belongs to the airline (`airline.validateHasAircraft(aircraftId)`, which throws `DomainRuleException` otherwise).
-4. Check that the aircraft has no overlapping leg (`LegOverlapValidator.validateNoOverlap`).
-5. Create the leg with `Leg.createLeg(...)`:
+1. Convert the codes to `Airport` with `Airport.getByAcronym`.
+2. Find the airline by `airlineId`.
+3. Find the aircraft by `aircraftId`.
+4. Check that the aircraft belongs to the airline (`airline.validateHasAircraft(aircraftId)`, which throws `DomainRuleException` otherwise).
+5. Check that the aircraft has no overlapping leg (`LegOverlapValidator.validateNoOverlap`).
+6. Create the leg with `Leg.createLeg(...)`:
    - one `LegSeat` per aircraft seat, all `AVAILABLE`;
    - `availableSeats` = number of seats;
    - one `Luggage` with `luggagePrice` (max weight 23 kg).
-6. Link the leg with `airline.addLeg(leg.getId())`.
-7. Save the leg in `LegRepository`.
-8. Save the airline in `AirlineRepository`, so the link (`airline_legs`) is stored.
-9. Return the leg.
+7. Link the leg with `airline.addLeg(leg.getId())`.
+8. Save the leg in `LegRepository`.
+9. Save the airline in `AirlineRepository`, so the link (`airline_legs`) is stored.
+10. Return the leg.
 
 The use case is `@Transactional`: the leg and the airline are saved together, or neither is.
 
@@ -54,6 +55,7 @@ The use case is `@Transactional`: the leg and the airline are saved together, or
   - the aircraft must have at least one seat;
   - `price` and `luggagePrice` cannot be negative;
   - the leg id cannot already be in the airline.
+- Unknown airport code: `IllegalArgumentException` (400 in REST). It is checked before anything else.
 - The airline or the aircraft does not exist: `NoSuchElementException` (404 in REST).
 - Only airline users (`AIRLINE_ADMIN` or `AIRLINE_SELLER`) can call the endpoint (no token: 401, other role: 403). Since the airline comes from the token, an airline cannot use an aircraft of another airline (422).
 - Leg invariants: see [leg-aggregate/Invariants.md](../leg-aggregate/Invariants.md).

@@ -30,7 +30,7 @@ public enum Airport {
     LA_FLORIDA("La Florida Airport", "TCO", City.TUMACO),
     GUILLERMO_LEON_VALENCIA("Guillermo León Valencia Airport", "PPN", City.POPAYAN),
     VANGUARDIA("Vanguardia Airport", "VVC", City.VILLAVICENCIO),
-    EL_CARAÑO("El Caraño Airport", "UIB", City.QUIBDO),
+    EL_CARANO("El Caraño Airport", "UIB", City.QUIBDO),
     JURADO("Juradó Airport", "JUO", City.JURADO),
     SAN_JOSE_DEL_GUAVIARE("San José del Guaviare Airport", "SJE", City.SAN_JOSE_DEL_GUAVIARE),
     TRES_DE_MAYO("Tres de Mayo Airport", "PUU", City.PUERTO_ASIS),
@@ -72,7 +72,7 @@ public enum Airport {
     LAS_AMERICAS("Las Américas International Airport", "SDQ", City.SANTO_DOMINGO),
     LUIS_MUNOZ_MARIN("Luis Muñoz Marín International Airport", "SJU", City.SAN_JUAN),
     GRANTLEY_ADAMS("Grantley Adams International Airport", "BGI", City.BRIDGETOWN),
-    CHEddi_JAGAN("Cheddi Jagan International Airport", "GEO", City.GEORGETOWN),
+    CHEDDI_JAGAN("Cheddi Jagan International Airport", "GEO", City.GEORGETOWN),
 
     // Europe
     ADOLFO_SUAREZ_MADRID("Adolfo Suárez Madrid-Barajas Airport", "MAD", City.MADRID),

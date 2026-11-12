@@ -27,11 +27,13 @@ public class CreateLegUseCase {
     private final AircraftRepository aircraftRepository;
 
 
-    // Creates a leg and links it to the airline.
+    // Creates a leg and links it to the airline. The airports come as their IATA codes.
     @Transactional
-    public Leg execute(Airport originAirport, Airport destinationAirport, LocalDateTime departureTime,
+    public Leg execute(String originCode, String destinationCode, LocalDateTime departureTime,
                        LocalDateTime arrivalTime, String airlineId, String aircraftId, double luggagePrice, double price) {
 
+        Airport originAirport = findAirport(originCode);
+        Airport destinationAirport = findAirport(destinationCode);
         Airline airline = airlineRepository.findById(airlineId).orElseThrow();
         Aircraft aircraft = aircraftRepository.findById(aircraftId).orElseThrow();
 
@@ -46,5 +48,11 @@ public class CreateLegUseCase {
         legRepository.save(leg);
         airlineRepository.save(airline);
         return leg;
+    }
+
+    // An unknown code is bad input from the client (400), not a broken business rule.
+    private static Airport findAirport(String code) {
+        return Airport.getByAcronym(code)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown airport code: " + code));
     }
 }

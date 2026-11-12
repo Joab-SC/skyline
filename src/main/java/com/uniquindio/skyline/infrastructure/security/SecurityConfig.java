@@ -71,6 +71,7 @@ public class SecurityConfig {
                         // What a buyer needs to read to build a booking.
                         .requestMatchers(HttpMethod.GET,
                                 "/api/flights/**",
+                                "/api/airports",
                                 "/api/airlines/**",
                                 "/api/legs/*/seats",
                                 "/api/extra_services"

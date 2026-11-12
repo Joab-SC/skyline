@@ -15,7 +15,8 @@ import java.time.Duration;
 @NoArgsConstructor @AllArgsConstructor
 public class LayoverEmbeddable{
 
-    @Enumerated(EnumType.STRING)
+    // Stored as the IATA code ("BOG") by AirportConverter.
+    @Column(length = 3)
     Airport airport;
 
     @Column(length = 100, nullable = false)

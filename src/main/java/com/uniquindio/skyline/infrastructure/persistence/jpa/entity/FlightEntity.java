@@ -33,10 +33,11 @@ public class FlightEntity {
     @Column(name = "leg_id", nullable = false)
     private List<String> idLegs;
 
-    @Enumerated(EnumType.STRING)
+    // Stored as the IATA code ("BOG") by AirportConverter.
+    @Column(length = 3)
     private Airport originAirport;
 
-    @Enumerated(EnumType.STRING)
+    @Column(length = 3)
     private Airport destinationAirport;
 
     @Column(nullable = false)

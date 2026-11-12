@@ -137,8 +137,31 @@ class CreateLegUseCaseTest {
         verify(airlineRepository, never()).save(any());
     }
 
+    @Test
+    void shouldThrowExceptionWhenAirportCodeDoesNotExist() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute("XXX", "AXM", DEPARTURE, ARRIVAL,
+                AIRLINE_ID, aircraft.getId(), 100, 500));
+        verifyNoInteractions(airlineRepository, aircraftRepository, legOverlapValidator, legRepository);
+    }
+
+    @Test
+    void shouldCreateLegWithTheAirportsOfTheCodes() {
+        // Arrange
+        airline.addAircraft(aircraft.getId());
+        when(airlineRepository.findById(AIRLINE_ID)).thenReturn(Optional.of(airline));
+        when(aircraftRepository.findById(aircraft.getId())).thenReturn(Optional.of(aircraft));
+
+        // Act
+        Leg result = createLeg();
+
+        // Assert
+        assertEquals(Airport.EL_DORADO, result.getOriginAirport());
+        assertEquals(Airport.EL_EDEN, result.getDestinationAirport());
+    }
+
     private Leg createLeg() {
-        return useCase.execute(Airport.EL_DORADO, Airport.EL_EDEN, DEPARTURE, ARRIVAL,
+        return useCase.execute("BOG", "AXM", DEPARTURE, ARRIVAL,
                 AIRLINE_ID, aircraft.getId(), 100, 500);
     }
 }

@@ -13,8 +13,8 @@ public class LegMapper {
     public LegResponse toLegResponse(Leg leg) {
         return new LegResponse(
                 leg.getId(),
-                leg.getOriginAirport().name(),
-                leg.getDestinationAirport().name(),
+                leg.getOriginAirport().getCode(),
+                leg.getDestinationAirport().getCode(),
                 leg.getDepartureTime(),
                 leg.getArrivalTime(),
                 leg.getAirlineId(),
