@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -71,10 +70,10 @@ public class FlightControllerTest {
     }
 
     @Test
-    void shouldAnswer404WhenAirportCodeDoesNotExist() throws Exception {
+    void shouldAnswer400WhenAirportCodeDoesNotExist() throws Exception {
         // Arrange
         when(searchFlightsUseCase.execute(any(), any(), any(), anyInt()))
-                .thenThrow(new NoSuchElementException());
+                .thenThrow(new IllegalArgumentException("Unknown airport code: XXX"));
 
         // Act & Assert
         mockMvc.perform(get("/api/flights")
@@ -82,7 +81,7 @@ public class FlightControllerTest {
                         .param("destination", "AXM")
                         .param("departureDay", "2026-12-01")
                         .param("passengers", "2"))
-                .andExpect(status().isNotFound());         // 404
+                .andExpect(status().isBadRequest());       // 400: the client sent a code that does not exist
     }
 
     @Test
