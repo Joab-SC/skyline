@@ -36,6 +36,9 @@ class LegRepositoryDataJpaTest {
     @Autowired
     private LegRepository legRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
 
     // Creates a new leg with three seats: 1A, 1B and 1C.
     private Leg createLeg() {
@@ -72,6 +75,24 @@ class LegRepositoryDataJpaTest {
         assertEquals("airline-avianca", recovered.getAirlineId());
         assertEquals(180000, recovered.getPrice());
         assertEquals(3, recovered.getAvailableSeats());
+    }
+
+    @Test
+    void shouldStoreAirportsAsTheirIataCode() {
+        // Arrange
+        Leg leg = createLeg();
+
+        // Act
+        legRepository.save(leg);
+        entityManager.flush();
+        Object[] row = (Object[]) entityManager
+                .createNativeQuery("SELECT origin_airport, destination_airport FROM legs WHERE id = ?1")
+                .setParameter(1, leg.getId())
+                .getSingleResult();
+
+        // Assert: the column holds "BOG", not the constant name "EL_DORADO" (AirportConverter).
+        assertEquals("BOG", row[0]);
+        assertEquals("AXM", row[1]);
     }
 
     @Test
