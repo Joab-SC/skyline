@@ -1,6 +1,5 @@
 package com.uniquindio.skyline.application.dto.request;
 
-import com.uniquindio.skyline.domain.valueObject.Airport;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -8,13 +7,16 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
 
+// Airports are sent as their IATA code.
 // The airline is not sent: it is the airline of the logged-in user (JWT).
 public record CreateLegRequest(
-        @NotNull(message = "The origin airport is required")
-        Airport originAirport,
+        // IATA code, e.g. "BOG".
+        @NotBlank(message = "The origin airport code is required")
+        String originAirport,
 
-        @NotNull(message = "The destination airport is required")
-        Airport destinationAirport,
+        // IATA code, e.g. "MDE".
+        @NotBlank(message = "The destination airport code is required")
+        String destinationAirport,
 
         @NotNull(message = "The departure time is required")
         LocalDateTime departureTime,
