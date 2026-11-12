@@ -57,6 +57,13 @@ class SearchFlightsUseCaseTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenAirportCodeDoesNotExist() {
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute("XXX", "MDE", DEPARTURE_DAY, 2));
+        verifyNoInteractions(flightSearcher, flightSearchCache);
+    }
+
+    @Test
     void shouldSaveFoundFlightsInSearchCache() {
         // Arrange
         Airport origin = Airport.EL_DORADO;
