@@ -21,12 +21,11 @@ public class LegEntity {
     @Column(length = 36)
     private String id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "origin_airport", nullable = false, length = 50)
+    // Stored as the IATA code ("BOG") by AirportConverter.
+    @Column(name = "origin_airport", nullable = false, length = 3)
     private Airport originAirport;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "destination_airport", nullable = false, length = 50)
+    @Column(name = "destination_airport", nullable = false, length = 3)
     private Airport destinationAirport;
 
     @Column(name = "departure_time", nullable = false)
