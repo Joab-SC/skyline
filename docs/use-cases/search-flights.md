@@ -41,4 +41,4 @@ Returns the possible flights (combinations of legs) from an origin to a destinat
 - The flight is `INTERNATIONAL` when at least one of its legs connects airports of different countries; otherwise it is `NATIONAL` (`FlightScope`).
 
 ## Errors
-- Unknown airport code: `NoSuchElementException` (404 in REST).
+- Unknown airport code: `IllegalArgumentException` (400 in REST): the client sent bad input.
