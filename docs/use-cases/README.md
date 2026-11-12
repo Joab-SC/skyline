@@ -32,6 +32,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 24 | [RegisterAirlineAdmin](register-airline-admin.md) | The `ADMIN` creates the `AIRLINE_ADMIN` account of an airline. | `UserRepository`, `AirlineRepository` | `POST /api/airlines/{id}/admins` | Implemented |
 | 25 | [RegisterAirlineSeller](register-airline-seller.md) | An `AIRLINE_ADMIN` creates a seller for their own airline (taken from the token). | `UserRepository`, `AirlineRepository` | `POST /api/airlines/sellers` | Implemented |
 | 26 | [ListCustomerBookings](list-customer-bookings.md) | Returns the logged-in customer's bookings, newest first. | `BookingRepository` | `GET /api/bookings/mine` | Implemented |
+| 27 | [ListAirports](list-airports.md) | Returns every airport (IATA code, name, city, country) so the client can choose origin and destination. | — (the `Airport` enum) | `GET /api/airports` | Implemented |
 
 ## Users and roles
 
@@ -46,7 +47,7 @@ The booking flow is public: a guest can book without an account. The rules are i
 
 ## Booking flow
 
-`SearchFlights` → `SelectOutboundFlight` → `SelectReturnFlight` (round trip only) → `AddPassengersToBooking` → `GetLegSeatMap` → `AssignSeatToPassenger` / `AddLuggage` / `ListAirlineExtraServices` → `AddExtraServices` → `PayBooking`
+`ListAirports` → `SearchFlights` → `SelectOutboundFlight` → `SelectReturnFlight` (round trip only) → `AddPassengersToBooking` → `GetLegSeatMap` → `AssignSeatToPassenger` / `AddLuggage` / `ListAirlineExtraServices` → `AddExtraServices` → `PayBooking`
 
 `GetBooking` can be called at any step to read the booking again. A customer who wants the booking linked to their account calls `RegisterCustomer` and `Login` first and sends the token on `SelectOutboundFlight`.
 
