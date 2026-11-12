@@ -16,8 +16,8 @@ public class FlightMapper {
                 flight.getId(),
                 flight.getAirlineId(),
                 flight.getPrice(),
-                flight.getOriginAirport().name(),
-                flight.getDestinationAirport().name(),
+                flight.getOriginAirport().getCode(),
+                flight.getDestinationAirport().getCode(),
                 flight.getDepartureTime(),
                 flight.getArrivalTime(),
                 flight.getFlightScope().name(),
@@ -32,7 +32,7 @@ public class FlightMapper {
 
     private LayoverResponse toLayoverResponse(Layover layover) {
         return new LayoverResponse(
-                layover.airport().name(),
+                layover.airport().getCode(),
                 layover.duration().toMinutes()
         );
     }
