@@ -43,6 +43,14 @@ class SecurityEndpointTest {
     private MockMvc mockMvc;
 
     @Test
+    void airportsShouldBePublic() throws Exception {
+        // Act & Assert: a guest needs the airports to search flights.
+        mockMvc.perform(get("/api/airports"))
+                .andExpect(status().isOk())                // 200 without a token
+                .andExpect(jsonPath("$[0].code").exists());
+    }
+
+    @Test
     void shouldAnswer401WhenThereIsNoToken() throws Exception {
         // Act & Assert
         mockMvc.perform(get(TOP_AIRLINES_URL))
