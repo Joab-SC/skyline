@@ -35,7 +35,7 @@ public class LegControllerTest {
 
     private static final String VALID_JSON = """
             {
-            "originAirport": "EL_DORADO", "destinationAirport": "EL_EDEN",
+            "originAirport": "BOG", "destinationAirport": "AXM",
             "departureTime": "2026-12-01T08:00:00", "arrivalTime": "2026-12-01T09:00:00",
             "aircraftId": "craft-1",
             "luggagePrice": 50, "price": 200
@@ -74,8 +74,8 @@ public class LegControllerTest {
                 .andExpect(status().isCreated())           // 201
                 .andExpect(header().exists("Location"));
 
-        verify(createLegUseCase).execute(any(), any(), any(), any(),
-                eq("air-1"), eq("craft-1"), anyDouble(), anyDouble());  // airline of the token
+        verify(createLegUseCase).execute(eq("BOG"), eq("AXM"), any(), any(),
+                eq("air-1"), eq("craft-1"), anyDouble(), anyDouble());  // IATA codes; airline of the token
     }
 
     @Test
@@ -107,11 +107,25 @@ public class LegControllerTest {
     }
 
     @Test
+    void shouldAnswer400WhenAirportCodeDoesNotExist() throws Exception {
+        // Arrange
+        when(createLegUseCase.execute(any(), any(), any(), any(), any(), any(), anyDouble(), anyDouble()))
+                .thenThrow(new IllegalArgumentException("Unknown airport code: XXX"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/legs")
+                        .principal(AIRLINE_USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_JSON))
+                .andExpect(status().isBadRequest());       // 400
+    }
+
+    @Test
     void shouldAnswer400WhenOriginAirportIsMissing() throws Exception {
         // Arrange
         String requestJson = """
                 {
-                "destinationAirport": "EL_EDEN",
+                "destinationAirport": "AXM",
                 "departureTime": "2026-12-01T08:00:00", "arrivalTime": "2026-12-01T09:00:00",
                 "aircraftId": "craft-1",
                 "luggagePrice": 50, "price": 200
