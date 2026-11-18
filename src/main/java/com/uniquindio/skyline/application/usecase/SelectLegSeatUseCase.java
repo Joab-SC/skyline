@@ -23,7 +23,8 @@ public class SelectLegSeatUseCase {
         Booking booking = bookingRepository.findById(idBooking).orElseThrow();
         Passenger passenger = booking.getPassenger(idPassenger).orElseThrow();
         Leg leg = legRepository.findById(idLeg).orElseThrow();
-        seatAssigner.assignSeat(booking,idLegSeat, passenger,leg);
+        if (idLegSeat == null) seatAssigner.releaseSeat(booking, passenger,leg);
+        else seatAssigner.assignSeat(booking,idLegSeat, passenger,leg);
         legRepository.save(leg);
         bookingRepository.save(booking);
         return booking;
