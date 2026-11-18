@@ -71,6 +71,9 @@ public class AirlineControllerTest {
     private ListAirlinesUseCase listAirlinesUseCase;
 
     @MockitoBean
+    private GetAirlineUseCase getAirlineUseCase;
+
+    @MockitoBean
     private RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
 
     @MockitoBean
@@ -248,6 +251,34 @@ public class AirlineControllerTest {
         mockMvc.perform(get("/api/airlines"))
                 .andExpect(status().isOk())                // 200
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    // ---------- GET /api/airlines/{id} ----------
+
+    @Test
+    void shouldAnswerTheAirline() throws Exception {
+        // Arrange
+        Airline avianca = Airline.createAirline("Avianca", 2, 50000);
+        when(getAirlineUseCase.execute(avianca.getId())).thenReturn(avianca);
+        when(mapper.toAirlineResponse(avianca))
+                .thenReturn(new AirlineResponse(avianca.getId(), "Avianca", 2, 50000));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/" + avianca.getId()))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.id").value(avianca.getId()))
+                .andExpect(jsonPath("$.name").value("Avianca"))
+                .andExpect(jsonPath("$.maximumLuggageAmount").value(2));
+    }
+
+    @Test
+    void shouldAnswer404WhenGettingAnAirlineThatDoesNotExist() throws Exception {
+        // Arrange
+        when(getAirlineUseCase.execute("no-airline")).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/no-airline"))
+                .andExpect(status().isNotFound());         // 404
     }
 
     // ---------- POST /api/airlines/{id}/admins ----------
