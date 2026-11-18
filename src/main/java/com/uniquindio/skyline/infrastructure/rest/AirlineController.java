@@ -31,6 +31,7 @@ public class AirlineController {
     private final ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase;
     private final GetTopAirlinesUseCase getTopAirlinesUseCase;
     private final ListAirlinesUseCase listAirlinesUseCase;
+    private final GetAirlineUseCase getAirlineUseCase;
     private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
     private final RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
     private final AirlineMapper mapper;
@@ -39,6 +40,7 @@ public class AirlineController {
 
     public AirlineController(CreateAirlineUseCase createAirlineUseCase,
                              ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
+                             GetAirlineUseCase getAirlineUseCase,
                              RegisterAirlineAdminUseCase registerAirlineAdminUseCase,
                              RegisterAirlineSellerUseCase registerAirlineSellerUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper, UserMapper userMapper) {
@@ -46,6 +48,7 @@ public class AirlineController {
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
         this.getTopAirlinesUseCase = getTopAirlinesUseCase;
         this.listAirlinesUseCase = listAirlinesUseCase;
+        this.getAirlineUseCase = getAirlineUseCase;
         this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
         this.registerAirlineSellerUseCase = registerAirlineSellerUseCase;
         this.mapper = mapper;
@@ -117,6 +120,12 @@ public class AirlineController {
                 .map(mapper::toAirlineResponse)
                 .toList();
         return ResponseEntity.ok(response); // 200
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AirlineResponse> getById(@PathVariable String id) {
+        Airline airline = getAirlineUseCase.execute(id);
+        return ResponseEntity.ok(mapper.toAirlineResponse(airline)); // 200
     }
 
     @GetMapping("/{id}/extra-services")
