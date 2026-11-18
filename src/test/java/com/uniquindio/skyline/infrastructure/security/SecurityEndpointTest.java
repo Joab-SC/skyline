@@ -51,6 +51,14 @@ class SecurityEndpointTest {
     }
 
     @Test
+    void airlineByIdShouldBePublic() throws Exception {
+        // Act & Assert: a guest needs the airline to know its luggage limit. airline-latam is an initial airline.
+        mockMvc.perform(get("/api/airlines/airline-latam"))
+                .andExpect(status().isOk())                // 200 without a token
+                .andExpect(jsonPath("$.id").value("airline-latam"));
+    }
+
+    @Test
     void shouldAnswer401WhenThereIsNoToken() throws Exception {
         // Act & Assert
         mockMvc.perform(get(TOP_AIRLINES_URL))
