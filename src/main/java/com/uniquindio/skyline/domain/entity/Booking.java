@@ -188,9 +188,16 @@ public class Booking {
 
     public void addPriceSeats(double priceSeats){
         if (priceSeats <0){
-            throw new DomainRuleException("Pice cannot be negative");
+            throw new DomainRuleException("Price cannot be negative");
         }
         this.price += priceSeats;
+    }
+
+    public void subtractPriceSeats(double priceSeats) {
+        if (priceSeats <0){
+            throw new DomainRuleException("Price cannot be negative");
+        }
+        this.price -= priceSeats;
     }
 
     // Creates a luggage detail for a passenger of this booking.
@@ -381,4 +388,6 @@ public class Booking {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+
 }
