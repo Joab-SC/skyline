@@ -35,6 +35,7 @@ public class AirlineController {
     private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
     private final ListAirlineAdminsUseCase listAirlineAdminsUseCase;
     private final RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
+    private final ListAirlineSellersUseCase listAirlineSellersUseCase;
     private final AirlineMapper mapper;
     private final ExtraServiceMapper extraServiceMapper;
     private final UserMapper userMapper;
@@ -45,6 +46,7 @@ public class AirlineController {
                              RegisterAirlineAdminUseCase registerAirlineAdminUseCase,
                              ListAirlineAdminsUseCase listAirlineAdminsUseCase,
                              RegisterAirlineSellerUseCase registerAirlineSellerUseCase,
+                             ListAirlineSellersUseCase listAirlineSellersUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper, UserMapper userMapper) {
         this.createAirlineUseCase = createAirlineUseCase;
         this.listAirlineExtraServicesUseCase = listAirlineExtraServicesUseCase;
@@ -54,6 +56,7 @@ public class AirlineController {
         this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
         this.listAirlineAdminsUseCase = listAirlineAdminsUseCase;
         this.registerAirlineSellerUseCase = registerAirlineSellerUseCase;
+        this.listAirlineSellersUseCase = listAirlineSellersUseCase;
         this.mapper = mapper;
         this.extraServiceMapper = extraServiceMapper;
         this.userMapper = userMapper;
@@ -124,6 +127,17 @@ public class AirlineController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.toRegisterResponse(user)); // 201
+    }
+
+    // Only an AIRLINE_ADMIN lists the sellers (see SecurityConfig).
+    @GetMapping("/sellers")
+    public ResponseEntity<List<UserResponse>> listSellers(JwtAuthenticationToken authentication) {
+        // The airline comes from the token, so an admin only sees the sellers of its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        List<UserResponse> response = listAirlineSellersUseCase.execute(airlineId).stream()
+                .map(userMapper::toRegisterResponse)
+                .toList();
+        return ResponseEntity.ok(response); // 200
     }
 
     @GetMapping

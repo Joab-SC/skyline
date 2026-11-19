@@ -19,7 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // Loads the whole application, so the requests go through the real SecurityConfig.
 // GET /api/airlines/top (airline ranking) and POST /api/airlines/{id}/admins are only for ADMIN,
-// POST /api/airlines/sellers only for AIRLINE_ADMIN,
+// POST and GET /api/airlines/sellers only for AIRLINE_ADMIN,
+// GET /api/aircrafts and GET /api/legs only for airline users,
 // and GET /api/bookings/mine only for CUSTOMER.
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -132,6 +133,102 @@ class SecurityEndpointTest {
                 .andExpect(status().isOk());               // 200
     }
 
+    // ---------- GET /api/aircrafts: only airline users ----------
+
+    @Test
+    void listAircraftsShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/aircrafts"))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void listAircraftsShouldAnswer403WhenRoleIsNotAirlineUser() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority customer = new SimpleGrantedAuthority("CUSTOMER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/aircrafts").with(jwt().authorities(customer)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void listAircraftsShouldAnswer200WhenRoleIsAirlineSeller() throws Exception {
+        // Arrange: airline-latam is an initial airline with aircraft
+        SimpleGrantedAuthority seller = new SimpleGrantedAuthority("AIRLINE_SELLER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/aircrafts")
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-latam"))
+                                .authorities(seller)))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$[0].id").exists());
+    }
+
+    // ---------- GET /api/legs: only airline users ----------
+
+    @Test
+    void listLegsShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/legs"))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void listLegsShouldAnswer403WhenRoleIsNotAirlineUser() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority customer = new SimpleGrantedAuthority("CUSTOMER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs").with(jwt().authorities(customer)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void listLegsShouldAnswer200WhenRoleIsAirlineSeller() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority seller = new SimpleGrantedAuthority("AIRLINE_SELLER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs")
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-latam"))
+                                .authorities(seller)))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.content").isArray());
+    }
+
+    // ---------- GET /api/airlines/sellers: only AIRLINE_ADMIN ----------
+
+    @Test
+    void listSellersShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert: GET /api/airlines/** is public, but not this one.
+        mockMvc.perform(get(REGISTER_SELLER_URL))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void listSellersShouldAnswer403WhenRoleIsAirlineSeller() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority seller = new SimpleGrantedAuthority("AIRLINE_SELLER");
+
+        // Act & Assert
+        mockMvc.perform(get(REGISTER_SELLER_URL).with(jwt().authorities(seller)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void listSellersShouldAnswer200WhenRoleIsAirlineAdmin() throws Exception {
+        // Arrange: seller1@skyline.com is an initial seller of airline-avianca.
+        SimpleGrantedAuthority airlineAdmin = new SimpleGrantedAuthority("AIRLINE_ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(get(REGISTER_SELLER_URL)
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-avianca"))
+                                .authorities(airlineAdmin)))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$[0].email").value("seller1@skyline.com"));
+    }
+
     // ---------- POST /api/airlines/{id}/admins: only ADMIN ----------
 
     @Test
@@ -220,6 +317,7 @@ class SecurityEndpointTest {
                 .andExpect(jsonPath("$.role").value("AIRLINE_SELLER"))
                 .andExpect(jsonPath("$.airlineId").value("airline-latam"));
     }
+
 
     // ---------- GET /api/airlines/{id}/admins: only ADMIN ----------
 

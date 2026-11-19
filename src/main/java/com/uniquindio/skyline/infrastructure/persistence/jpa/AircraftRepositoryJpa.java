@@ -6,6 +6,7 @@ import com.uniquindio.skyline.infrastructure.persistence.jpa.mapper.AircraftPers
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,5 +24,12 @@ public class AircraftRepositoryJpa implements AircraftRepository {
     @Override
     public void save(Aircraft aircraft) {
         dataRepository.save(mapper.toEntity(aircraft));
+    }
+
+    @Override
+    public List<Aircraft> findAllById(List<String> ids) {
+        return dataRepository.findAllById(ids).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

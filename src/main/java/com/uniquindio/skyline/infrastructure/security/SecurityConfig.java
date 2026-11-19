@@ -73,6 +73,8 @@ public class SecurityConfig {
 
                         // Must stay BEFORE "GET /api/airlines/**", which would also match /top and make it public.
                         .requestMatchers(HttpMethod.GET, "/api/airlines/top").hasAuthority(ADMIN)
+                        // Also BEFORE "GET /api/airlines/**": the sellers of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/airlines/sellers").hasAuthority(AIRLINE_ADMIN)
 
                         // What a buyer needs to read to build a booking.
                         .requestMatchers(HttpMethod.GET,
@@ -103,6 +105,10 @@ public class SecurityConfig {
                         ).hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, "/api/extra_services/*")
                                 .hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
+                        // The aircraft of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts").hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
+                        // The legs of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/legs").hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
 
                         // Default deny: a new endpoint without a rule is blocked until a rule is added for it.
                         .anyRequest().denyAll()
