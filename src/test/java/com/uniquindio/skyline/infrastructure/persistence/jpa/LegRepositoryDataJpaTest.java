@@ -4,6 +4,7 @@ import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.entity.LegSeat;
 import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
+import com.uniquindio.skyline.domain.repository.PageResult;
 import com.uniquindio.skyline.domain.valueObject.Airport;
 import com.uniquindio.skyline.domain.valueObject.Seat;
 import com.uniquindio.skyline.domain.valueObject.PassengerBookingId;
@@ -233,5 +234,30 @@ class LegRepositoryDataJpaTest {
         assertTrue(leg.getLegSeatById("seat-bog-mde-1A").orElseThrow().getPassengerBookingId().isEmpty());
     }
 
+    @Test
+    void shouldFindOnePageOfTheAirlineLegsOrderedByDepartureTime() {
+        // Arrange
+        Leg later = Leg.createLeg(Airport.EL_DORADO, Airport.EL_EDEN, DEPARTURE_TIME.plusDays(2), ARRIVAL_TIME.plusDays(2),
+                "aircraft-a320-02", "airline-test", List.of(new Seat("1A")), 75000, 180000);
+        Leg earlier = Leg.createLeg(Airport.EL_EDEN, Airport.EL_DORADO, DEPARTURE_TIME, ARRIVAL_TIME,
+                "aircraft-a320-02", "airline-test", List.of(new Seat("1A")), 75000, 180000);
+        Leg middle = Leg.createLeg(Airport.EL_DORADO, Airport.EL_EDEN, DEPARTURE_TIME.plusDays(1), ARRIVAL_TIME.plusDays(1),
+                "aircraft-a320-02", "airline-test", List.of(new Seat("1A")), 75000, 180000);
+        Leg otherAirline = Leg.createLeg(Airport.EL_DORADO, Airport.EL_EDEN, DEPARTURE_TIME, ARRIVAL_TIME,
+                "aircraft-a320-01", "airline-other", List.of(new Seat("1A")), 75000, 180000);
+        legRepository.save(later);
+        legRepository.save(earlier);
+        legRepository.save(middle);
+        legRepository.save(otherAirline);
 
+        // Act
+        PageResult<Leg> firstPage = legRepository.findByAirline("airline-test", 0, 2);
+        PageResult<Leg> secondPage = legRepository.findByAirline("airline-test", 1, 2);
+
+        // Assert
+        assertEquals(List.of(earlier.getId(), middle.getId()), firstPage.content().stream().map(Leg::getId).toList());
+        assertEquals(List.of(later.getId()), secondPage.content().stream().map(Leg::getId).toList());
+        assertEquals(3, firstPage.totalElements());
+        assertEquals(2, firstPage.totalPages());
+    }
 }

@@ -34,7 +34,12 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 26 | [ListCustomerBookings](list-customer-bookings.md) | Returns the logged-in customer's bookings, newest first. | `BookingRepository` | `GET /api/bookings/mine` | Implemented |
 | 27 | [ListAirports](list-airports.md) | Returns every airport (IATA code, name, city, country) so the client can choose origin and destination. | — (the `Airport` enum) | `GET /api/airports` | Implemented |
 | 28 | [GetAirline](get-airline.md) | Returns one airline by its id, for example to know its maximum luggage amount before adding luggage. | `AirlineRepository` | `GET /api/airlines/{id}` | Implemented |
+<<<<<<< HEAD
 | 31 | [ListAirlineSellers](list-airline-sellers.md) | Returns the sellers of the airline in the token (`AIRLINE_ADMIN`). | `UserRepository` | `GET /api/airlines/sellers` | Implemented |
+=======
+| 29 | [ListAirlineAircrafts](list-airline-aircrafts.md) | Returns the aircraft of the airline in the token, so the panel can list them and the leg form can offer them. | `AirlineRepository`, `AircraftRepository` | `GET /api/aircrafts` | Implemented |
+| 30 | [ListAirlineLegs](list-airline-legs.md) | Returns one page of the legs of the airline in the token, ordered by departure time. | `LegRepository` | `GET /api/legs` | Implemented |
+>>>>>>> 0d2dc237956f84e8dfa86132447c554cf54628d2
 
 ## Users and roles
 

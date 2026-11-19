@@ -2,6 +2,8 @@ package com.uniquindio.skyline.infrastructure.rest;
 
 import com.uniquindio.skyline.application.usecase.CreateLegUseCase;
 import com.uniquindio.skyline.application.usecase.GetLegSeatMapUseCase;
+import com.uniquindio.skyline.application.usecase.ListAirlineLegsUseCase;
+import com.uniquindio.skyline.domain.repository.PageResult;
 import com.uniquindio.skyline.domain.entity.Aircraft;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.exception.DomainRuleException;
@@ -17,6 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +31,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LegController.class)
@@ -52,6 +56,9 @@ public class LegControllerTest {
 
     @MockitoBean
     private GetLegSeatMapUseCase getLegSeatMapUseCase;
+
+    @MockitoBean
+    private ListAirlineLegsUseCase listAirlineLegsUseCase;
 
     @MockitoBean
     private LegMapper mapper;
@@ -167,5 +174,31 @@ public class LegControllerTest {
         // Act & Assert
         mockMvc.perform(get("/api/legs/leg-1/seats"))
                 .andExpect(status().isNotFound());         // 404
+    }
+
+    @Test
+    void shouldAnswerPageOfLegsOfTheAirlineInTheToken() throws Exception {
+        // Arrange
+        when(listAirlineLegsUseCase.execute("air-1", 1, 5)).thenReturn(new PageResult<>(List.of(), 6, 2, 1, 5));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs").param("page", "1").param("size", "5").principal(AIRLINE_USER))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.totalElements").value(6))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.number").value(1));
+
+        verify(listAirlineLegsUseCase).execute("air-1", 1, 5);  // airline of the token
+    }
+
+    @Test
+    void shouldAnswer400WhenListingWithPageOutOfRange() throws Exception {
+        // Arrange
+        when(listAirlineLegsUseCase.execute(any(), eq(-1), eq(10)))
+                .thenThrow(new IllegalArgumentException("The page cannot be negative"));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs").param("page", "-1").principal(AIRLINE_USER))
+                .andExpect(status().isBadRequest());       // 400
     }
 }
