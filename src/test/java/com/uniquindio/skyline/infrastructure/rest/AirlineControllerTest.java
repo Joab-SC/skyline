@@ -77,6 +77,9 @@ public class AirlineControllerTest {
     private RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
 
     @MockitoBean
+    private ListAirlineAdminsUseCase listAirlineAdminsUseCase;
+
+    @MockitoBean
     private RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
 
     @MockitoBean
@@ -364,6 +367,34 @@ public class AirlineControllerTest {
                         .content(REGISTER_ADMIN_JSON))
                 .andExpect(status().isUnprocessableContent())  // 422
                 .andExpect(jsonPath("$.message").value("The password must have a number"));
+    }
+
+    // ---------- GET /api/airlines/{id}/admins ----------
+
+    @Test
+    void shouldAnswerAdminsOfTheAirline() throws Exception {
+        // Arrange
+        User admin = User.registerAirlineAdmin("airline-1", "1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE, "laura@mail.com", "hash");
+        when(listAirlineAdminsUseCase.execute("airline-1")).thenReturn(List.of(admin));
+        when(userMapper.toRegisterResponse(admin))
+                .thenReturn(new UserResponse(admin.getId(), "laura@mail.com", "AIRLINE_ADMIN", "airline-1"));
+
+        // Act & Assert
+        mockMvc.perform(get(REGISTER_ADMIN_URL))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$[0].email").value("laura@mail.com"))
+                .andExpect(jsonPath("$[0].role").value("AIRLINE_ADMIN"));
+    }
+
+    @Test
+    void shouldAnswer404WhenListingAdminsOfAnAirlineThatDoesNotExist() throws Exception {
+        // Arrange
+        when(listAirlineAdminsUseCase.execute("airline-1")).thenThrow(new NoSuchElementException());
+
+        // Act & Assert
+        mockMvc.perform(get(REGISTER_ADMIN_URL))
+                .andExpect(status().isNotFound());         // 404
     }
 
     // ---------- POST /api/airlines/sellers ----------

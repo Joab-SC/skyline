@@ -220,4 +220,34 @@ class SecurityEndpointTest {
                 .andExpect(jsonPath("$.role").value("AIRLINE_SELLER"))
                 .andExpect(jsonPath("$.airlineId").value("airline-latam"));
     }
+
+    // ---------- GET /api/airlines/{id}/admins: only ADMIN ----------
+
+    @Test
+    void listAdminsShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert: GET /api/airlines/** is public, but not this one.
+        mockMvc.perform(get("/api/airlines/airline-avianca/admins"))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void listAdminsShouldAnswer403WhenRoleIsNotAdmin() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority airlineAdmin = new SimpleGrantedAuthority("AIRLINE_ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/airline-avianca/admins").with(jwt().authorities(airlineAdmin)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void listAdminsShouldAnswer200WhenRoleIsAdmin() throws Exception {
+        // Arrange: airline1@skyline.com is an initial admin of airline-avianca.
+        SimpleGrantedAuthority admin = new SimpleGrantedAuthority("ADMIN");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/airlines/airline-avianca/admins").with(jwt().authorities(admin)))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$[0].email").value("airline1@skyline.com"));
+    }
 }
