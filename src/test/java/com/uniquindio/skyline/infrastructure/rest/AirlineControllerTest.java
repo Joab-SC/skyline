@@ -80,6 +80,9 @@ public class AirlineControllerTest {
     private RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
 
     @MockitoBean
+    private ListAirlineSellersUseCase listAirlineSellersUseCase;
+
+    @MockitoBean
     private UserMapper userMapper;
 
     @MockitoBean
@@ -454,5 +457,25 @@ public class AirlineControllerTest {
                         .content(REGISTER_ADMIN_JSON))
                 .andExpect(status().isUnprocessableContent())  // 422
                 .andExpect(jsonPath("$.message").value("The password must have a number"));
+    }
+
+    // ---------- GET /api/airlines/sellers ----------
+
+    @Test
+    void shouldAnswerSellersOfTheAirlineInTheToken() throws Exception {
+        // Arrange
+        User seller = User.registerAirlineSeller("airline-1", "1001", DocumentType.CITIZENSHIP_ID, "Laura", null,
+                "Duarte", null, LocalDate.of(2000, 5, 10), Gender.FEMALE, "laura@mail.com", "hash");
+        when(listAirlineSellersUseCase.execute("airline-1")).thenReturn(List.of(seller));
+        when(userMapper.toRegisterResponse(seller))
+                .thenReturn(new UserResponse(seller.getId(), "laura@mail.com", "AIRLINE_SELLER", "airline-1"));
+
+        // Act & Assert
+        mockMvc.perform(get(REGISTER_SELLER_URL).principal(AIRLINE_ADMIN))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$[0].email").value("laura@mail.com"))
+                .andExpect(jsonPath("$[0].role").value("AIRLINE_SELLER"));
+
+        verify(listAirlineSellersUseCase).execute("airline-1");  // airline of the token
     }
 }
