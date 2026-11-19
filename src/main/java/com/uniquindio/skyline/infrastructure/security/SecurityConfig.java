@@ -2,6 +2,7 @@ package com.uniquindio.skyline.infrastructure.security;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +38,8 @@ public class SecurityConfig {
     private static final String UNAUTHORIZED_MESSAGE = "A valid token is required";
     private static final String FORBIDDEN_MESSAGE = "You do not have permission for this action";
     private static final String CUSTOMER = "CUSTOMER";
+    @Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
@@ -153,7 +156,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
 
