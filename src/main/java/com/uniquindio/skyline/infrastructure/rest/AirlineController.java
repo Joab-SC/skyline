@@ -33,6 +33,7 @@ public class AirlineController {
     private final ListAirlinesUseCase listAirlinesUseCase;
     private final GetAirlineUseCase getAirlineUseCase;
     private final RegisterAirlineAdminUseCase registerAirlineAdminUseCase;
+    private final ListAirlineAdminsUseCase listAirlineAdminsUseCase;
     private final RegisterAirlineSellerUseCase registerAirlineSellerUseCase;
     private final ListAirlineSellersUseCase listAirlineSellersUseCase;
     private final AirlineMapper mapper;
@@ -43,6 +44,7 @@ public class AirlineController {
                              ListAirlineExtraServicesUseCase listAirlineExtraServicesUseCase, GetTopAirlinesUseCase getTopAirlinesUseCase, ListAirlinesUseCase listAirlinesUseCase,
                              GetAirlineUseCase getAirlineUseCase,
                              RegisterAirlineAdminUseCase registerAirlineAdminUseCase,
+                             ListAirlineAdminsUseCase listAirlineAdminsUseCase,
                              RegisterAirlineSellerUseCase registerAirlineSellerUseCase,
                              ListAirlineSellersUseCase listAirlineSellersUseCase,
                              AirlineMapper mapper, ExtraServiceMapper extraServiceMapper, UserMapper userMapper) {
@@ -52,6 +54,7 @@ public class AirlineController {
         this.listAirlinesUseCase = listAirlinesUseCase;
         this.getAirlineUseCase = getAirlineUseCase;
         this.registerAirlineAdminUseCase = registerAirlineAdminUseCase;
+        this.listAirlineAdminsUseCase = listAirlineAdminsUseCase;
         this.registerAirlineSellerUseCase = registerAirlineSellerUseCase;
         this.listAirlineSellersUseCase = listAirlineSellersUseCase;
         this.mapper = mapper;
@@ -92,6 +95,15 @@ public class AirlineController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.toRegisterResponse(user)); // 201
+    }
+
+    // Only an ADMIN lists the admins of an airline (see SecurityConfig).
+    @GetMapping("/{id}/admins")
+    public ResponseEntity<List<UserResponse>> listAdmins(@PathVariable String id) {
+        List<UserResponse> response = listAirlineAdminsUseCase.execute(id).stream()
+                .map(userMapper::toRegisterResponse)
+                .toList();
+        return ResponseEntity.ok(response); // 200
     }
 
     // Only an AIRLINE_ADMIN creates a seller (see SecurityConfig).
