@@ -100,6 +100,8 @@ public class SecurityConfig {
                         ).hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, "/api/extra_services/*")
                                 .hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
+                        // The aircraft of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/aircrafts").hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
                         // The legs of the airline in the token.
                         .requestMatchers(HttpMethod.GET, "/api/legs").hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
 
