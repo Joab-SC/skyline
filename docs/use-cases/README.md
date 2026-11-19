@@ -34,6 +34,7 @@ Out of scope for now: booking pre-confirmation and tax calculation (CalculateBoo
 | 26 | [ListCustomerBookings](list-customer-bookings.md) | Returns the logged-in customer's bookings, newest first. | `BookingRepository` | `GET /api/bookings/mine` | Implemented |
 | 27 | [ListAirports](list-airports.md) | Returns every airport (IATA code, name, city, country) so the client can choose origin and destination. | — (the `Airport` enum) | `GET /api/airports` | Implemented |
 | 28 | [GetAirline](get-airline.md) | Returns one airline by its id, for example to know its maximum luggage amount before adding luggage. | `AirlineRepository` | `GET /api/airlines/{id}` | Implemented |
+| 31 | [ListAirlineSellers](list-airline-sellers.md) | Returns the sellers of the airline in the token (`AIRLINE_ADMIN`). | `UserRepository` | `GET /api/airlines/sellers` | Implemented |
 
 ## Users and roles
 
