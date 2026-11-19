@@ -56,6 +56,23 @@ class AddLuggageUseCaseTest {
     }
 
     @Test
+    void shouldRemoveLuggageWhenAmountIsZero() {
+        // Arrange
+        Booking booking = createBookingWithPassenger();
+        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3));
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+
+        // Act
+        Booking result = addLuggageUseCase.execute("123", booking.getId(), 0);
+
+        // Assert
+        assertTrue(result.getPassengerList().getFirst().getLuggageDetail().isEmpty());
+        assertEquals(500.0, result.getPrice(), 0.001);
+        verify(luggageDetailCreator, never()).createDetail(any(), anyInt());
+        verify(bookingRepository).save(booking);
+    }
+
+    @Test
     void shouldThrowExceptionWhenBookingIsNotFound() {
         // Arrange
         when(bookingRepository.findById("missing")).thenReturn(Optional.empty());
