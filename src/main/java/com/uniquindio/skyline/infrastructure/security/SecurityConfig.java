@@ -70,6 +70,8 @@ public class SecurityConfig {
 
                         // Must stay BEFORE "GET /api/airlines/**", which would also match /top and make it public.
                         .requestMatchers(HttpMethod.GET, "/api/airlines/top").hasAuthority(ADMIN)
+                        // Also BEFORE "GET /api/airlines/**": the sellers of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/airlines/sellers").hasAuthority(AIRLINE_ADMIN)
 
                         // What a buyer needs to read to build a booking.
                         .requestMatchers(HttpMethod.GET,
