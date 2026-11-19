@@ -132,6 +132,38 @@ class SecurityEndpointTest {
                 .andExpect(status().isOk());               // 200
     }
 
+    // ---------- GET /api/legs: only airline users ----------
+
+    @Test
+    void listLegsShouldAnswer401WhenThereIsNoToken() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/legs"))
+                .andExpect(status().isUnauthorized());     // 401
+    }
+
+    @Test
+    void listLegsShouldAnswer403WhenRoleIsNotAirlineUser() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority customer = new SimpleGrantedAuthority("CUSTOMER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs").with(jwt().authorities(customer)))
+                .andExpect(status().isForbidden());        // 403
+    }
+
+    @Test
+    void listLegsShouldAnswer200WhenRoleIsAirlineSeller() throws Exception {
+        // Arrange
+        SimpleGrantedAuthority seller = new SimpleGrantedAuthority("AIRLINE_SELLER");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/legs")
+                        .with(jwt().jwt(token -> token.claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-latam"))
+                                .authorities(seller)))
+                .andExpect(status().isOk())                // 200
+                .andExpect(jsonPath("$.content").isArray());
+    }
+
     // ---------- POST /api/airlines/{id}/admins: only ADMIN ----------
 
     @Test

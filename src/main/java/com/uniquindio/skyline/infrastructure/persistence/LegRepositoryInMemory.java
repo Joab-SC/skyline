@@ -3,6 +3,7 @@ package com.uniquindio.skyline.infrastructure.persistence;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.domain.repository.LegRepository;
+import com.uniquindio.skyline.domain.repository.PageResult;
 
 import java.util.*;
 
@@ -55,5 +56,17 @@ public class LegRepositoryInMemory implements LegRepository {
                                 seat.getPassengerBookingId().orElseThrow().passengerDocument(),
                                 leg.getId())))
                 .toList();
+    }
+
+    @Override
+    public PageResult<Leg> findByAirline(String airlineId, int page, int size) {
+        List<Leg> all = legs.values().stream()
+                .filter(leg -> leg.getAirlineId().equals(airlineId))
+                .sorted(Comparator.comparing(Leg::getDepartureTime))
+                .toList();
+        int from = Math.min(page * size, all.size());
+        int to = Math.min(from + size, all.size());
+        int totalPages = (int) Math.ceil((double) all.size() / size);
+        return new PageResult<>(all.subList(from, to), all.size(), totalPages, page, size);
     }
 }
