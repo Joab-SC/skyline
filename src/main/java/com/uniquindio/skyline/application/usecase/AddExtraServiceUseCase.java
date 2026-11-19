@@ -23,6 +23,12 @@ public class AddExtraServiceUseCase {
     @Transactional
     public Booking execute(String bookingId, String serviceId, int quantity) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
+        // 0 removes the service, even if the airline deleted it after it was added
+        if (quantity == 0) {
+            booking.removeExtraService(serviceId);
+            bookingRepository.save(booking);
+            return booking;
+        }
 
         Flight outboundFlight = flightRepository.findById(booking.getIdOutboundFlight()).orElseThrow();
         Airline airline = airlineRepository.findById(outboundFlight.getAirlineId()).orElseThrow();
