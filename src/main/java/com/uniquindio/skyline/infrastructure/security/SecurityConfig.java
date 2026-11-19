@@ -100,6 +100,8 @@ public class SecurityConfig {
                         ).hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, "/api/extra_services/*")
                                 .hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
+                        // The legs of the airline in the token.
+                        .requestMatchers(HttpMethod.GET, "/api/legs").hasAnyAuthority(AIRLINE_ADMIN, AIRLINE_SELLER)
 
                         // Default deny: a new endpoint without a rule is blocked until a rule is added for it.
                         .anyRequest().denyAll()

@@ -12,4 +12,6 @@ public interface LegRepository {
     List<Leg> findAll();
     List<Leg> findLegsWithAtLeastAvailableSeats(int minimumSeats);
     List<BookingSeat> findSeatsByBookingId(String bookingId);
+    // One page of the airline's legs, ordered by departure time (earliest first).
+    PageResult<Leg> findByAirline(String airlineId, int page, int size);
 }
