@@ -108,6 +108,10 @@ public class Passenger  {
         this.luggageDetail = Optional.of(luggageDetail);
     }
 
+    void removeLuggage() {
+        this.luggageDetail = Optional.empty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

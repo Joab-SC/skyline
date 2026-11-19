@@ -169,6 +169,18 @@ public class Booking {
         this.price += newDetail.subtotal();
     }
 
+    // Removes an extra service from the booking and subtracts its subtotal. Nothing happens if it was not added.
+    public void removeExtraService(String extraServiceId){
+        validateIsModifiable();
+        detailExtraServices.stream()
+                .filter(detail -> detail.idExtraService().equals(extraServiceId))
+                .findFirst()
+                .ifPresent(detail -> {
+                    this.price -= detail.subtotal();
+                    detailExtraServices.remove(detail);
+                });
+    }
+
 
 
     public Optional<Passenger> getPassenger(String id){
@@ -216,6 +228,14 @@ public class Booking {
         }
         passenger.registerLuggage(luggageDetail);
         this.price = this.price + luggageDetail.subTotal();
+    }
+
+    // Removes the passenger's luggage and subtracts its subtotal. Nothing happens if they had none.
+    public void removePassengerLuggage(String idDocument){
+        validateIsModifiable();
+        Passenger passenger = getPassenger(idDocument).orElseThrow();
+        passenger.getLuggageDetail().ifPresent(detail -> this.price -= detail.subTotal());
+        passenger.removeLuggage();
     }
 
     public void addReturnFlight(String idReturnFlight, double price){
