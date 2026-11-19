@@ -1,0 +1,14 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb-ecommerce
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: ecommercedb
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+volumes:
+  mariadb_data:
