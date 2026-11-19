@@ -68,6 +68,9 @@ public class SecurityConfig {
                                 "/h2-console/**"
                         ).permitAll()
 
+                        // Must stay BEFORE "GET /api/airlines/**", which would make the admins of an airline public.
+                        .requestMatchers(HttpMethod.GET, "/api/airlines/*/admins").hasAuthority(ADMIN)
+
                         // Must stay BEFORE "GET /api/airlines/**", which would also match /top and make it public.
                         .requestMatchers(HttpMethod.GET, "/api/airlines/top").hasAuthority(ADMIN)
 
