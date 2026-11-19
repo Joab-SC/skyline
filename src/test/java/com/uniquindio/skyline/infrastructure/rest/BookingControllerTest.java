@@ -1,5 +1,8 @@
 package com.uniquindio.skyline.infrastructure.rest;
 
+import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
 import com.uniquindio.skyline.application.dto.result.BookingDetail;
 import com.uniquindio.skyline.application.usecase.*;
 import com.uniquindio.skyline.domain.entity.Booking;
@@ -157,6 +160,31 @@ public class BookingControllerTest {
                 .andExpect(status().isCreated());          // 201
 
         // Assert
+        verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, null);
+    }
+
+    @Test
+    void shouldCreateAGuestBookingWhenTheTokenIsNotOfACustomer() throws Exception {
+        // Arrange
+        Booking booking = Booking.createPendingBooking(2, 200, "flight-1", TripType.ROUND_TRIP);
+        when(selectOutboundFlightUseCase.execute(anyInt(), any(), any(), any())).thenReturn(booking);
+
+        // A seller's token also has a uid: it must not be used as the customer of the booking
+        Jwt sellerJwt = Jwt.withTokenValue("token")
+                .header("alg", "HS256")
+                .claim("roles", List.of("AIRLINE_SELLER"))
+                .claim(JwtTokenProvider.USER_ID_CLAIM, "seller1")
+                .claim(JwtTokenProvider.AIRLINE_ID_CLAIM, "airline-1")
+                .build();
+
+        // Act
+        mockMvc.perform(post("/api/bookings")
+                        .principal(new JwtAuthenticationToken(sellerJwt))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(OUTBOUND_JSON))
+                .andExpect(status().isCreated());          // 201
+
+        // Assert: an airline user is not a customer, so the booking is not linked to them
         verify(selectOutboundFlightUseCase).execute(2, "flight-1", TripType.ROUND_TRIP, null);
     }
 
