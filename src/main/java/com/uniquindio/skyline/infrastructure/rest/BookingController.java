@@ -54,8 +54,12 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<BookingResponse> create(@Valid @RequestBody SelectOutboundFlightRequest request,
                                                   JwtAuthenticationToken authentication) {
-        String idCustomer = authentication == null ? null
-                : authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM);
+        // Only a CUSTOMER token links the booking. With an airline or ADMIN token it is a guest booking,
+        // because those users have no "my bookings" and the booking would be seen by nobody.
+        List<String> roles = authentication == null ? null : authentication.getToken().getClaimAsStringList("roles");
+        String idCustomer = roles != null && roles.contains("CUSTOMER")
+                ? authentication.getToken().getClaimAsString(JwtTokenProvider.USER_ID_CLAIM)
+                : null;
         Booking booking = selectOutboundFlightUseCase.execute(
                 request.numPassengers(), request.outboundFlightId(), request.tripType(), idCustomer);
         BookingResponse response = mapper.toBookingResponse(booking);
