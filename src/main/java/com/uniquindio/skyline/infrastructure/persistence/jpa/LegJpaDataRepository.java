@@ -2,6 +2,8 @@ package com.uniquindio.skyline.infrastructure.persistence.jpa;
 
 import com.uniquindio.skyline.domain.repository.BookingSeat;
 import com.uniquindio.skyline.infrastructure.persistence.jpa.entity.LegEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,8 @@ interface LegJpaDataRepository extends JpaRepository<LegEntity, String> {
     List<LegEntity> findByAircraftId(String aircraftId);
 
     List<LegEntity> findByAvailableSeatsGreaterThanEqual(int minimumSeats);
+
+    Page<LegEntity> findByAirlineIdOrderByDepartureTimeAsc(String airlineId, Pageable pageable);
 
     @Query("""
     SELECT new com.uniquindio.skyline.domain.repository.BookingSeat(s.id, s.seatCode, s.passengerId, l.id)

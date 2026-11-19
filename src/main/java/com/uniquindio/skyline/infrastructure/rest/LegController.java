@@ -3,8 +3,10 @@ package com.uniquindio.skyline.infrastructure.rest;
 import com.uniquindio.skyline.application.dto.request.CreateLegRequest;
 import com.uniquindio.skyline.application.dto.response.LegResponse;
 import com.uniquindio.skyline.application.dto.response.LegSeatMapResponse;
+import com.uniquindio.skyline.application.dto.response.PageResponse;
 import com.uniquindio.skyline.application.usecase.CreateLegUseCase;
 import com.uniquindio.skyline.application.usecase.GetLegSeatMapUseCase;
+import com.uniquindio.skyline.application.usecase.ListAirlineLegsUseCase;
 import com.uniquindio.skyline.domain.entity.Leg;
 import com.uniquindio.skyline.infrastructure.rest.mapper.LegMapper;
 import com.uniquindio.skyline.infrastructure.security.JwtTokenProvider;
@@ -22,12 +24,28 @@ public class LegController {
 
     private final CreateLegUseCase createLegUseCase;
     private final GetLegSeatMapUseCase getLegSeatMapUseCase;
+    private final ListAirlineLegsUseCase listAirlineLegsUseCase;
     private final LegMapper mapper;
 
-    public LegController(CreateLegUseCase createLegUseCase, GetLegSeatMapUseCase getLegSeatMapUseCase, LegMapper mapper) {
+    public LegController(CreateLegUseCase createLegUseCase, GetLegSeatMapUseCase getLegSeatMapUseCase,
+                         ListAirlineLegsUseCase listAirlineLegsUseCase, LegMapper mapper) {
         this.createLegUseCase = createLegUseCase;
         this.getLegSeatMapUseCase = getLegSeatMapUseCase;
+        this.listAirlineLegsUseCase = listAirlineLegsUseCase;
         this.mapper = mapper;
+    }
+
+    @GetMapping
+    public ResponseEntity<PageResponse<LegResponse>> listMine(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            JwtAuthenticationToken authentication) {
+        // The airline comes from the token, so a user only sees the legs of its own airline.
+        String airlineId = authentication.getToken().getClaimAsString(JwtTokenProvider.AIRLINE_ID_CLAIM);
+        PageResponse<LegResponse> response = PageResponse.from(
+                listAirlineLegsUseCase.execute(airlineId, page, size),
+                mapper::toLegResponse);
+        return ResponseEntity.ok(response); // 200
     }
 
     @PostMapping
