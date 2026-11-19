@@ -12,7 +12,7 @@ Adds extra services to a `PENDING` booking as extra service details (service, qu
 |------|------|-------------|
 | `bookingId` | `String` | Booking id. |
 | `serviceId` | `String` | Extra service id. It must belong to the airline of the outbound flight. The client gets the available ids from [ListAirlineExtraServices](list-airline-extra-services.md). |
-| `quantity` | `int` | How many units of the service. |
+| `quantity` | `int` | How many units of the service. `0` removes the service from the booking. |
 
 ## Output
 The updated `Booking`.
@@ -21,7 +21,7 @@ The updated `Booking`.
 - Repositories: `BookingRepository`, `FlightRepository`, `AirlineRepository`
 
 ## Steps
-1. Find the booking.
+1. Find the booking. If `quantity` is `0`, call `booking.removeExtraService(serviceId)`, which checks that the booking can be modified and, if the booking has that service, removes it and subtracts its subtotal. Then save and return the booking. The service is not looked up, so a service the airline deleted can still be removed.
 2. Find the outbound flight and its airline (`flight.getAirlineId()`). The outbound and return flights belong to the same airline, so the client does not send the airline.
 3. Find the service in the airline. The `ExtraService` entities belong to the Airline aggregate. `extraService.validateIsNotDeleted()` rejects a service the airline deleted ([DeleteExtraService](delete-extra-service.md)).
 4. Unit price = `extraService.getPrice(outboundFlight.getFlightScope())`: `internationalPrice` if the flight is international, else `nationalPrice` (see below).
@@ -42,6 +42,6 @@ One call adds one service. To add several, the client calls the endpoint once pe
 ## Rules and errors
 - `DomainRuleException`:
   - the booking is `PENDING` and its payment deadline has not passed;
-  - `quantity > 0`;
-  - the service is not deleted.
+  - `quantity > 0` when adding (`0` removes, a negative quantity is 400 in REST by `@PositiveOrZero`);
+  - the service is not deleted (only when adding).
 - The booking, the outbound flight, the airline or the service does not exist: `NoSuchElementException` (404 in REST). A service of another airline is not found.
