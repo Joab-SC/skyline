@@ -12,7 +12,7 @@ Registers the luggage detail of a passenger in a `PENDING` booking and adds its 
 |------|------|-------------|
 | `passengerId` | `String` | Passenger document (`person.idDocument`). |
 | `bookingId` | `String` | Booking id. |
-| `amount` | `int` | Pieces of luggage the passenger carries on every leg. |
+| `amount` | `int` | Pieces of luggage the passenger carries on every leg. `0` removes the passenger's luggage. |
 
 ## Output
 The updated `Booking`.
@@ -22,7 +22,7 @@ The updated `Booking`.
 - Domain services: `LuggageDetailCreator`
 
 ## Steps
-1. The use case finds the booking (`BookingRepository`).
+1. The use case finds the booking (`BookingRepository`). If `amount` is `0`, it calls `booking.removePassengerLuggage(passengerId)`, which checks that the booking can be modified, subtracts the passenger's luggage `subTotal` (if they had luggage) and leaves them without luggage. Then it skips to step 4.
 2. `LuggageDetailCreator.createDetail(booking, amount)`:
    1. Gets the flights: the outbound flight, plus the return flight when `idReturnFlight` is present (`FlightRepository`).
    2. Gets every leg of those flights (`flight.getIdLegs()` → `LegRepository`).
@@ -40,6 +40,7 @@ The updated `Booking`.
 
 ## Rules and errors
 - The booking or the passenger does not exist: `NoSuchElementException` (404 in REST).
+- A negative `amount`: 400 in REST (`@PositiveOrZero`).
 
 The following throw `DomainRuleException`:
 - The booking is `PENDING` and its payment deadline has not passed.

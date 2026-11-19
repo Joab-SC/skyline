@@ -504,6 +504,34 @@ public class BookingTest {
     }
 
     @Test
+    void shouldRemovePassengerLuggageAndSubtractItsPrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.registerPassengerLuggage("123", new LuggageDetail(List.of("luggage-1"), 2, 100.0, 3));
+
+        // Act
+        booking.removePassengerLuggage("123");
+
+        // Assert
+        assertTrue(booking.getPassengerList().getFirst().getLuggageDetail().isEmpty());
+        assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
+    void shouldRemoveExtraServiceAndSubtractItsPrice() {
+        // Arrange
+        Booking booking = createBookingWithPassenger("123");
+        booking.addExtraService("extra-1", 2, 30.0);
+
+        // Act
+        booking.removeExtraService("extra-1");
+
+        // Assert
+        assertTrue(booking.getDetailExtraServices().isEmpty());
+        assertEquals(500.0, booking.getPrice(), 0.001);
+    }
+
+    @Test
     void shouldThrowExceptionWhenPassengerIsNotInBooking() {
         // Arrange
         Booking booking = createBookingWithPassenger("123");

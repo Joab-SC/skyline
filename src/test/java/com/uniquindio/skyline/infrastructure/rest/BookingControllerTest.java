@@ -463,11 +463,11 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenLuggageQuantityIsZero() throws Exception {
+    void shouldAnswer400WhenLuggageQuantityIsNegative() throws Exception {
         // Arrange
         String requestJson = """
             {
-            "passengerId": "1094", "quantity": 0
+            "passengerId": "1094", "quantity": -1
             }
             """;
 
@@ -475,7 +475,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/luggage")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());       // 400 by @Positive
+                .andExpect(status().isBadRequest());       // 400 by @PositiveOrZero
 
         verify(addLuggageUseCase, never()).execute(any(), any(), anyInt());
     }
@@ -521,11 +521,11 @@ public class BookingControllerTest {
     }
 
     @Test
-    void shouldAnswer400WhenExtraServiceQuantityIsZero() throws Exception {
+    void shouldAnswer400WhenExtraServiceQuantityIsNegative() throws Exception {
         // Arrange
         String requestJson = """
             {
-            "extraServiceId": "service-1", "quantity": 0
+            "extraServiceId": "service-1", "quantity": -1
             }
             """;
 
@@ -533,7 +533,7 @@ public class BookingControllerTest {
         mockMvc.perform(put("/api/bookings/booking-1/extra-services")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());       // 400 by @Positive
+                .andExpect(status().isBadRequest());       // 400 by @PositiveOrZero
 
         verify(addExtraServiceUseCase, never()).execute(any(), any(), anyInt());
     }

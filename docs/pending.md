@@ -7,12 +7,6 @@ No new features for now: the goal is to fix what exists so the front can run the
 ## Close the purchase
 - [ ] Only `GET /api/bookings/{id}` shows each passenger's seats (`BookingDetailResponse`). The other booking endpoints (`POST /api/bookings`, return flight, passengers, seats, luggage, extra services, cancel, payment) still return `BookingResponse` without seats, so the front must call GET again to see them. Plan: each endpoint runs its command use case, then `GetBookingUseCase`, and maps the result with `toBookingDetailResponse`. → `BookingController`
 
-## Changing a booking (overwrite instead of error)
-Selecting the outbound or return flight again stays an error (the return flight already throws "The booking already has a return flight"). Seats, extra services and luggage are overwritten, and an empty value removes what was chosen, because the user may have chosen by mistake or wants to change it.
-- [ ] Assign seat with no seat removes the passenger's seat on that leg and subtracts the seat price. Today `legSeatId` is `@NotBlank`, so it answers 400. → `SelectSeatRequest`, `SelectLegSeatUseCase`, `SeatAssigner`, `Leg`
-- [ ] Add extra service with quantity 0 removes that service from the booking and subtracts its subtotal. Today `quantity` is `@Positive`, so it answers 400. → `AddExtraServiceRequest`, `Booking.addExtraService`
-- [ ] Decide whether luggage with quantity 0 also removes the passenger's luggage, so the three work the same way. Today it answers 400 (`@Positive`). → `AddLuggageRequest`, `Booking.registerPassengerLuggage`
-
 ## Users
 - [ ] The email is case sensitive: `laura@x.com` and `LAURA@x.com` can be registered as two accounts. Save it in lowercase (and trimmed) when registering and when logging in. → `User`, `RegisterCustomerUseCase`, `AuthenticationService`
 - [ ] Decide whether a customer must be an adult. Today a person born a few years ago can register. The booking holder already must be an adult. → `User.registerCustomer`
